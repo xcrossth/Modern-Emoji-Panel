@@ -12,3 +12,7 @@
 - [ ] Picker build และเปิดใช้งานบน Windows 10 22H2 x64 ได้ โดย smoke test พฤติกรรม upstream หลักผ่าน
 - [ ] build scripts ที่รับมาจาก upstream ใช้ตำแหน่งใหม่ใน monorepo ได้และไม่มี workflow ใด sync upstream เข้า `main` อัตโนมัติ
 - [ ] มี regression check ที่พิสูจน์ว่ารากฐานใหม่ build ซ้ำได้จาก clean checkout
+
+## Comments
+
+- 28 สิงหาคม 2026: เริ่มดำเนินการบน branch `feature/modern-emoji-picker-mvp` ภายใต้ Goal ของ Picker MVP

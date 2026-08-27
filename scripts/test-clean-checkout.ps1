@@ -13,24 +13,24 @@ $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
 $checkoutPath = [System.IO.Path]::GetFullPath((Join-Path $temporaryRoot ("modern-emoji-picker-foundation-" + [Guid]::NewGuid().ToString("N"))))
 
 if (-not $checkoutPath.StartsWith($temporaryRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
-    throw "ตำแหน่ง clean checkout อยู่นอก temporary directory"
+    throw "Clean checkout path is outside the temporary directory"
 }
 
 Push-Location $repositoryRoot
 try {
     & git rev-parse --verify "$Revision^{commit}" *> $null
     if ($LASTEXITCODE -ne 0) {
-        throw "Revision '$Revision' ไม่ใช่ commit ที่ใช้งานได้"
+        throw "Revision '$Revision' is not a valid commit"
     }
 
     & git worktree add --detach $checkoutPath $Revision
     if ($LASTEXITCODE -ne 0) {
-        throw "สร้าง temporary worktree ไม่สำเร็จ"
+        throw "Failed to create the temporary worktree"
     }
 
     & (Join-Path $checkoutPath "scripts\verify-foundation.ps1") -SkipPublish:$SkipPublish
     if ($LASTEXITCODE -ne 0) {
-        throw "regression verification จาก clean checkout ล้มเหลว"
+        throw "Regression verification from the clean checkout failed"
     }
 }
 finally {
@@ -41,7 +41,7 @@ finally {
         try {
             & git worktree remove --force $checkoutPath
             if ($LASTEXITCODE -ne 0) {
-                throw "ลบ temporary worktree ไม่สำเร็จ: $checkoutPath"
+                throw "Failed to remove the temporary worktree: $checkoutPath"
             }
         }
         finally {
@@ -50,4 +50,4 @@ finally {
     }
 }
 
-Write-Host "Clean-checkout verification ผ่านสำหรับ $Revision" -ForegroundColor Green
+Write-Host "Clean-checkout verification passed for $Revision" -ForegroundColor Green

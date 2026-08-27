@@ -2,7 +2,7 @@
 
 Modern Emoji Picker คือโครงการสร้าง Emoji Picker สำหรับ Windows 10/11 ที่รองรับ Unicode Emoji รุ่นใหม่ แสดงภาพด้วย Noto Emoji และส่ง Unicode sequence ไปยังแอปเป้าหมายโดยไม่ผูกกับ Emoji font ของ Windows
 
-สถานะปัจจุบัน: **ออกแบบและยืนยันสเปกแล้ว ยังไม่เริ่ม implementation**
+สถานะปัจจุบัน: **เริ่ม Foundation แล้ว** โดยนำ Classic Emoji Picker ที่ตรึง commit เข้ามาใต้ `apps/picker` และย้าย build target ไป .NET 10 ส่วน product identity ยังเป็น Classic จนกว่าจะทำ Ticket 02
 
 ## เป้าหมายหลัก
 
@@ -21,9 +21,9 @@ Modern Emoji Picker คือโครงการสร้าง Emoji Picker �
 - [Architecture Decision Records](./docs/adr/)
 - [ผลทดสอบ Noto PNG 128 เทียบ 512](./docs/research/asset-visual-spike/README.md)
 
-## แผน repository
+## โครง repository
 
-เมื่อเริ่ม implementation โครงการจะเป็น monorepo:
+โครงการเป็น monorepo:
 
     apps/picker/              WPF application
     tools/emoji-baseline/     .NET 10 data generator
@@ -31,14 +31,24 @@ Modern Emoji Picker คือโครงการสร้าง Emoji Picker �
     tests/                    Automated tests
     scripts/                  Local build and release scripts
 
-Picker จะถูกนำเข้าจาก platima/Classic-EmojiPicker ด้วย Git subtree และ rebrand เป็นผลิตภัณฑ์ใหม่ โดยยังรับ upstream updates แบบ manual ได้
+Picker ถูกนำเข้าจาก platima/Classic-EmojiPicker ด้วย Git subtree และยังรับ upstream updates แบบ manual ได้ ดู [provenance และขั้นตอนอัปเดต upstream](./docs/upstream/classic-picker.md) การ rebrand เป็นผลิตภัณฑ์ใหม่ทั้งหมดอยู่ใน Ticket 02
 
 ## แพลตฟอร์มและข้อมูล
 
 - Picker: .NET 10 WPF, self-contained win-x64
 - แพลตฟอร์มหลักที่โครงการทดสอบ: Windows 10 22H2 x64
-- Windows 11: smoke-tested
+- Windows 11: ต้องผ่าน smoke test ก่อน release
 - Emoji Baseline: Unicode/Emoji 17.0, CLDR 48.2 และ Noto Emoji v2.051
+
+โครงการทดสอบ Windows 10 22H2 build 19045 ด้วยตนเอง แต่ Windows 10 รุ่นทั่วไปไม่อยู่ใน supported-OS matrix ปัจจุบันของ .NET 10 จึงต้องทดสอบ smoke และ regression บนเครื่องจริงทุกครั้งที่อัปเดต runtime
+
+## Build foundation
+
+ต้องมี .NET SDK feature band 10.0.4xx แล้วรัน:
+
+    .\scripts\verify-foundation.ps1
+
+คำสั่ง build และ regression จาก clean checkout อธิบายเพิ่มเติมใน [เอกสารสคริปต์](./scripts/README.md)
 
 ## ความเป็นส่วนตัว
 

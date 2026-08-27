@@ -1,6 +1,17 @@
 # ประกาศซอฟต์แวร์และข้อมูลจากบุคคลที่สาม
 
-เอกสารนี้บันทึก attribution ของทรัพยากรที่มีอยู่ใน repository ปัจจุบัน รายการของ Classic Emoji Picker, Unicode, CLDR, Noto Emoji และ dependencies ของผลิตภัณฑ์จะเพิ่มเมื่อทรัพยากรเหล่านั้นถูกนำเข้าใน implementation
+เอกสารนี้บันทึก attribution ของทรัพยากรที่มีอยู่ใน repository ปัจจุบัน รายการของ Unicode, CLDR และ Noto Emoji จะเพิ่มเมื่อทรัพยากรเหล่านั้นถูกนำเข้าใน implementation
+
+## Classic Emoji Picker
+
+โค้ดรากฐานใต้ `apps/picker` นำเข้าจาก Classic Emoji Picker ที่ commit `56c54201e0673a57710c2498db25a149b45e63ec`
+
+- Source: https://github.com/platima/Classic-EmojiPicker
+- License: MIT
+- Copyright (c) 2025 Platima
+- License และ notices ต้นฉบับ: `apps/picker/LICENSE` และ `apps/picker/THIRD-PARTY-NOTICES.md`
+
+รายละเอียด provenance และ manual update flow อยู่ที่ `docs/upstream/classic-picker.md`
 
 ## Matt Pocock Skills
 

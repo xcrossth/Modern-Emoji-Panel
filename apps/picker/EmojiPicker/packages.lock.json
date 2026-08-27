@@ -1,0 +1,34 @@
+{
+  "version": 2,
+  "dependencies": {
+    "net10.0-windows7.0": {
+      "Emoji.Wpf": {
+        "type": "Direct",
+        "requested": "[0.3.4, )",
+        "resolved": "0.3.4",
+        "contentHash": "3ouEfw6Mo5Czk0TJd4BWrElB21jK9lKWqB1ZZF1DEBDRLNmOvJJbT51/ELLMIyqyn4p/mh10XC9Kmqmb1IbmnQ==",
+        "dependencies": {
+          "JeremyAnsel.HLSL.Targets": "1.0.13",
+          "Stfu": "0.1.1"
+        }
+      },
+      "VirtualizingWrapPanel": {
+        "type": "Direct",
+        "requested": "[2.5.2, )",
+        "resolved": "2.5.2",
+        "contentHash": "532Uu1Q64+bSQQugZMz2GzNCOIL0NFUcEbpop0kIGVK4TG2ccuUr3vm2GH9XJwa+m26YVkEugeEjg9SLVB9kJQ=="
+      },
+      "JeremyAnsel.HLSL.Targets": {
+        "type": "Transitive",
+        "resolved": "1.0.13",
+        "contentHash": "uLfE1STTM/o8G2eWEtQWMHm91nO47BIEsjXhO3c6hvsjx+bInTA7LnqI9iAWUWr58Sug+NSoNNZT83i2mWMl7g=="
+      },
+      "Stfu": {
+        "type": "Transitive",
+        "resolved": "0.1.1",
+        "contentHash": "wUd0joqQoZ1B/wULKx1gGTY9zxiDbsW3Y6W0G0guCTL/jRMdDBPr9FMHfkoOKB0JIYGlup3NqXrsqs8fPrCdrw=="
+      }
+    },
+    "net10.0-windows7.0/win-x64": {}
+  }
+}

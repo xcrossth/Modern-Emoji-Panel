@@ -70,10 +70,18 @@ namespace EmojiPicker
         private bool recentsDirty;
 
         public MainWindow()
+            : this(loadUserActivity: true)
+        {
+        }
+
+        internal MainWindow(bool loadUserActivity)
         {
             InitializeComponent();
             InitializeEmojis();
-            LoadRecentEmojis();
+            if (loadUserActivity)
+            {
+                LoadRecentEmojis();
+            }
 
             searchTimer = new DispatcherTimer { Interval = SearchDebounce };
             searchTimer.Tick += (_, _) => RunSearch();

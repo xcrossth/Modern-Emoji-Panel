@@ -20,13 +20,13 @@ try {
     if (-not $NoRestore) {
         & dotnet restore $solutionPath --locked-mode
         if ($LASTEXITCODE -ne 0) {
-            throw "dotnet restore แบบ locked mode ล้มเหลว"
+            throw "dotnet restore in locked mode failed"
         }
     }
 
     & dotnet build $solutionPath --configuration $Configuration --no-restore
     if ($LASTEXITCODE -ne 0) {
-        throw "dotnet build ล้มเหลว"
+        throw "dotnet build failed"
     }
 
     if ($PublishSelfContained) {
@@ -34,7 +34,7 @@ try {
         $publishPath = [System.IO.Path]::GetFullPath((Join-Path $artifactRoot "picker-win-x64"))
 
         if (-not $publishPath.StartsWith($artifactRoot + [System.IO.Path]::DirectorySeparatorChar, [System.StringComparison]::OrdinalIgnoreCase)) {
-            throw "ตำแหน่ง publish อยู่นอก artifacts/foundation"
+            throw "Publish path is outside artifacts/foundation"
         }
 
         if (Test-Path -LiteralPath $publishPath) {
@@ -48,7 +48,7 @@ try {
             --no-restore `
             --output $publishPath
         if ($LASTEXITCODE -ne 0) {
-            throw "dotnet publish แบบ self-contained ล้มเหลว"
+            throw "Self-contained dotnet publish failed"
         }
 
         Write-Host "Self-contained publish: $publishPath" -ForegroundColor Green

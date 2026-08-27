@@ -1,0 +1,128 @@
+[
+  {
+    "sourceSize": 128,
+    "file": "emoji_u1f9ec.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/128/emoji_u1f9ec.png",
+    "bytes": 4955,
+    "sha256": "22e0f7c9d41ea292a46bc9525ffc9439b55bbc25e4ad22423d348e70d75f5fb1"
+  },
+  {
+    "sourceSize": 128,
+    "file": "emoji_u2699.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/128/emoji_u2699.png",
+    "bytes": 3311,
+    "sha256": "a9be91aaf97236fc0ecb1c0c83f468795451f36093e9627f28f167757528a23e"
+  },
+  {
+    "sourceSize": 128,
+    "file": "emoji_u1faa9.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/128/emoji_u1faa9.png",
+    "bytes": 11915,
+    "sha256": "902ce9b6c74c24d69e814b05cb1b08fd77a53ed9c6993994ebcf382286f0dafb"
+  },
+  {
+    "sourceSize": 128,
+    "file": "emoji_u1f3c1.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/128/emoji_u1f3c1.png",
+    "bytes": 5372,
+    "sha256": "facba94cf215382714b36aa296952d317755f84e010afdb0d5639441e5de0813"
+  },
+  {
+    "sourceSize": 128,
+    "file": "emoji_u1f469_1f3fd_200d_1f4bb.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/128/emoji_u1f469_1f3fd_200d_1f4bb.png",
+    "bytes": 3265,
+    "sha256": "d4fcdcb83e82c1a83553fee0c2af0be595099e2dbbeed255e1281571d77d9439"
+  },
+  {
+    "sourceSize": 128,
+    "file": "emoji_u1f468_200d_1f469_200d_1f467_200d_1f466.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/128/emoji_u1f468_200d_1f469_200d_1f467_200d_1f466.png",
+    "bytes": 3479,
+    "sha256": "6cbe4a5dd5d4c2590dccb0c5b95c70d1be3162d89132dd856312bd4bc3919ec6"
+  },
+  {
+    "sourceSize": 128,
+    "file": "emoji_u1f98b.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/128/emoji_u1f98b.png",
+    "bytes": 8282,
+    "sha256": "db8bed6411a85cfb267f93f6fbf4daf63316e43121f4d864d313b8dcc3822dc6"
+  },
+  {
+    "sourceSize": 128,
+    "file": "emoji_u1f6b2.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/128/emoji_u1f6b2.png",
+    "bytes": 6870,
+    "sha256": "64a4b1cc8a369174b4c05d62f700bad8fbf27eeaf3c22212c3b31150f76285e6"
+  },
+  {
+    "sourceSize": 128,
+    "file": "emoji_u1f441_200d_1f5e8.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/128/emoji_u1f441_200d_1f5e8.png",
+    "bytes": 3840,
+    "sha256": "cc0c30dbd25675f9f2cd2fc068e92c2a967a8e0a23b6c7cc371e24a9c8ce6420"
+  },
+  {
+    "sourceSize": 512,
+    "file": "emoji_u1f9ec.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/512/emoji_u1f9ec.png",
+    "bytes": 19109,
+    "sha256": "91d911899bc33dc1c4ac0fcfe0303822b0deec8c3af91a3eaba0d26f4090df6a"
+  },
+  {
+    "sourceSize": 512,
+    "file": "emoji_u2699.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/512/emoji_u2699.png",
+    "bytes": 14525,
+    "sha256": "b280075e6048bbbf3304f29bd395540ceea83f354f8a125281dc4fe1f49b34ae"
+  },
+  {
+    "sourceSize": 512,
+    "file": "emoji_u1faa9.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/512/emoji_u1faa9.png",
+    "bytes": 59750,
+    "sha256": "e8711398f2316f81626678c33b977e43fd3aaecf77ead5ee3f5cec9cd6708dbc"
+  },
+  {
+    "sourceSize": 512,
+    "file": "emoji_u1f3c1.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/512/emoji_u1f3c1.png",
+    "bytes": 24174,
+    "sha256": "0d55aa1f02d6b134fe15470290277077de0ad529d4637b59a18fd170b277d0bd"
+  },
+  {
+    "sourceSize": 512,
+    "file": "emoji_u1f469_1f3fd_200d_1f4bb.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/512/emoji_u1f469_1f3fd_200d_1f4bb.png",
+    "bytes": 13338,
+    "sha256": "d81800b78699e2dcd414e54920c6fd5549323cf0054208aa19730ff523c14ee0"
+  },
+  {
+    "sourceSize": 512,
+    "file": "emoji_u1f468_200d_1f469_200d_1f467_200d_1f466.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/512/emoji_u1f468_200d_1f469_200d_1f467_200d_1f466.png",
+    "bytes": 14718,
+    "sha256": "cfadbe9661f243fb404f9e2b5a3c12990ddce2694fdf8f75536ca60973f6d863"
+  },
+  {
+    "sourceSize": 512,
+    "file": "emoji_u1f98b.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/512/emoji_u1f98b.png",
+    "bytes": 37841,
+    "sha256": "27a136d6e9af1fb160d89ef6eb86ec169cc0268e9914c676ac21ecdc609cd3e2"
+  },
+  {
+    "sourceSize": 512,
+    "file": "emoji_u1f6b2.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/512/emoji_u1f6b2.png",
+    "bytes": 30242,
+    "sha256": "a158043a23e846272ca6e53b845d4e1712701af1248a338488cc1159f3ba0e93"
+  },
+  {
+    "sourceSize": 512,
+    "file": "emoji_u1f441_200d_1f5e8.png",
+    "upstreamUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/png/512/emoji_u1f441_200d_1f5e8.png",
+    "bytes": 16674,
+    "sha256": "89747c31405f2646248e5137a7af85438e1bf96b584a51a2a8ca1138e30f0be1"
+  }
+]

@@ -2,7 +2,8 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net8.0-windows</TargetFramework>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
@@ -51,8 +52,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Emoji.Wpf" Version="0.3.4" />
-    <PackageReference Include="VirtualizingWrapPanel" Version="2.5.2" />
+    <PackageReference Include="Emoji.Wpf" />
+    <PackageReference Include="VirtualizingWrapPanel" />
   </ItemGroup>
 
   <!-- Trade a little allocation speed for a smaller retained heap (0-9; higher

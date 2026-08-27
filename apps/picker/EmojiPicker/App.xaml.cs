@@ -1,10 +1,12 @@
 using System;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using Application = System.Windows.Application;
 using MessageBox = System.Windows.MessageBox;
 
@@ -55,6 +57,17 @@ namespace EmojiPicker
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
+
+            // A deterministic smoke path lets the monorepo verify that the WPF
+            // shell, resources and Emoji.Wpf data initialise on the current OS
+            // without taking the user's global hook, tray or Classic mutex. It
+            // never reads or writes user settings and exits after the dispatcher
+            // has completed the off-screen prewarm pass.
+            if (e.Args.Contains("--foundation-smoke", StringComparer.Ordinal))
+            {
+                RunFoundationSmoke();
+                return;
+            }
 
             // Only one resident instance may own the global hook and tray icon
             instanceMutex = new Mutex(true, MutexName, out var isNew);
@@ -139,6 +152,47 @@ namespace EmojiPicker
             showThread.Start();
 
             CreateTrayIcon();
+        }
+
+        private void RunFoundationSmoke()
+        {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            global::Emoji.Wpf.EmojiData.Load();
+            ThemeManager.Initialize();
+
+            var smokeWindow = new MainWindow(loadUserActivity: false);
+            smokeWindow.PreWarm();
+            Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    if (!smokeWindow.IsLoaded || smokeWindow.CategoryTabs.Items.Count != 7 || smokeWindow.EmojiGrid.Items.Count == 0)
+                    {
+                        FinishFoundationSmoke(smokeWindow, exitCode: 1);
+                        return;
+                    }
+
+                    smokeWindow.SearchBox.Text = "smile";
+                    var searchVerificationTimer = new DispatcherTimer
+                    {
+                        Interval = TimeSpan.FromMilliseconds(500),
+                    };
+                    searchVerificationTimer.Tick += (_, _) =>
+                    {
+                        searchVerificationTimer.Stop();
+                        var searchPassed = smokeWindow.CategoryHeader.Text == "Search results" &&
+                            smokeWindow.EmojiGrid.Items.Count > 0;
+                        FinishFoundationSmoke(smokeWindow, searchPassed ? 0 : 1);
+                    };
+                    searchVerificationTimer.Start();
+                }),
+                DispatcherPriority.ContextIdle);
+        }
+
+        private void FinishFoundationSmoke(MainWindow smokeWindow, int exitCode)
+        {
+            smokeWindow.Hide();
+            ThemeManager.Shutdown();
+            Shutdown(exitCode);
         }
 
         private void OnHotkeyPressed(IntPtr targetWindow)

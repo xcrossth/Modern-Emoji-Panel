@@ -1,0 +1,48 @@
+# Visual Studio / .NET
+.vs/
+**/bin/
+**/obj/
+TestResults/
+artifacts/
+publish/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build and installer output
+*.nupkg
+*.snupkg
+*.msi
+*.msix
+*.appx
+*.appxbundle
+*.exe
+*.pdb
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Logs and temporary files
+*.log
+*.tmp
+*.bak
+*.corrupt-*
+
+# Local throwaway workspace. Curated evidence lives under docs/research/.
+/.scratch/asset-visual-spike/
+
+# Regenerated inputs and outputs of the curated visual spike
+/docs/research/asset-visual-spike/assets/
+/docs/research/asset-visual-spike/bin/
+/docs/research/asset-visual-spike/obj/
+/docs/research/asset-visual-spike/results/rendered-grid-icons/
+/docs/research/asset-visual-spike/results/comparison-zoom4x-125.png
+/docs/research/asset-visual-spike/results/comparison-zoom4x-150.png
+/docs/research/asset-visual-spike/results/comparison-zoom4x-175.png
+/docs/research/asset-visual-spike/results/comparison-zoom4x-200.png
+/docs/research/asset-visual-spike/results/comparison-zoom4x-225.png

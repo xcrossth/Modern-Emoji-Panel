@@ -19,7 +19,9 @@ namespace EmojiPicker
 
         private const int VkLwin = 0x5B;
         private const int VkRwin = 0x5C;
-        private const int VkOemPeriod = 0xBE; // '.' on US layouts
+        private const int VkControl = 0x11;
+        private const int VkShift = 0x10;
+        private const int VkMenu = 0x12;
 
         // Injected between Win-down and Win-up when we swallow the '.', so the
         // shell doesn't treat the sequence as a bare Win press and open the
@@ -29,6 +31,7 @@ namespace EmojiPicker
         // Keep the delegate alive for the lifetime of the hook so the GC
         // does not collect it out from under unmanaged code
         private readonly NativeMethods.LowLevelKeyboardProc hookProc;
+        private readonly HotkeyBinding binding;
         private IntPtr hookHandle;
 
         // Tracks that our Win+. '.' is physically held so auto-repeat key-downs
@@ -42,8 +45,9 @@ namespace EmojiPicker
         /// </summary>
         public event Action<IntPtr>? HotkeyPressed;
 
-        public HotkeyListener()
+        public HotkeyListener(HotkeyBinding? binding = null)
         {
+            this.binding = binding ?? HotkeyBinding.Default;
             hookProc = HookCallback;
         }
 
@@ -104,7 +108,7 @@ namespace EmojiPicker
 
                 if (message == WmKeyDown || message == WmSysKeyDown)
                 {
-                    if (vkCode == VkOemPeriod && IsWinDown())
+                    if (vkCode == binding.VirtualKey && AreModifiersDown(binding.Modifiers))
                     {
                         // Ignore auto-repeat: only the first '.' down of a physical
                         // Win+. press fires (holding it must not thrash the picker)
@@ -124,7 +128,10 @@ namespace EmojiPicker
                         // The shell never sees the swallowed '.', so on Win-up it
                         // would open the Start menu; a no-op key press in between
                         // convinces it the Win key was a modifier, not a tap
-                        InjectNoOpKey();
+                        if (binding.Modifiers.HasFlag(HotkeyModifiers.Win))
+                        {
+                            InjectNoOpKey();
+                        }
 
                         // Marshal to the UI thread; showing a window from inside
                         // the hook callback would block the input queue
@@ -137,7 +144,7 @@ namespace EmojiPicker
                 }
                 else if (message == WmKeyUp || message == WmSysKeyUp)
                 {
-                    if (vkCode == VkOemPeriod && periodHeld)
+                    if (vkCode == binding.VirtualKey && periodHeld)
                     {
                         // Swallow the matching key-up of our hotkey and re-arm for
                         // the next press
@@ -179,6 +186,21 @@ namespace EmojiPicker
             return (NativeMethods.GetAsyncKeyState(VkLwin) & pressed) != 0
                 || (NativeMethods.GetAsyncKeyState(VkRwin) & pressed) != 0;
         }
+
+        private static bool AreModifiersDown(HotkeyModifiers modifiers)
+        {
+            var win = IsWinDown();
+            var control = IsDown(VkControl);
+            var alt = IsDown(VkMenu);
+            var shift = IsDown(VkShift);
+            return win == modifiers.HasFlag(HotkeyModifiers.Win) &&
+                control == modifiers.HasFlag(HotkeyModifiers.Control) &&
+                alt == modifiers.HasFlag(HotkeyModifiers.Alt) &&
+                shift == modifiers.HasFlag(HotkeyModifiers.Shift);
+        }
+
+        private static bool IsDown(int virtualKey) =>
+            (NativeMethods.GetAsyncKeyState(virtualKey) & 0x8000) != 0;
 
         public void Dispose()
         {

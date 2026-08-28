@@ -1,0 +1,76 @@
+<Window x:Class="EmojiPicker.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Settings"
+        Width="560" Height="680" MinWidth="500" MinHeight="560"
+        WindowStartupLocation="CenterScreen" ShowInTaskbar="False">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24">
+            <TextBlock x:Name="TitleText" Text="Settings" FontSize="24" FontWeight="SemiBold"/>
+
+            <GroupBox x:Name="GeneralGroup" Header="General" Margin="0,18,0,0">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/><RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <CheckBox x:Name="HotkeyEnabledCheck" Grid.ColumnSpan="2" Content="Enable global hotkey" Margin="0,4"/>
+                    <TextBlock x:Name="HotkeyLabel" Grid.Row="1" Text="Hotkey" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="HotkeyCombo" Grid.Row="1" Grid.Column="1" Margin="0,4"/>
+                    <CheckBox x:Name="StartupCheck" Grid.Row="2" Grid.ColumnSpan="2" Content="Start with Windows" Margin="0,6"/>
+                    <TextBlock x:Name="LanguageLabel" Grid.Row="3" Text="UI language" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="LanguageCombo" Grid.Row="3" Grid.Column="1" Margin="0,4"/>
+                    <TextBlock x:Name="ThemeLabel" Grid.Row="4" Text="Theme" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="ThemeCombo" Grid.Row="4" Grid.Column="1" Margin="0,4"/>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox x:Name="EmojiGroup" Header="Emoji and insertion" Margin="0,12,0,0">
+                <Grid Margin="12">
+                    <Grid.ColumnDefinitions><ColumnDefinition Width="190"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                    <TextBlock x:Name="ToneLabel" Text="Default skin tone" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="ToneCombo" Grid.Column="1" Margin="0,4"/>
+                    <TextBlock x:Name="InsertionLabel" Grid.Row="1" Text="Insertion mode" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="InsertionCombo" Grid.Row="1" Grid.Column="1" Margin="0,4"/>
+                </Grid>
+            </GroupBox>
+
+            <GroupBox x:Name="AdvancedGroup" Header="Advanced" Margin="0,12,0,0">
+                <StackPanel Margin="12">
+                    <DockPanel>
+                        <TextBlock x:Name="DelayLabel" Text="Clipboard restore delay (ms)" Width="250" VerticalAlignment="Center"/>
+                        <TextBox x:Name="DelayText" Width="90" HorizontalAlignment="Left"/>
+                    </DockPanel>
+                    <TextBlock x:Name="PasteExplanation" Margin="0,7,0,8" TextWrapping="Wrap"
+                               Foreground="{DynamicResource WatermarkForegroundBrush}"
+                               Text="Temporary Paste cannot guarantee that every app pastes successfully, every private clipboard format is restored, or third-party clipboard managers honor the exclusion marker. New clipboard content is never overwritten."/>
+                    <CheckBox x:Name="DiagnosticCheck" Content="Enable privacy-safe diagnostic logging"/>
+                    <TextBlock x:Name="DiagnosticExplanation" Margin="22,4,0,8" TextWrapping="Wrap"
+                               Foreground="{DynamicResource WatermarkForegroundBrush}"
+                               Text="Logs contain technical metadata only—never search queries, selected emoji, clipboard/text, or target window names. Logs are never uploaded automatically."/>
+                    <Button x:Name="ResetAdvancedButton" Content="Reset advanced defaults" Width="170" HorizontalAlignment="Left" Click="ResetAdvanced_Click"/>
+                </StackPanel>
+            </GroupBox>
+
+            <GroupBox x:Name="ActivityGroup" Header="Activity Data (this device only)" Margin="0,12,0,0">
+                <StackPanel Margin="12">
+                    <WrapPanel>
+                        <Button x:Name="ClearRecentButton" Content="Clear Recent" Margin="0,0,8,8" Click="ClearRecent_Click"/>
+                        <Button x:Name="ResetRankingButton" Content="Reset learned ranking" Margin="0,0,8,8" Click="ResetRanking_Click"/>
+                        <Button x:Name="ClearAllButton" Content="Clear all activity" Margin="0,0,0,8" Click="ClearAll_Click"/>
+                    </WrapPanel>
+                    <TextBlock x:Name="ActivityExplanation" TextWrapping="Wrap"
+                               Text="Settings and Activity Data stay under Modern Emoji Picker's local data directory. v1 has no account, sync, telemetry, provider, or upload code."/>
+                </StackPanel>
+            </GroupBox>
+
+            <TextBlock x:Name="ResultText" Margin="0,12,0,0" TextWrapping="Wrap"/>
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+                <Button x:Name="CancelButton" Content="Cancel" Width="90" Margin="0,0,8,0" IsCancel="True"/>
+                <Button x:Name="SaveButton" Content="Save" Width="90" IsDefault="True" Click="Save_Click"/>
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</Window>

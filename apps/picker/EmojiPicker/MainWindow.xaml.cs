@@ -81,6 +81,7 @@ namespace EmojiPicker
             InitializeSkinTonePicker();
             RefreshRecentEmojis();
             ShowActivityRecoveryNotice();
+            ApplyUiLanguage();
 
             searchTimer = new DispatcherTimer { Interval = SearchDebounce };
             searchTimer.Tick += (_, _) => RunSearch();
@@ -426,7 +427,7 @@ namespace EmojiPicker
 
         private void InitializeSkinTonePicker()
         {
-            var thai = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "th";
+            var thai = Localizer.IsThai;
             var options = new List<SkinToneOption>
             {
                 new(SkinTonePreference.Neutral, thai ? "กลาง (สีเหลือง)" : "Neutral (yellow)"),
@@ -440,6 +441,41 @@ namespace EmojiPicker
             SkinTonePicker.ItemsSource = options;
             SkinTonePicker.SelectedItem = options.Single(option => option.Preference == currentSkinTone);
             skinTonePickerReady = true;
+        }
+
+        internal void ApplyRuntimeSettings()
+        {
+            currentSkinTone = Settings.Current.PreferredSkinTone;
+            RebuildResolvedEntries();
+            searchIndex = new EmojiSearchIndex(allEmojis, activityData.GetLearnedScores);
+            categories = CreateCategories(allEmojis);
+            CategoryTabs.ItemsSource = categories;
+            skinTonePickerReady = false;
+            InitializeSkinTonePicker();
+            ApplyUiLanguage();
+            if (string.IsNullOrWhiteSpace(SearchBox.Text))
+            {
+                LoadCategory(currentCategory);
+            }
+            else
+            {
+                RunSearch();
+            }
+        }
+
+        private void ApplyUiLanguage()
+        {
+            SearchWatermark.Text = Localizer.Text("Keep typing to find an emoji", "พิมพ์ต่อเพื่อค้นหา Emoji");
+            AssetRepairTitle.Text = Localizer.Text("Emoji artwork is unavailable", "ไม่พบภาพ Emoji");
+            AssetRepairMessage.Text = Localizer.Text(
+                "Repair or reinstall Modern Emoji Picker to restore the bundled Noto artwork.",
+                "Repair หรือติดตั้ง Modern Emoji Picker ใหม่เพื่อคืนภาพ Noto ที่มากับแอป");
+            ActivityNoticeDismissButton.Content = Localizer.Text("Dismiss", "ปิดข้อความ");
+            ExplicitCopyButton.Content = Localizer.Text("Copy", "คัดลอก");
+            SkinTonePicker.ToolTip = Localizer.Text(
+                "Default skin tone (Alt+T). Right-click or press Alt+Down for a one-shot mixed-tone Variant Override.",
+                "สีผิวเริ่มต้น (Alt+T) คลิกขวาหรือกด Alt+Down เพื่อเลือก Variant Override แบบครั้งเดียว");
+            CloseButton.ToolTip = Localizer.Text("Close picker", "ปิด Picker");
         }
 
         private void SkinTonePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -485,7 +521,7 @@ namespace EmojiPicker
 
         private static List<EmojiCategory> CreateCategories(IReadOnlyList<Emoji> emojis)
         {
-            var thai = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "th";
+            var thai = Localizer.IsThai;
             return new List<EmojiCategory>
             {
                 CreateCategory(RecentCategoryKey, "1F550", thai ? "ใช้ล่าสุด" : "Recent", emojis),
@@ -1029,7 +1065,7 @@ namespace EmojiPicker
             HidePreview();
             var continueSession = PickerSessionState.ContinuesAfter(gesture);
             var snapshot = CaptureViewSnapshot();
-            Logger.Log($"CommitEmoji: gesture={gesture} continue={continueSession} '{emoji.Character}' -> target={App.PreviousForegroundWindow}");
+            Logger.Log($"CommitEmoji: gesture={gesture}; continue={continueSession}; targetCaptured={App.PreviousForegroundWindow != IntPtr.Zero}");
             RecordActivity(emoji);
             ActivityNoticePanel.Visibility = Visibility.Collapsed;
             HideInsertionError();
@@ -1052,7 +1088,7 @@ namespace EmojiPicker
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogAlways($"Insert threw: {ex}");
+                    Logger.LogAlways($"Insert threw: {ex.GetType().Name}");
                     result = InsertionResult.Failure("The emoji could not be sent safely.");
                 }
 
@@ -1276,7 +1312,7 @@ namespace EmojiPicker
                 return;
             }
 
-            var thai = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "th";
+            var thai = Localizer.IsThai;
             ActivityNoticeText.Text = thai
                 ? "ข้อมูลกิจกรรมบางส่วนอ่านไม่ได้ ระบบสำรองไฟล์เดิมและรีเซ็ตเฉพาะส่วนนั้นแล้ว"
                 : "Some activity data was unreadable. The original was backed up and only that part was reset.";
@@ -1360,7 +1396,7 @@ namespace EmojiPicker
     {
         public string Id { get; }
         public string Character { get; }
-        public string Name { get; }
+        public string Name => Localizer.IsThai ? ThaiName : EnglishName;
         public string EnglishName { get; }
         public string ThaiName { get; }
         public string Category { get; }
@@ -1404,7 +1440,7 @@ namespace EmojiPicker
         {
             Id = id;
             Character = character;
-            Name = name;
+            _ = name; // retained in the generated-data constructor contract
             EnglishName = englishName;
             ThaiName = thaiName;
             Category = category;

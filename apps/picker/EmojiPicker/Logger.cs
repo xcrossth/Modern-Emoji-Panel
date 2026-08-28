@@ -6,8 +6,9 @@ namespace EmojiPicker
     /// <summary>
     /// Lightweight opt-in file logger for diagnosing runtime issues (the picker
     /// not appearing, hotkey/foreground problems, etc.). Logging is off by default
-    /// and toggled via the tray icon's "Debug logging" menu item; the state
-    /// persists between runs through a marker file. Fatal exceptions are always recorded.
+    /// and controlled through Advanced Settings. The state persists through
+    /// Settings. Every write obeys the same opt-in switch; there
+    /// is no fatal-error bypass that could create a log without consent.
     /// </summary>
     internal static class Logger
     {
@@ -19,55 +20,37 @@ namespace EmojiPicker
 
         private static readonly string Dir = ProductIdentity.DataDirectory;
 
-        private static readonly string EnabledMarker = Path.Combine(Dir, "debug.enabled");
-
         public static string LogPath { get; } = Path.Combine(Dir, "debug.log");
 
         public static bool Enabled { get; private set; }
 
-        /// <summary>Reads the persisted on/off state. Call once at startup.</summary>
-        public static void Initialize()
+        /// <summary>Applies the persisted opt-in state. Call after Settings.Load.</summary>
+        public static void Initialize(bool enabled)
         {
-            try
-            {
-                Enabled = File.Exists(EnabledMarker);
-            }
-            catch (Exception)
-            {
-                Enabled = false;
-            }
-
+            Enabled = enabled;
             if (Enabled)
             {
                 Log("--- logging resumed (enabled) ---");
             }
         }
 
-        /// <summary>Flips logging on/off, persists it, and returns the new state.</summary>
-        public static bool Toggle()
+        internal static void SetEnabled(bool enabled)
         {
-            try
+            if (Enabled == enabled)
             {
-                Directory.CreateDirectory(Dir);
-                if (Enabled)
-                {
-                    File.Delete(EnabledMarker);
-                    Log("--- logging disabled ---"); // recorded before we stop
-                    Enabled = false;
-                }
-                else
-                {
-                    File.WriteAllText(EnabledMarker, DateTime.Now.ToString("o"));
-                    Enabled = true;
-                    Log("--- logging enabled ---");
-                }
-            }
-            catch (Exception)
-            {
-                // Toggling the marker is best-effort; never throw from the tray handler
+                return;
             }
 
-            return Enabled;
+            if (Enabled)
+            {
+                Log("--- logging disabled ---");
+            }
+
+            Enabled = enabled;
+            if (Enabled)
+            {
+                Log("--- logging enabled ---");
+            }
         }
 
         public static void Log(string message)
@@ -78,10 +61,10 @@ namespace EmojiPicker
             }
         }
 
-        /// <summary>Writes regardless of the toggle - used for fatal errors.</summary>
+        /// <summary>Compatibility entry point; still obeys the user's opt-in.</summary>
         public static void LogAlways(string message)
         {
-            Write(message);
+            Log(message);
         }
 
         private static void Write(string message)

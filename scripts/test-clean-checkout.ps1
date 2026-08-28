@@ -67,6 +67,11 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Activity Data verification from the clean checkout failed"
     }
+
+    & (Join-Path $checkoutPath "scripts\verify-settings-privacy.ps1") -SkipBuild
+    if ($LASTEXITCODE -ne 0) {
+        throw "Settings and privacy verification from the clean checkout failed"
+    }
 }
 finally {
     Pop-Location

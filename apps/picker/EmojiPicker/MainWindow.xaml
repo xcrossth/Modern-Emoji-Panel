@@ -192,7 +192,7 @@
                              BorderThickness="1"
                              GotKeyboardFocus="SearchBox_GotKeyboardFocus"
                              TextChanged="SearchBox_TextChanged"/>
-                    <TextBlock Text="Keep typing to find an emoji"
+                    <TextBlock x:Name="SearchWatermark" Text="Keep typing to find an emoji"
                                FontSize="12"
                                Foreground="{DynamicResource WatermarkForegroundBrush}"
                                Margin="10,0,0,0"
@@ -267,7 +267,7 @@
                         Visibility="Collapsed"
                         Panel.ZIndex="10">
                     <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="Emoji artwork is unavailable"
+                        <TextBlock x:Name="AssetRepairTitle" Text="Emoji artwork is unavailable"
                                    FontSize="15"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource HeaderForegroundBrush}"
@@ -433,7 +433,7 @@
         </Popup>
 
         <!-- Close Button (top-right corner) -->
-        <Button HorizontalAlignment="Right"
+        <Button x:Name="CloseButton" HorizontalAlignment="Right"
                 VerticalAlignment="Top"
                 Margin="0,8,8,0"
                 Width="20"

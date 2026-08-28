@@ -62,6 +62,11 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Picker Session verification from the clean checkout failed"
     }
+
+    & (Join-Path $checkoutPath "scripts\verify-activity-data.ps1") -SkipBuild
+    if ($LASTEXITCODE -ne 0) {
+        throw "Activity Data verification from the clean checkout failed"
+    }
 }
 finally {
     Pop-Location

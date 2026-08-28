@@ -77,6 +77,20 @@ namespace EmojiPicker
                 return;
             }
 
+            var insertionSmokeIndex = Array.FindIndex(
+                e.Args,
+                argument => string.Equals(argument, "--insertion-policy-smoke", StringComparison.Ordinal));
+            if (insertionSmokeIndex >= 0)
+            {
+                var reportPath = insertionSmokeIndex + 1 < e.Args.Length
+                    ? e.Args[insertionSmokeIndex + 1]
+                    : null;
+                Shutdown(string.IsNullOrWhiteSpace(reportPath)
+                    ? 2
+                    : InsertionPolicySmoke.Run(reportPath));
+                return;
+            }
+
             // Only one resident instance may own the global hook and tray icon
             if (!SingleInstanceCoordinator.TryAcquire(
                     ProductIdentity.MutexName,
@@ -209,6 +223,13 @@ namespace EmojiPicker
                     }
 
                     if (!missingAssetWindowPassed)
+                    {
+                        FinishFoundationSmoke(smokeWindow, exitCode: 1);
+                        return;
+                    }
+
+                    smokeWindow.ShowInsertionFailureForSmoke(firstEmoji!, "Target validation failed for smoke test.");
+                    if (!smokeWindow.IsVisible || !smokeWindow.InsertionErrorVisible || !smokeWindow.ExplicitCopyAvailable)
                     {
                         FinishFoundationSmoke(smokeWindow, exitCode: 1);
                         return;

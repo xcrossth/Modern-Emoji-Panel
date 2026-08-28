@@ -57,6 +57,11 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Emoji variant verification from the clean checkout failed"
     }
+
+    & (Join-Path $checkoutPath "scripts\verify-picker-session.ps1") -SkipBuild
+    if ($LASTEXITCODE -ne 0) {
+        throw "Picker Session verification from the clean checkout failed"
+    }
 }
 finally {
     Pop-Location

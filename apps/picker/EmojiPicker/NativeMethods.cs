@@ -44,6 +44,9 @@ namespace EmojiPicker
         [DllImport("user32.dll")]
         internal static extern uint GetDpiForWindow(IntPtr hWnd);
 
+        [DllImport("user32.dll")]
+        internal static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+
         // --- Keyboard hook ---
 
         internal delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);

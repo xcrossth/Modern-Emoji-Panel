@@ -42,6 +42,11 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Noto grid verification from the clean checkout failed"
     }
+
+    & (Join-Path $checkoutPath "scripts\verify-search-preview.ps1") -SkipBuild
+    if ($LASTEXITCODE -ne 0) {
+        throw "Bilingual search and preview verification from the clean checkout failed"
+    }
 }
 finally {
     Pop-Location

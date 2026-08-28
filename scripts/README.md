@@ -79,3 +79,11 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 ```
 
 คำสั่งนี้ build Picker แล้วตรวจว่า Emoji 17 ครบ 3,944 รายการในหมวดมาตรฐาน, PNG 128 ทุกภาพถูก bundle ตาม manifest, runtime ไม่อ้าง `Emoji.Wpf` และ WPF smoke ผ่านทั้ง lazy decode, frozen image, cache bound, DPI 100–250%, missing-image fallback และคำแนะนำ Repair/Reinstall เมื่อชุด asset หาย รายละเอียดอยู่ที่ [การแสดง Emoji 17 ด้วย Noto grid](../docs/noto-grid-runtime.md)
+
+## ตรวจสีผิวและ Variant Override
+
+```powershell
+.\scripts\verify-emoji-variants.ps1
+```
+
+คำสั่งนี้ตรวจค่าเริ่มต้นและการคงอยู่ของสีผิวระดับ global, การ resolve สีผิวเดียวทุกตำแหน่ง, mixed-tone Variant Override แบบหนึ่งครั้ง และยืนยันว่า fully-qualified sequence ทุกตัวเข้าถึงได้ผ่าน Emoji Entry ฐาน, global setting หรือ Variant Override

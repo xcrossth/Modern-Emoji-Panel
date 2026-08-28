@@ -35,11 +35,16 @@ namespace EmojiPicker
         private const string DefaultCategoryKey = "Smileys & Emotion";
 
         private readonly DispatcherTimer searchTimer;
+        private List<Emoji> baselineEmojis = new List<Emoji>();
         private List<Emoji> allEmojis = new List<Emoji>();
         private List<Emoji> recentEmojis = new List<Emoji>();
         private List<EmojiCategory> categories = new List<EmojiCategory>();
+        private EmojiVariantCatalog? variantCatalog;
+        private SkinTonePreference currentSkinTone = SkinTonePreference.Neutral;
         private string currentCategory = DefaultCategoryKey;
         private bool bundledAssetsAvailable;
+        private bool skinTonePickerReady;
+        private bool variantMenuOpen;
         private bool isShowing;
         private bool recentsDirty;
         private bool allowProcessExit;
@@ -58,6 +63,7 @@ namespace EmojiPicker
         {
             InitializeComponent();
             InitializeEmojis(catalogOverride);
+            InitializeSkinTonePicker();
             if (loadUserActivity)
             {
                 LoadRecentEmojis();
@@ -70,7 +76,7 @@ namespace EmojiPicker
             CategoryTabs.SelectedIndex = categories.FindIndex(category => category.Key == currentCategory);
         }
 
-        internal int BaselineEntryCount => allEmojis.Count;
+        internal int BaselineEntryCount => baselineEmojis.Count;
         internal bool BundledAssetsAvailable => bundledAssetsAvailable;
         internal bool RepairGuidanceVisible => AssetRepairPanel.Visibility == Visibility.Visible;
         internal IReadOnlyList<Emoji> SmokeEntries => allEmojis;
@@ -354,13 +360,17 @@ namespace EmojiPicker
             // truth. No Windows emoji font or runtime network request is involved.
             var popularity = LoadResourceMap<int>("popularity.json");
             var catalog = catalogOverride ?? EmojiCatalog.Load();
-            allEmojis = catalog.Entries.ToList();
-            foreach (var emoji in allEmojis)
+            baselineEmojis = catalog.Entries.ToList();
+            foreach (var emoji in baselineEmojis)
             {
                 emoji.Popularity = popularity.TryGetValue(NormalizeEmoji(emoji.Character), out var tier)
                     ? tier
                     : UnrankedPopularity;
             }
+
+            variantCatalog = baselineEmojis.Count > 0 ? new EmojiVariantCatalog(baselineEmojis) : null;
+            currentSkinTone = Settings.Current.PreferredSkinTone;
+            RebuildResolvedEntries();
 
             bundledAssetsAvailable = catalog.AssetSetAvailable;
             AssetRepairPanel.Visibility = catalog.AssetSetAvailable ? Visibility.Collapsed : Visibility.Visible;
@@ -370,6 +380,73 @@ namespace EmojiPicker
             }
 
             categories = CreateCategories(allEmojis);
+        }
+
+        private void RebuildResolvedEntries()
+        {
+            allEmojis = variantCatalog == null
+                ? new List<Emoji>()
+                : variantCatalog.BaseEntries
+                    .Select(entry => variantCatalog.Resolve(entry, currentSkinTone).ToPresentation())
+                    .ToList();
+        }
+
+        private void InitializeSkinTonePicker()
+        {
+            var thai = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "th";
+            var options = new List<SkinToneOption>
+            {
+                new(SkinTonePreference.Neutral, thai ? "กลาง (สีเหลือง)" : "Neutral (yellow)"),
+                new(SkinTonePreference.Light, thai ? "สีผิวอ่อน" : "Light skin tone"),
+                new(SkinTonePreference.MediumLight, thai ? "สีผิวขาวเหลือง" : "Medium-light skin tone"),
+                new(SkinTonePreference.Medium, thai ? "สีผิวปานกลาง" : "Medium skin tone"),
+                new(SkinTonePreference.MediumDark, thai ? "สีผิวเข้มปานกลาง" : "Medium-dark skin tone"),
+                new(SkinTonePreference.Dark, thai ? "สีผิวเข้ม" : "Dark skin tone"),
+            };
+
+            SkinTonePicker.ItemsSource = options;
+            SkinTonePicker.SelectedItem = options.Single(option => option.Preference == currentSkinTone);
+            skinTonePickerReady = true;
+        }
+
+        private void SkinTonePicker_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!skinTonePickerReady || SkinTonePicker.SelectedItem is not SkinToneOption option ||
+                option.Preference == currentSkinTone)
+            {
+                return;
+            }
+
+            var selectedBaseId = (EmojiGrid.SelectedItem as Emoji)?.Id;
+            currentSkinTone = option.Preference;
+            Settings.SetGlobalSkinTone(currentSkinTone);
+            RebuildResolvedEntries();
+
+            var selectedCategoryIndex = Math.Max(0, categories.FindIndex(category => category.Key == currentCategory));
+            categories = CreateCategories(allEmojis);
+            CategoryTabs.ItemsSource = categories;
+            CategoryTabs.SelectedIndex = selectedCategoryIndex;
+
+            if (string.IsNullOrWhiteSpace(SearchBox.Text))
+            {
+                LoadCategory(currentCategory);
+            }
+            else
+            {
+                RunSearch();
+            }
+
+            if (!string.IsNullOrEmpty(selectedBaseId))
+            {
+                var selected = EmojiGrid.Items.Cast<Emoji>().FirstOrDefault(entry => entry.Id == selectedBaseId);
+                if (selected != null)
+                {
+                    EmojiGrid.SelectedItem = selected;
+                    EmojiGrid.ScrollIntoView(selected);
+                }
+            }
+
+            Logger.Log($"Global skin tone changed to {currentSkinTone}");
         }
 
         private static List<EmojiCategory> CreateCategories(IReadOnlyList<Emoji> emojis)
@@ -397,7 +474,7 @@ namespace EmojiPicker
             IReadOnlyList<Emoji> emojis)
         {
             var icon = emojis.FirstOrDefault(emoji =>
-                    string.Equals(emoji.CanonicalSequence, iconCanonicalSequence, StringComparison.OrdinalIgnoreCase)) ??
+                    string.Equals(emoji.BaseCanonicalSequence, iconCanonicalSequence, StringComparison.OrdinalIgnoreCase)) ??
                 emojis.FirstOrDefault(emoji => emoji.Category == key);
             return new EmojiCategory(key, icon?.AssetPath ?? string.Empty, displayName);
         }
@@ -602,7 +679,8 @@ namespace EmojiPicker
 
             // Win10 picker behaviour: typing searches while the arrow keys move
             // the grid selection and Enter commits it, wherever focus happens to be
-            switch (e.Key)
+            var key = e.Key == Key.System ? e.SystemKey : e.Key;
+            switch (key)
             {
                 case Key.Enter:
                     // Apply any pending debounced search so the selection is current
@@ -631,7 +709,7 @@ namespace EmojiPicker
                         break;
                     }
 
-                    MoveSelection(e.Key == Key.Left ? -1 : 1);
+                    MoveSelection(key == Key.Left ? -1 : 1);
                     e.Handled = true;
                     break;
                 case Key.Up:
@@ -639,8 +717,24 @@ namespace EmojiPicker
                     e.Handled = true;
                     break;
                 case Key.Down:
+                    if ((Keyboard.Modifiers & ModifierKeys.Alt) != 0 && !SkinTonePicker.IsKeyboardFocusWithin)
+                    {
+                        OpenSelectedVariantOverrideMenu();
+                        e.Handled = true;
+                        break;
+                    }
+
                     MoveSelection(ColumnsPerRow);
                     e.Handled = true;
+                    break;
+                case Key.T:
+                    if ((Keyboard.Modifiers & ModifierKeys.Alt) != 0)
+                    {
+                        SkinTonePicker.Focus();
+                        Keyboard.Focus(SkinTonePicker);
+                        e.Handled = true;
+                    }
+
                     break;
             }
         }
@@ -685,6 +779,79 @@ namespace EmojiPicker
             {
                 e.Handled = true;
                 CommitEmoji(emoji);
+            }
+        }
+
+        private void EmojiItem_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            if (sender is ListBoxItem { DataContext: Emoji emoji } item && OpenVariantOverrideMenu(item, emoji))
+            {
+                e.Handled = true;
+            }
+        }
+
+        private bool OpenVariantOverrideMenu(ListBoxItem item, Emoji presentation)
+        {
+            if (variantCatalog == null)
+            {
+                return false;
+            }
+
+            var baseEntry = baselineEmojis.FirstOrDefault(entry => entry.Id == presentation.Id);
+            if (baseEntry == null)
+            {
+                return false;
+            }
+
+            var overrides = variantCatalog.GetVariantOverrides(baseEntry);
+            if (overrides.Count == 0)
+            {
+                return false;
+            }
+
+            var menu = new ContextMenu
+            {
+                PlacementTarget = item,
+            };
+            foreach (var variant in overrides)
+            {
+                var selection = variantCatalog.Resolve(baseEntry, currentSkinTone, variant.Id);
+                var menuItem = new MenuItem
+                {
+                    Header = variant.Name,
+                    ToolTip = variant.CanonicalSequence,
+                    Tag = selection,
+                    Icon = new NotoEmojiImage
+                    {
+                        AssetPath = variant.AssetPath,
+                        DecodeSizeDip = 24,
+                        Width = 24,
+                        Height = 24,
+                    },
+                };
+                menuItem.Click += (_, _) => CommitEmoji(selection.ToPresentation());
+                menu.Items.Add(menuItem);
+            }
+
+            variantMenuOpen = true;
+            menu.Closed += (_, _) => variantMenuOpen = false;
+            item.ContextMenu = menu;
+            menu.IsOpen = true;
+            return true;
+        }
+
+        private void OpenSelectedVariantOverrideMenu()
+        {
+            if (EmojiGrid.SelectedItem is not Emoji emoji)
+            {
+                return;
+            }
+
+            EmojiGrid.ScrollIntoView(emoji);
+            EmojiGrid.UpdateLayout();
+            if (EmojiGrid.ItemContainerGenerator.ContainerFromItem(emoji) is ListBoxItem item)
+            {
+                OpenVariantOverrideMenu(item, emoji);
             }
         }
 
@@ -797,6 +964,12 @@ namespace EmojiPicker
                 return;
             }
 
+            if (variantMenuOpen)
+            {
+                Logger.Log("Deactivated ignored (Variant Override menu open)");
+                return;
+            }
+
             // Dismiss when focus leaves the panel, like the Windows 10 picker
             Logger.Log("Deactivated -> dismiss");
             DismissPicker();
@@ -837,8 +1010,9 @@ namespace EmojiPicker
 
                 recentEmojis = characters
                     .Distinct() // a corrupt/legacy file could contain duplicates
-                    .Select(character => allEmojis.FirstOrDefault(item => item.Character == character))
+                    .Select(character => baselineEmojis.FirstOrDefault(item => item.Character == character))
                     .OfType<Emoji>()
+                    .Select(entry => variantCatalog!.RestoreResolved(entry).ToPresentation())
                     .Take(MaxRecentEmojis)
                     .ToList();
             }
@@ -914,6 +1088,9 @@ namespace EmojiPicker
         public string EmojiVersion { get; }
         public string AssetPath { get; }
         public int Order { get; }
+        public string BaseCanonicalSequence { get; }
+        public string ResolvedEntryId { get; }
+        public bool IsVariantOverride { get; }
 
         /// <summary>Extra search terms (emojibase tags), e.g. "splash" for 💦.</summary>
         public string Keywords { get; }
@@ -934,7 +1111,10 @@ namespace EmojiPicker
             string emojiVersion,
             string assetPath,
             int order,
-            int popularity)
+            int popularity,
+            string? baseCanonicalSequence = null,
+            string? resolvedEntryId = null,
+            bool isVariantOverride = false)
         {
             Id = id;
             Character = character;
@@ -948,6 +1128,9 @@ namespace EmojiPicker
             AssetPath = assetPath;
             Order = order;
             Popularity = popularity;
+            BaseCanonicalSequence = baseCanonicalSequence ?? canonicalSequence;
+            ResolvedEntryId = resolvedEntryId ?? id;
+            IsVariantOverride = isVariantOverride;
         }
 
         // Shown by UI Automation / screen readers for the grid items
@@ -967,4 +1150,6 @@ namespace EmojiPicker
             DisplayName = displayName;
         }
     }
+
+    internal sealed record SkinToneOption(SkinTonePreference Preference, string DisplayName);
 }

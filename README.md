@@ -23,6 +23,7 @@ Modern Emoji Picker คือโครงการสร้าง Emoji Picker �
 - [แหล่งข้อมูล Emoji Baseline](./docs/emoji-baseline-sources.md)
 - [การสร้าง Emoji Baseline](./docs/emoji-baseline-generator.md)
 - [การแสดง Emoji 17 ด้วย Noto grid](./docs/noto-grid-runtime.md)
+- [สีผิวเริ่มต้นและ Variant Override](./docs/emoji-skin-tone-and-variants.md)
 
 ## โครง repository
 

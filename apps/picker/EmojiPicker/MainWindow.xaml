@@ -117,6 +117,7 @@
                 </Setter.Value>
             </Setter>
             <EventSetter Event="PreviewMouseLeftButtonUp" Handler="EmojiItem_MouseLeftButtonUp"/>
+            <EventSetter Event="PreviewMouseRightButtonUp" Handler="EmojiItem_MouseRightButtonUp"/>
         </Style>
 
         <!-- Minimal theme-aware scrollbar so the dark grid doesn't show a light track -->
@@ -199,13 +200,24 @@
                     </TextBlock>
                 </Grid>
 
-                <!-- Category header -->
-                <TextBlock x:Name="CategoryHeader"
-                           Grid.Row="1"
-                           Margin="12,4,12,2"
-                           FontSize="12"
-                           FontWeight="SemiBold"
-                           Foreground="{DynamicResource HeaderForegroundBrush}"/>
+                <!-- Category and the global default skin tone. Mixed-tone
+                     sequences remain one-shot Variant Overrides on a tile. -->
+                <DockPanel Grid.Row="1" Margin="12,4,12,2" LastChildFill="True">
+                    <ComboBox x:Name="SkinTonePicker"
+                              DockPanel.Dock="Right"
+                              Width="148"
+                              Height="26"
+                              Margin="8,0,0,0"
+                              DisplayMemberPath="DisplayName"
+                              SelectionChanged="SkinTonePicker_SelectionChanged"
+                              ToolTip="Default skin tone (Alt+T). Right-click or press Alt+Down on a supported tile for a one-shot mixed-tone Variant Override."
+                              AutomationProperties.Name="Default skin tone"/>
+                    <TextBlock x:Name="CategoryHeader"
+                               FontSize="12"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource HeaderForegroundBrush}"/>
+                </DockPanel>
 
                 <!-- Emoji Grid (UI-virtualized: only visible cells are realized) -->
                 <ListBox x:Name="EmojiGrid"

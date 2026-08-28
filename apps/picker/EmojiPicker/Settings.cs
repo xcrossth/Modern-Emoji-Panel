@@ -51,6 +51,14 @@ namespace EmojiPicker
         [JsonPropertyName("pasteRestoreDelayMs")]
         public int PasteRestoreDelayMs { get; set; } = 250;
 
+        /// <summary>
+        /// Global skin tone applied to every Emoji Entry that supports a
+        /// modifier. This is deliberately independent from one-shot mixed-tone
+        /// Variant Overrides.
+        /// </summary>
+        [JsonPropertyName("globalSkinTone")]
+        public string GlobalSkinTone { get; set; } = "neutral";
+
         [JsonIgnore]
         public EmojiInsertMode InsertMode => EmojiInsertMode?.Trim().ToLowerInvariant() switch
         {
@@ -59,43 +67,76 @@ namespace EmojiPicker
             _ => EmojiPicker.EmojiInsertMode.Hybrid,
         };
 
+        [JsonIgnore]
+        public SkinTonePreference PreferredSkinTone =>
+            SkinTonePreferenceNames.ParseSettingValue(GlobalSkinTone);
+
         /// <summary>Reads the settings file (writing defaults if absent). Call once at startup.</summary>
         public static void Load()
         {
+            var fileExists = File.Exists(FilePath);
+            Current = LoadFrom(FilePath);
+            if (!fileExists)
+            {
+                Save(); // create a default file users can discover and edit
+            }
+
+            Logger.Log($"Settings: emojiInsertMode={Current.InsertMode}, globalSkinTone={Current.PreferredSkinTone}");
+        }
+
+        public static void SetGlobalSkinTone(SkinTonePreference preference)
+        {
+            Current.GlobalSkinTone = preference.ToSettingValue();
+            Save();
+        }
+
+        internal static Settings LoadFrom(string filePath)
+        {
             try
             {
-                if (File.Exists(FilePath))
+                if (!File.Exists(filePath))
                 {
-                    var loaded = JsonSerializer.Deserialize<Settings>(File.ReadAllText(FilePath));
-                    if (loaded != null)
-                    {
-                        Current = loaded;
-                    }
+                    return new Settings();
                 }
-                else
-                {
-                    Save(); // create a default file users can discover and edit
-                }
+
+                return JsonSerializer.Deserialize<Settings>(File.ReadAllText(filePath)) ?? new Settings();
             }
             catch (Exception)
             {
-                Current = new Settings(); // any problem -> safe defaults
+                return new Settings(); // any problem -> safe defaults
+            }
+        }
+
+        internal void SaveTo(string filePath)
+        {
+            var directory = Path.GetDirectoryName(filePath);
+            if (!string.IsNullOrEmpty(directory))
+            {
+                Directory.CreateDirectory(directory);
             }
 
-            Logger.Log($"Settings: emojiInsertMode={Current.InsertMode}");
+            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true });
+            var temporaryPath = filePath + ".tmp";
+            File.WriteAllText(temporaryPath, json);
+            if (File.Exists(filePath))
+            {
+                File.Replace(temporaryPath, filePath, null);
+            }
+            else
+            {
+                File.Move(temporaryPath, filePath);
+            }
         }
 
         private static void Save()
         {
             try
             {
-                Directory.CreateDirectory(Dir);
-                File.WriteAllText(FilePath,
-                    JsonSerializer.Serialize(Current, new JsonSerializerOptions { WriteIndented = true }));
+                Current.SaveTo(FilePath);
             }
             catch (Exception)
             {
-                // Writing the default file is best-effort; never throw at startup
+                // Writing settings is best-effort; never interrupt the picker
             }
         }
     }

@@ -11,7 +11,6 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Threading;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
-using WpfEmojiData = Emoji.Wpf.EmojiData;
 
 namespace EmojiPicker
 {
@@ -33,38 +32,14 @@ namespace EmojiPicker
             ProductIdentity.DataDirectory,
             "recent.json");
 
-        // Windows 10's seven picker categories, keyed by the Unicode group names
-        // that Emoji.Wpf's EmojiData exposes ("Component" and "Flags" are excluded,
-        // as in the original picker)
-        private static readonly Dictionary<string, string> GroupToCategory = new Dictionary<string, string>
-        {
-            ["Smileys & Emotion"] = "Smileys",
-            ["Animals & Nature"] = "Smileys",
-            ["People & Body"] = "People",
-            ["Activities"] = "Celebrations",
-            ["Objects"] = "Celebrations",
-            ["Food & Drink"] = "Food",
-            ["Travel & Places"] = "Transport",
-            ["Symbols"] = "Symbols",
-        };
-
-        private static readonly List<EmojiCategory> Categories = new List<EmojiCategory>
-        {
-            new EmojiCategory(RecentCategoryKey, "🕒", "Most recently used"),
-            new EmojiCategory("Smileys", "😀", "Smiley faces and animals"),
-            new EmojiCategory("People", "🧑", "People"),
-            new EmojiCategory("Celebrations", "🎉", "Celebrations and objects"),
-            new EmojiCategory("Food", "🍕", "Food and plants"),
-            new EmojiCategory("Transport", "🚗", "Transportation and places"),
-            new EmojiCategory("Symbols", "♥️", "Symbols"),
-        };
-
-        private const string DefaultCategoryKey = "Smileys";
+        private const string DefaultCategoryKey = "Smileys & Emotion";
 
         private readonly DispatcherTimer searchTimer;
         private List<Emoji> allEmojis = new List<Emoji>();
         private List<Emoji> recentEmojis = new List<Emoji>();
+        private List<EmojiCategory> categories = new List<EmojiCategory>();
         private string currentCategory = DefaultCategoryKey;
+        private bool bundledAssetsAvailable;
         private bool isShowing;
         private bool recentsDirty;
         private bool allowProcessExit;
@@ -75,9 +50,14 @@ namespace EmojiPicker
         }
 
         internal MainWindow(bool loadUserActivity)
+            : this(loadUserActivity, catalogOverride: null)
+        {
+        }
+
+        internal MainWindow(bool loadUserActivity, EmojiCatalogLoadResult? catalogOverride)
         {
             InitializeComponent();
-            InitializeEmojis();
+            InitializeEmojis(catalogOverride);
             if (loadUserActivity)
             {
                 LoadRecentEmojis();
@@ -86,9 +66,16 @@ namespace EmojiPicker
             searchTimer = new DispatcherTimer { Interval = SearchDebounce };
             searchTimer.Tick += (_, _) => RunSearch();
 
-            CategoryTabs.ItemsSource = Categories;
-            CategoryTabs.SelectedIndex = Categories.FindIndex(category => category.Key == currentCategory);
+            CategoryTabs.ItemsSource = categories;
+            CategoryTabs.SelectedIndex = categories.FindIndex(category => category.Key == currentCategory);
         }
+
+        internal int BaselineEntryCount => allEmojis.Count;
+        internal bool BundledAssetsAvailable => bundledAssetsAvailable;
+        internal bool RepairGuidanceVisible => AssetRepairPanel.Visibility == Visibility.Visible;
+        internal IReadOnlyList<Emoji> SmokeEntries => allEmojis;
+        internal int RealizedEmojiContainerCount => Enumerable.Range(0, EmojiGrid.Items.Count)
+            .Count(index => EmojiGrid.ItemContainerGenerator.ContainerFromIndex(index) != null);
 
         // The items panel hosting the emoji cells; cached after the first lookup.
         // Its ActualWidth is the viewport content width (scrollbar excluded),
@@ -141,7 +128,7 @@ namespace EmojiPicker
 
         /// <summary>
         /// Renders the window once off-screen at startup so the WPF visual tree and
-        /// Emoji.Wpf glyph path are JIT-warmed; the first real hotkey open is then
+        /// Noto artwork path are JIT-warmed; the first real hotkey open is then
         /// as fast as subsequent ones instead of paying a cold-start cost.
         /// </summary>
         public void PreWarm()
@@ -188,7 +175,7 @@ namespace EmojiPicker
             // Open on Recent when there is history (like the Windows 10 picker),
             // otherwise the first content tab
             var openKey = recentEmojis.Count > 0 ? RecentCategoryKey : DefaultCategoryKey;
-            var openIndex = Categories.FindIndex(category => category.Key == openKey);
+            var openIndex = categories.FindIndex(category => category.Key == openKey);
             if (CategoryTabs.SelectedIndex == openIndex)
             {
                 LoadCategory(openKey); // no SelectionChanged will fire; refresh directly
@@ -361,41 +348,62 @@ namespace EmojiPicker
         // (rarely used, or newer than the dataset and not in its supplement)
         private const int UnrankedPopularity = 99;
 
-        private void InitializeEmojis()
+        private void InitializeEmojis(EmojiCatalogLoadResult? catalogOverride)
         {
-            // Build the full emoji set from the Unicode database that ships
-            // inside Emoji.Wpf, mapped onto the Windows 10 categories
-            var keywords = LoadResourceMap<string>("keywords.json");
+            // The generated, pinned Emoji 17 baseline is the runtime source of
+            // truth. No Windows emoji font or runtime network request is involved.
             var popularity = LoadResourceMap<int>("popularity.json");
-            allEmojis = new List<Emoji>();
-            foreach (var group in WpfEmojiData.AllGroups)
+            var catalog = catalogOverride ?? EmojiCatalog.Load();
+            allEmojis = catalog.Entries.ToList();
+            foreach (var emoji in allEmojis)
             {
-                if (!GroupToCategory.TryGetValue(group.Name, out var categoryKey))
-                {
-                    continue;
-                }
-
-                foreach (var subGroup in group.SubGroups)
-                {
-                    // Windows 10 filed plants under "Food and plants", not with animals
-                    var key = subGroup.Name.StartsWith("plant-", StringComparison.Ordinal) ? "Food" : categoryKey;
-
-                    foreach (var emoji in subGroup.EmojiList)
-                    {
-                        if (emoji.Renderable)
-                        {
-                            var normalized = NormalizeEmoji(emoji.Text);
-                            keywords.TryGetValue(normalized, out var tags);
-                            var rank = popularity.TryGetValue(normalized, out var tier) ? tier : UnrankedPopularity;
-                            allEmojis.Add(new Emoji(emoji.Text, emoji.Name, key, tags ?? string.Empty, rank));
-                        }
-                    }
-                }
+                emoji.Popularity = popularity.TryGetValue(NormalizeEmoji(emoji.Character), out var tier)
+                    ? tier
+                    : UnrankedPopularity;
             }
+
+            bundledAssetsAvailable = catalog.AssetSetAvailable;
+            AssetRepairPanel.Visibility = catalog.AssetSetAvailable ? Visibility.Collapsed : Visibility.Visible;
+            if (!string.IsNullOrWhiteSpace(catalog.ErrorMessage))
+            {
+                AssetRepairMessage.Text = $"{catalog.ErrorMessage} Repair or reinstall Modern Emoji Picker.";
+            }
+
+            categories = CreateCategories(allEmojis);
         }
 
-        // Emoji.Wpf and the keyword data can differ on the FE0F variation selector;
-        // strip it so lookups line up
+        private static List<EmojiCategory> CreateCategories(IReadOnlyList<Emoji> emojis)
+        {
+            var thai = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "th";
+            return new List<EmojiCategory>
+            {
+                CreateCategory(RecentCategoryKey, "1F550", thai ? "ใช้ล่าสุด" : "Recent", emojis),
+                CreateCategory("Smileys & Emotion", "1F600", thai ? "หน้ายิ้มและอารมณ์" : "Smileys & Emotion", emojis),
+                CreateCategory("People & Body", "1F9D1", thai ? "ผู้คนและร่างกาย" : "People & Body", emojis),
+                CreateCategory("Animals & Nature", "1F43B", thai ? "สัตว์และธรรมชาติ" : "Animals & Nature", emojis),
+                CreateCategory("Food & Drink", "1F355", thai ? "อาหารและเครื่องดื่ม" : "Food & Drink", emojis),
+                CreateCategory("Travel & Places", "1F697", thai ? "การเดินทางและสถานที่" : "Travel & Places", emojis),
+                CreateCategory("Activities", "26BD", thai ? "กิจกรรม" : "Activities", emojis),
+                CreateCategory("Objects", "1F4A1", thai ? "สิ่งของ" : "Objects", emojis),
+                CreateCategory("Symbols", "2764 FE0F", thai ? "สัญลักษณ์" : "Symbols", emojis),
+                CreateCategory("Flags", "1F1F9 1F1ED", thai ? "ธง" : "Flags", emojis),
+            };
+        }
+
+        private static EmojiCategory CreateCategory(
+            string key,
+            string iconCanonicalSequence,
+            string displayName,
+            IReadOnlyList<Emoji> emojis)
+        {
+            var icon = emojis.FirstOrDefault(emoji =>
+                    string.Equals(emoji.CanonicalSequence, iconCanonicalSequence, StringComparison.OrdinalIgnoreCase)) ??
+                emojis.FirstOrDefault(emoji => emoji.Category == key);
+            return new EmojiCategory(key, icon?.AssetPath ?? string.Empty, displayName);
+        }
+
+        // The legacy popularity data can differ on the FE0F variation selector;
+        // strip it so lookups line up.
         private static string NormalizeEmoji(string text) => text.Replace("\uFE0F", string.Empty);
 
         private static Dictionary<string, T> LoadResourceMap<T>(string fileName)
@@ -433,7 +441,7 @@ namespace EmojiPicker
                 : allEmojis.Where(emoji => emoji.Category == categoryKey).ToList();
 
             Logger.Log($"LoadCategory '{categoryKey}' -> {categoryEmojis.Count} items");
-            CategoryHeader.Text = Categories.FirstOrDefault(category => category.Key == categoryKey)?.DisplayName ?? categoryKey;
+            CategoryHeader.Text = categories.FirstOrDefault(category => category.Key == categoryKey)?.DisplayName ?? categoryKey;
             ShowEmojis(categoryEmojis);
         }
 
@@ -639,7 +647,7 @@ namespace EmojiPicker
 
         private void SwitchCategory(int direction)
         {
-            var count = Categories.Count;
+            var count = categories.Count;
             if (count == 0)
             {
                 return;
@@ -687,7 +695,7 @@ namespace EmojiPicker
             if (sender is ListBoxItem { DataContext: EmojiCategory category })
             {
                 e.Handled = true;
-                var index = Categories.FindIndex(item => item.Key == category.Key);
+                var index = categories.FindIndex(item => item.Key == category.Key);
                 if (index >= 0)
                 {
                     CategoryTabs.SelectedIndex = index;
@@ -896,23 +904,49 @@ namespace EmojiPicker
 
     public class Emoji
     {
+        public string Id { get; }
         public string Character { get; }
         public string Name { get; }
+        public string EnglishName { get; }
+        public string ThaiName { get; }
         public string Category { get; }
+        public string CanonicalSequence { get; }
+        public string EmojiVersion { get; }
+        public string AssetPath { get; }
+        public int Order { get; }
 
         /// <summary>Extra search terms (emojibase tags), e.g. "splash" for 💦.</summary>
         public string Keywords { get; }
 
         /// <summary>Usage-popularity tier from Unicode's frequency data
         /// (0 = most used); unranked emoji get a large sentinel value.</summary>
-        public int Popularity { get; }
+        public int Popularity { get; set; }
 
-        public Emoji(string character, string name, string category, string keywords, int popularity)
+        public Emoji(
+            string id,
+            string character,
+            string name,
+            string englishName,
+            string thaiName,
+            string category,
+            string canonicalSequence,
+            string keywords,
+            string emojiVersion,
+            string assetPath,
+            int order,
+            int popularity)
         {
+            Id = id;
             Character = character;
             Name = name;
+            EnglishName = englishName;
+            ThaiName = thaiName;
             Category = category;
+            CanonicalSequence = canonicalSequence;
             Keywords = keywords;
+            EmojiVersion = emojiVersion;
+            AssetPath = assetPath;
+            Order = order;
             Popularity = popularity;
         }
 
@@ -923,13 +957,13 @@ namespace EmojiPicker
     public class EmojiCategory
     {
         public string Key { get; }
-        public string Icon { get; }
+        public string IconAssetPath { get; }
         public string DisplayName { get; }
 
-        public EmojiCategory(string key, string icon, string displayName)
+        public EmojiCategory(string key, string iconAssetPath, string displayName)
         {
             Key = key;
-            Icon = icon;
+            IconAssetPath = iconAssetPath;
             DisplayName = displayName;
         }
     }

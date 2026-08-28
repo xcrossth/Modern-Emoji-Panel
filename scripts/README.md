@@ -71,3 +71,11 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 ```
 
 รายละเอียด schema, stable ID, asset aliases และรายงาน update อยู่ที่ [การสร้าง Emoji Baseline](../docs/emoji-baseline-generator.md)
+
+## ตรวจ Noto grid ของ Picker
+
+```powershell
+.\scripts\verify-noto-grid.ps1
+```
+
+คำสั่งนี้ build Picker แล้วตรวจว่า Emoji 17 ครบ 3,944 รายการในหมวดมาตรฐาน, PNG 128 ทุกภาพถูก bundle ตาม manifest, runtime ไม่อ้าง `Emoji.Wpf` และ WPF smoke ผ่านทั้ง lazy decode, frozen image, cache bound, DPI 100–250%, missing-image fallback และคำแนะนำ Repair/Reinstall เมื่อชุด asset หาย รายละเอียดอยู่ที่ [การแสดง Emoji 17 ด้วย Noto grid](../docs/noto-grid-runtime.md)

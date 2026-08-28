@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Windows;
 using System.Windows.Forms;
@@ -52,7 +53,7 @@ namespace EmojiPicker
             base.OnStartup(e);
 
             // A deterministic smoke path lets the monorepo verify that the WPF
-            // shell, resources and Emoji.Wpf data initialise on the current OS
+            // shell, generated Emoji Baseline and Noto artwork initialise on the current OS
             // without taking the user's global hook, tray or Classic mutex. It
             // never reads or writes user settings and exits after the dispatcher
             // has completed the off-screen prewarm pass.
@@ -112,7 +113,6 @@ namespace EmojiPicker
             // Stay alive with no visible window until the hotkey shows the picker
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
 
-            global::Emoji.Wpf.EmojiData.Load();
             ThemeManager.Initialize();
 
             picker = new MainWindow();
@@ -145,15 +145,70 @@ namespace EmojiPicker
         private void RunFoundationSmoke()
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
-            global::Emoji.Wpf.EmojiData.Load();
             ThemeManager.Initialize();
 
             var smokeWindow = new MainWindow(loadUserActivity: false);
             smokeWindow.PreWarm();
             Dispatcher.BeginInvoke(
-                new Action(() =>
+                new Action(async () =>
                 {
-                    if (!smokeWindow.IsLoaded || smokeWindow.CategoryTabs.Items.Count != 7 || smokeWindow.EmojiGrid.Items.Count == 0)
+                    if (!smokeWindow.IsLoaded ||
+                        smokeWindow.CategoryTabs.Items.Count != 10 ||
+                        smokeWindow.BaselineEntryCount != 3944 ||
+                        !smokeWindow.BundledAssetsAvailable ||
+                        smokeWindow.EmojiGrid.Items.Count == 0)
+                    {
+                        FinishFoundationSmoke(smokeWindow, exitCode: 1);
+                        return;
+                    }
+
+                    var firstEmoji = smokeWindow.EmojiGrid.Items[0] as Emoji;
+                    var decoded = firstEmoji == null
+                        ? null
+                        : await NotoEmojiAssetProvider.Shared.LoadAsync(firstEmoji.AssetPath, 32);
+                    var missing = await NotoEmojiAssetProvider.Shared.LoadAsync(
+                        "vendor/noto-emoji/v2.051/png/128/definitely-missing.png", 32);
+                    var dpiWidths = new[] { 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5 }
+                        .Select(scale => NotoEmojiImage.CalculateDecodePixelWidth(32, scale))
+                        .SequenceEqual(new[] { 32, 40, 48, 56, 64, 72, 80 });
+                    await Task.WhenAll(smokeWindow.SmokeEntries.Take(300)
+                        .Select(emoji => NotoEmojiAssetProvider.Shared.LoadAsync(emoji.AssetPath, 32)));
+                    var realizedContainers = smokeWindow.RealizedEmojiContainerCount;
+                    if (decoded == null || !decoded.IsFrozen || missing != null || !dpiWidths ||
+                        NotoEmojiAssetProvider.Shared.CachedImageCount > 256 ||
+                        realizedContainers <= 0 ||
+                        realizedContainers >= smokeWindow.EmojiGrid.Items.Count)
+                    {
+                        FinishFoundationSmoke(smokeWindow, exitCode: 1);
+                        return;
+                    }
+
+                    var missingAssetRoot = Path.Combine(Path.GetTempPath(), $"modern-emoji-picker-missing-assets-{Guid.NewGuid():N}");
+                    var missingAssetWindowPassed = false;
+                    try
+                    {
+                        var baselineCopy = Path.Combine(
+                            missingAssetRoot,
+                            EmojiCatalog.BaselineRelativePath.Replace('/', Path.DirectorySeparatorChar));
+                        Directory.CreateDirectory(Path.GetDirectoryName(baselineCopy)!);
+                        File.Copy(EmojiCatalog.ResolveBundledPath(EmojiCatalog.BaselineRelativePath), baselineCopy);
+                        var missingAssetCatalog = EmojiCatalog.Load(missingAssetRoot);
+                        var missingAssetWindow = new MainWindow(loadUserActivity: false, missingAssetCatalog);
+                        missingAssetWindowPassed = missingAssetWindow.BaselineEntryCount == 3944 &&
+                            !missingAssetWindow.BundledAssetsAvailable &&
+                            missingAssetWindow.RepairGuidanceVisible;
+                        missingAssetWindow.PrepareForProcessExit();
+                        missingAssetWindow.Close();
+                    }
+                    finally
+                    {
+                        if (Directory.Exists(missingAssetRoot))
+                        {
+                            Directory.Delete(missingAssetRoot, recursive: true);
+                        }
+                    }
+
+                    if (!missingAssetWindowPassed)
                     {
                         FinishFoundationSmoke(smokeWindow, exitCode: 1);
                         return;

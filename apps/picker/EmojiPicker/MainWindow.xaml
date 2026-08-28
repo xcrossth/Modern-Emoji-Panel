@@ -167,6 +167,7 @@
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- Search Box with watermark -->
@@ -257,9 +258,38 @@
                     </StackPanel>
                 </Border>
 
+                <Border x:Name="InsertionErrorPanel"
+                        Grid.Row="3"
+                        Margin="6,0,6,6"
+                        Padding="8,6"
+                        Background="{DynamicResource ErrorBackgroundBrush}"
+                        BorderBrush="{DynamicResource ErrorBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Visibility="Collapsed"
+                        AutomationProperties.LiveSetting="Assertive">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="InsertionErrorText"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource ErrorForegroundBrush}"
+                                   TextWrapping="Wrap"/>
+                        <Button x:Name="ExplicitCopyButton"
+                                Grid.Column="1"
+                                Margin="8,0,0,0"
+                                Padding="9,3"
+                                Content="Copy"
+                                Click="ExplicitCopyButton_Click"
+                                AutomationProperties.Name="Copy selected emoji to clipboard"/>
+                    </Grid>
+                </Border>
+
                 <!-- Category Tabs at Bottom -->
                 <ListBox x:Name="CategoryTabs"
-                         Grid.Row="3"
+                         Grid.Row="4"
                          Height="42"
                          Background="{DynamicResource TabStripBackgroundBrush}"
                          BorderThickness="0"

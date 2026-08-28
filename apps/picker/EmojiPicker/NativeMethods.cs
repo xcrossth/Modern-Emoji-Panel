@@ -79,6 +79,8 @@ namespace EmojiPicker
         internal const uint ProcessQueryLimitedInformation = 0x1000;
         internal const uint TokenQuery = 0x0008;
         internal const int TokenElevation = 20; // TOKEN_INFORMATION_CLASS.TokenElevation
+        internal const int TokenIntegrityLevel = 25; // TOKEN_INFORMATION_CLASS.TokenIntegrityLevel
+        internal const int ErrorInsufficientBuffer = 122;
 
         [DllImport("kernel32.dll", SetLastError = true)]
         internal static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, uint dwProcessId);
@@ -89,6 +91,16 @@ namespace EmojiPicker
         [DllImport("advapi32.dll", SetLastError = true)]
         internal static extern bool GetTokenInformation(IntPtr tokenHandle, int tokenInformationClass,
             out int tokenInformation, int tokenInformationLength, out int returnLength);
+
+        [DllImport("advapi32.dll", SetLastError = true)]
+        internal static extern bool GetTokenInformation(IntPtr tokenHandle, int tokenInformationClass,
+            IntPtr tokenInformation, int tokenInformationLength, out int returnLength);
+
+        [DllImport("advapi32.dll")]
+        internal static extern IntPtr GetSidSubAuthorityCount(IntPtr sid);
+
+        [DllImport("advapi32.dll")]
+        internal static extern IntPtr GetSidSubAuthority(IntPtr sid, uint subAuthorityIndex);
 
         [DllImport("kernel32.dll")]
         internal static extern bool CloseHandle(IntPtr hObject);

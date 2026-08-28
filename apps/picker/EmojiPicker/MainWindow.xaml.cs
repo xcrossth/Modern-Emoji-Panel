@@ -43,6 +43,7 @@ namespace EmojiPicker
         private bool isShowing;
         private bool recentsDirty;
         private bool allowProcessExit;
+        private Emoji? failedInsertionEmoji;
 
         public MainWindow()
             : this(loadUserActivity: true)
@@ -76,6 +77,9 @@ namespace EmojiPicker
         internal IReadOnlyList<Emoji> SmokeEntries => allEmojis;
         internal int RealizedEmojiContainerCount => Enumerable.Range(0, EmojiGrid.Items.Count)
             .Count(index => EmojiGrid.ItemContainerGenerator.ContainerFromIndex(index) != null);
+        internal bool InsertionErrorVisible => InsertionErrorPanel.Visibility == Visibility.Visible;
+        internal bool ExplicitCopyAvailable => ExplicitCopyButton.IsEnabled && ExplicitCopyButton.Visibility == Visibility.Visible;
+        internal void ShowInsertionFailureForSmoke(Emoji emoji, string message) => ShowInsertionError(emoji, message);
 
         // The items panel hosting the emoji cells; cached after the first lookup.
         // Its ActualWidth is the viewport content width (scrollbar excluded),
@@ -707,6 +711,7 @@ namespace EmojiPicker
         {
             Logger.Log($"CommitEmoji: '{emoji.Character}' -> target={App.PreviousForegroundWindow}");
             AddToRecentEmojis(emoji);
+            HideInsertionError();
             DismissPicker();
 
             // Defer the insertion until the current input event has finished
@@ -714,29 +719,65 @@ namespace EmojiPicker
             // corrupts the injected Unicode sequence
             Dispatcher.BeginInvoke(new Action(async () =>
             {
-                // Insert into the app that was focused before the picker opened,
-                // like the Windows 10 panel; fall back to the clipboard otherwise.
-                // Awaited so the focus-settle delay doesn't block the UI thread.
-                bool inserted;
+                // Insert only into the target captured before the picker opened.
+                // Failure never retargets and never silently copies.
+                InsertionResult result;
                 try
                 {
-                    inserted = await TextInjector.TryInsertAsync(
+                    result = await TextInjector.TryInsertAsync(
                         App.PreviousForegroundWindow, App.PreviousFocusWindow, emoji.Character);
                 }
                 catch (Exception ex)
                 {
                     Logger.LogAlways($"Insert threw: {ex}");
-                    inserted = false;
+                    result = InsertionResult.Failure("The emoji could not be sent safely.");
                 }
 
-                if (!inserted)
+                if (!result.Accepted)
                 {
-                    // Leave the emoji on the clipboard for manual paste - tagged to
-                    // stay out of Clipboard History, like the paste path
-                    Logger.Log("Insert failed; leaving the emoji on the clipboard");
-                    TextInjector.SetClipboardTextExcluded(emoji.Character);
+                    Logger.Log($"Insert failed without retry or retarget: {result.Message}");
+                    ShowInsertionError(emoji, result.Message ?? "The emoji could not be sent safely.");
                 }
             }), System.Windows.Threading.DispatcherPriority.Background);
+        }
+
+        private void ShowInsertionError(Emoji emoji, string message)
+        {
+            failedInsertionEmoji = emoji;
+            InsertionErrorText.Text = message;
+            InsertionErrorPanel.Visibility = Visibility.Visible;
+
+            // The picker was hidden before target activation. Bring the same shell
+            // back without resetting query/category/selection/scroll.
+            isShowing = true;
+            Show();
+            Activate();
+            SearchBox.Focus();
+            Dispatcher.BeginInvoke(new Action(() => isShowing = false), DispatcherPriority.Background);
+        }
+
+        private void HideInsertionError()
+        {
+            failedInsertionEmoji = null;
+            InsertionErrorPanel.Visibility = Visibility.Collapsed;
+            InsertionErrorText.Text = string.Empty;
+        }
+
+        private void ExplicitCopyButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (failedInsertionEmoji == null)
+            {
+                return;
+            }
+
+            if (TextInjector.CopyExplicit(failedInsertionEmoji.Character))
+            {
+                InsertionErrorText.Text = "Copied to the clipboard. It will appear in clipboard history when enabled.";
+            }
+            else
+            {
+                InsertionErrorText.Text = "The emoji could not be copied to the clipboard.";
+            }
         }
 
         /// <summary>

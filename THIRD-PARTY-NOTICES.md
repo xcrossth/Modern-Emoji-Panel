@@ -1,6 +1,6 @@
 # ประกาศซอฟต์แวร์และข้อมูลจากบุคคลที่สาม
 
-เอกสารนี้บันทึก attribution ของทรัพยากรที่มีอยู่ใน repository ปัจจุบัน รายการของ Unicode, CLDR และ Noto Emoji จะเพิ่มเมื่อทรัพยากรเหล่านั้นถูกนำเข้าใน implementation
+เอกสารนี้บันทึก attribution ของทรัพยากรที่มีอยู่ใน repository ปัจจุบัน
 
 ## Classic Emoji Picker
 
@@ -12,6 +12,39 @@
 - License และ notices ต้นฉบับ: `apps/picker/LICENSE` และ `apps/picker/THIRD-PARTY-NOTICES.md`
 
 รายละเอียด provenance และ manual update flow อยู่ที่ `docs/upstream/classic-picker.md`
+
+## Unicode 17.0.0 และ CLDR 48.2
+
+ข้อมูล Unicode Emoji, Unicode Character Database และ CLDR ภาษาไทย/อังกฤษที่ตรึงไว้ใน Emoji Baseline มาจาก Unicode Consortium
+
+- Unicode version: 17.0.0
+- Unicode Emoji version: 17.0
+- CLDR version: 48.2
+- License: Unicode-3.0
+- Source lock: `vendor/emoji-baseline/sources.lock.json`
+- License text: `vendor/emoji-baseline/licenses/UNICODE-LICENSE-V3.txt`
+
+Unicode, Inc. สงวนลิขสิทธิ์ตามข้อความต้นฉบับ การแจกและใช้งานข้อมูลอยู่ภายใต้ Unicode License V3
+
+## Noto Emoji v2.051
+
+ภาพ PNG canonical ขนาด 128 และ 512 px มาจาก Noto Emoji ที่ commit `8998f5dd683424a73e2314a8c1f1e359c19e8742`
+
+- Source: https://github.com/googlefonts/noto-emoji
+- Version: v2.051
+- License class: Apache-2.0 สำหรับ artwork ที่นำมาใช้
+- Artwork notice: `vendor/noto-emoji/v2.051/licenses/ARTWORK-LICENSE.txt`
+- Apache License 2.0: `vendor/noto-emoji/v2.051/licenses/APACHE-2.0.txt`
+
+Copyright 2013 Google, Inc. All Rights Reserved.
+
+## Noto region-flags
+
+ภาพธงที่มากับ Noto Emoji มี provenance จากโครงการ `googlei18n/region-flags` ที่ commit `743e1f4a92b7d2dac49d7e6af509af63a71f0b45` และประกาศเป็น Public Domain หรือได้รับการยกเว้นลิขสิทธิ์ตามรายละเอียดของแต่ละธง
+
+- Provenance: `vendor/noto-emoji/v2.051/third_party/region-flags/README.third_party`
+- Authors: `vendor/noto-emoji/v2.051/third_party/region-flags/AUTHORS`
+- Public Domain notice: `vendor/noto-emoji/v2.051/third_party/region-flags/LICENSE`
 
 ## Matt Pocock Skills
 

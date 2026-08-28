@@ -31,3 +31,19 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
     .\scripts\setup-classic-upstream.ps1
 
 หากต้องการ fetch และตรวจ tree hash ของ commit แรกที่อนุมัติด้วย ให้เพิ่ม `-FetchApprovedCommit` สคริปต์นี้ไม่ merge, subtree pull หรือ push และไม่ถูกเรียกจาก build
+
+## ตรวจ Emoji Baseline แบบ offline
+
+    .\scripts\verify-emoji-baseline.ps1
+
+คำสั่งนี้อ่านเฉพาะไฟล์ที่ commit แล้ว ตรวจเวอร์ชัน, immutable URL, SHA-256, byte length, inventory ของ PNG ทั้งชุด, license notices และยืนยันว่า asset ไม่ใช้ Git LFS โดยไม่มี network call
+
+ก่อนสร้าง release ให้เพิ่ม release gate ซึ่งตรวจขนาดไฟล์สูงสุดด้วย:
+
+    .\scripts\verify-emoji-baseline.ps1 -VerificationMode Release
+
+## อัปเดต Emoji Baseline โดยตั้งใจ
+
+    .\scripts\update-emoji-baseline.ps1
+
+คำสั่งนี้เป็นทางเดียวในโครงการที่ดาวน์โหลด source ของ Emoji Baseline โดย fetch เฉพาะ URL และ Git commit ที่ตรึงใน source lock ลง staging directory ชั่วคราว ตรวจ checksum กับ inventory ก่อนแทนที่ไฟล์ใน repository และรัน offline verifier ซ้ำ การ build, test และ release ตามปกติไม่เรียกคำสั่งนี้

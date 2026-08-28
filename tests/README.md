@@ -12,5 +12,6 @@
 - `scripts/verify-picker-session.ps1` สำหรับ Browse/Search Mode, Commit Gesture, dismissal/focus policy, placement, ขนาดหน้าต่าง และ accessibility state
 - `scripts/verify-activity-data.ps1` สำหรับ Recent MRU, Learned Ranking, schema/migration, atomic persistence, corruption recovery และคำสั่งล้าง Activity Data
 - `scripts/verify-insertion-queue.ps1` สำหรับ FIFO/capacity/cancellation, terminal focus transition และ committed-text policy ของ Typing Handoff โดยไม่ขึ้นกับ timing จริงของเดสก์ท็อป
+- `scripts/verify-settings-privacy.ps1` สำหรับ Settings model เดียว, ภาษา fallback, theme/hotkey/insertion choices, advanced reset, Welcome และ privacy-safe logging
 
 เมื่อเพิ่ม test project ให้เพิ่มเข้า `ModernEmojiPanel.sln` และเก็บ NuGet lock file ของ project นั้นใน Git

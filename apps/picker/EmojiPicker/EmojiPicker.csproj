@@ -63,6 +63,10 @@
              Link="EmojiBaseline\vendor\noto-emoji\v2.051\png\128\%(RecursiveDir)%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\..\vendor\noto-emoji\v2.051\png\512\**\*.png"
+             Link="EmojiBaseline\vendor\noto-emoji\v2.051\png\512\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
     <Content Include="..\..\..\vendor\noto-emoji\v2.051\third_party\region-flags\png\**\*.png"
              Link="EmojiBaseline\vendor\noto-emoji\v2.051\third_party\region-flags\png\%(RecursiveDir)%(Filename)%(Extension)"
              CopyToOutputDirectory="PreserveNewest"

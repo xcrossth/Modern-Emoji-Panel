@@ -18,5 +18,8 @@
     <!-- Filled highlight behind the selected emoji, like the Windows 10 panel
          (accent blended ~35% over the dark background) -->
     <SolidColorBrush x:Key="SelectionBrush" Color="#1C4666"/>
+    <SolidColorBrush x:Key="PlaceholderBorderBrush" Color="#777777"/>
+    <SolidColorBrush x:Key="PlaceholderForegroundBrush" Color="#BBBBBB"/>
+    <SolidColorBrush x:Key="RepairBackgroundBrush" Color="#3C3522"/>
 
 </ResourceDictionary>

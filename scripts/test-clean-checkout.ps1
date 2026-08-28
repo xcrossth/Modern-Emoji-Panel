@@ -10,7 +10,7 @@ Set-StrictMode -Version Latest
 
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())
-$checkoutPath = [System.IO.Path]::GetFullPath((Join-Path $temporaryRoot ("modern-emoji-picker-foundation-" + [Guid]::NewGuid().ToString("N"))))
+$checkoutPath = [System.IO.Path]::GetFullPath((Join-Path $temporaryRoot ("mep-" + [Guid]::NewGuid().ToString("N").Substring(0, 8))))
 
 if (-not $checkoutPath.StartsWith($temporaryRoot, [System.StringComparison]::OrdinalIgnoreCase)) {
     throw "Clean checkout path is outside the temporary directory"
@@ -36,6 +36,11 @@ try {
     & (Join-Path $checkoutPath "scripts\verify-generated-emoji-baseline.ps1")
     if ($LASTEXITCODE -ne 0) {
         throw "Generated Emoji Baseline verification from the clean checkout failed"
+    }
+
+    & (Join-Path $checkoutPath "scripts\verify-noto-grid.ps1") -SkipBuild
+    if ($LASTEXITCODE -ne 0) {
+        throw "Noto grid verification from the clean checkout failed"
     }
 }
 finally {

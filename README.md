@@ -28,6 +28,7 @@ Modern Emoji Picker คือโครงการสร้าง Emoji Picker �
 - [สีผิวเริ่มต้นและ Variant Override](./docs/emoji-skin-tone-and-variants.md)
 - [Recent และ Learned Ranking บนเครื่อง](./docs/local-activity-data.md)
 - [Settings, Welcome และความเป็นส่วนตัว](./docs/settings-welcome-and-privacy.md)
+- [การรับรอง accessibility, compatibility และ performance](./docs/qualification/README.md)
 
 ## โครง repository
 

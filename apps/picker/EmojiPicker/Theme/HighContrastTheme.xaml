@@ -1,0 +1,27 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Follow the active Windows High Contrast palette instead of overriding
+         the colors selected by the user with the normal Light/Dark palettes. -->
+    <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}"/>
+    <SolidColorBrush x:Key="WindowBorderBrush" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}"/>
+    <SolidColorBrush x:Key="TabStripBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+    <SolidColorBrush x:Key="HeaderForegroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}"/>
+    <SolidColorBrush x:Key="HoverBrush" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}"/>
+    <SolidColorBrush x:Key="SearchBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}"/>
+    <SolidColorBrush x:Key="SearchForegroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}"/>
+    <SolidColorBrush x:Key="SearchBorderBrush" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}"/>
+    <SolidColorBrush x:Key="WatermarkForegroundBrush" Color="{DynamicResource {x:Static SystemColors.GrayTextColorKey}}"/>
+    <SolidColorBrush x:Key="CloseForegroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}"/>
+    <SolidColorBrush x:Key="ScrollBarBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>
+    <SolidColorBrush x:Key="ScrollBarThumbBrush" Color="{DynamicResource {x:Static SystemColors.ControlTextColorKey}}"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="{DynamicResource {x:Static SystemColors.HighlightTextColorKey}}"/>
+    <SolidColorBrush x:Key="SelectionBrush" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}"/>
+    <SolidColorBrush x:Key="PlaceholderBorderBrush" Color="{DynamicResource {x:Static SystemColors.GrayTextColorKey}}"/>
+    <SolidColorBrush x:Key="PlaceholderForegroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}"/>
+    <SolidColorBrush x:Key="RepairBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}"/>
+    <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}"/>
+    <SolidColorBrush x:Key="ErrorBorderBrush" Color="{DynamicResource {x:Static SystemColors.HighlightColorKey}}"/>
+    <SolidColorBrush x:Key="ErrorForegroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}"/>
+
+</ResourceDictionary>

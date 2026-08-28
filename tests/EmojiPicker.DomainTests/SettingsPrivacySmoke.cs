@@ -51,6 +51,21 @@ internal static class SettingsPrivacySmoke
             ThemeManager.ResolveDark(AppThemePreference.Dark, systemDark: false) &&
             ThemeManager.ResolveDark(AppThemePreference.System, systemDark: true),
             "System, Light and Dark theme choices must resolve deterministically.");
+        Assert(
+            ThemeManager.ResolveThemeUri(AppThemePreference.Light, systemDark: false, highContrast: true)
+                .OriginalString.EndsWith("HighContrastTheme.xaml", StringComparison.Ordinal),
+            "High Contrast must override both explicit Light and Dark themes.");
+        Assert(
+            ThemeManager.ResolveThemeUri(AppThemePreference.System, systemDark: true, highContrast: false)
+                .OriginalString.EndsWith("DarkTheme.xaml", StringComparison.Ordinal),
+            "System theme must still resolve to Dark when High Contrast is off.");
+        Assert(
+            ThemeManager.ShouldRefreshFor(Microsoft.Win32.UserPreferenceCategory.Accessibility) &&
+            ThemeManager.ShouldRefreshFor(Microsoft.Win32.UserPreferenceCategory.Color) &&
+            ThemeManager.ShouldRefreshFor(Microsoft.Win32.UserPreferenceCategory.General) &&
+            ThemeManager.ShouldRefreshFor(Microsoft.Win32.UserPreferenceCategory.VisualStyle) &&
+            !ThemeManager.ShouldRefreshFor(Microsoft.Win32.UserPreferenceCategory.Mouse),
+            "Theme refresh must react to High Contrast/color changes without refreshing for unrelated input preferences.");
 
         var model = SettingsControlModel.From(new Settings(), startWithWindows: false, startupManagedByInstaller: false);
         model.HotkeyEnabled = false;

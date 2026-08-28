@@ -15,9 +15,10 @@ namespace EmojiPicker
 
         private static readonly Uri LightThemeUri = new Uri("Theme/LightTheme.xaml", UriKind.Relative);
         private static readonly Uri DarkThemeUri = new Uri("Theme/DarkTheme.xaml", UriKind.Relative);
+        private static readonly Uri HighContrastThemeUri = new Uri("Theme/HighContrastTheme.xaml", UriKind.Relative);
 
         private static ResourceDictionary? currentTheme;
-        private static bool isDark;
+        private static Uri? currentThemeUri;
 
         /// <summary>
         /// Merges the theme matching the current Windows setting and starts
@@ -25,11 +26,11 @@ namespace EmojiPicker
         /// </summary>
         public static void Initialize()
         {
-            Apply(ResolveDark(Settings.Current.ThemePreference));
+            Apply(ResolveThemeUri(Settings.Current.ThemePreference));
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         }
 
-        internal static void Refresh() => Apply(ResolveDark(Settings.Current.ThemePreference));
+        internal static void Refresh() => Apply(ResolveThemeUri(Settings.Current.ThemePreference));
 
         public static void Shutdown()
         {
@@ -38,18 +39,13 @@ namespace EmojiPicker
 
         private static void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
-            if (e.Category != UserPreferenceCategory.General)
+            if (!ShouldRefreshFor(e.Category))
             {
                 return;
             }
 
-            if (Settings.Current.ThemePreference != AppThemePreference.System)
-            {
-                return;
-            }
-
-            var wantDark = IsSystemDark();
-            if (wantDark == isDark)
+            var themeUri = ResolveThemeUri(Settings.Current.ThemePreference);
+            if (themeUri == currentThemeUri)
             {
                 return;
             }
@@ -66,7 +62,7 @@ namespace EmojiPicker
 
             try
             {
-                dispatcher.Invoke(() => Apply(wantDark));
+                dispatcher.Invoke(() => Apply(themeUri));
             }
             catch (Exception)
             {
@@ -74,7 +70,7 @@ namespace EmojiPicker
             }
         }
 
-        private static void Apply(bool dark)
+        private static void Apply(Uri themeUri)
         {
             var app = Application.Current;
             if (app == null)
@@ -82,7 +78,7 @@ namespace EmojiPicker
                 return;
             }
 
-            var theme = new ResourceDictionary { Source = dark ? DarkThemeUri : LightThemeUri };
+            var theme = new ResourceDictionary { Source = themeUri };
 
             if (currentTheme != null)
             {
@@ -91,7 +87,7 @@ namespace EmojiPicker
 
             app.Resources.MergedDictionaries.Add(theme);
             currentTheme = theme;
-            isDark = dark;
+            currentThemeUri = themeUri;
         }
 
         private static bool IsSystemDark()
@@ -114,5 +110,24 @@ namespace EmojiPicker
             AppThemePreference.Light => false,
             _ => systemDark ?? IsSystemDark(),
         };
+
+        internal static Uri ResolveThemeUri(
+            AppThemePreference preference,
+            bool? systemDark = null,
+            bool? highContrast = null)
+        {
+            if (highContrast ?? SystemParameters.HighContrast)
+            {
+                return HighContrastThemeUri;
+            }
+
+            return ResolveDark(preference, systemDark) ? DarkThemeUri : LightThemeUri;
+        }
+
+        internal static bool ShouldRefreshFor(UserPreferenceCategory category) => category is
+            UserPreferenceCategory.Accessibility or
+            UserPreferenceCategory.Color or
+            UserPreferenceCategory.General or
+            UserPreferenceCategory.VisualStyle;
     }
 }

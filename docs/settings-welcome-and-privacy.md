@@ -8,6 +8,7 @@ Modern Emoji Picker รวมค่าที่ผู้ใช้ควบคุ
 - เปิดพร้อม Windows ได้เมื่อผู้ใช้สั่ง สำหรับ portable ค่าเริ่มต้นคือปิด ส่วน installer สามารถสร้างค่า Modern ตอนติดตั้งและแอปจะแสดงเป็นค่าที่ installer จัดการ
 - ภาษา UI เลือก System, English หรือไทย เมื่อเลือก System จะใช้ไทยเฉพาะเมื่อ Windows display language เป็นไทย ภาษาอื่นใช้ English โดยการค้นหายังค้นชื่อและ keyword ไทยกับอังกฤษพร้อมกันเสมอ
 - ธีมเลือก System, Light หรือ Dark
+- เมื่อ Windows เปิด High Contrast แอปจะใช้สีระบบของ High Contrast แทน Light/Dark override เพื่อเคารพ palette ที่ผู้ใช้เลือก
 - สีผิวเริ่มต้นเป็นค่าระดับ global และไม่เปลี่ยนพฤติกรรม Variant Override แบบครั้งเดียว
 
 ## การส่ง Emoji และค่าขั้นสูง

@@ -32,6 +32,11 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Regression verification from the clean checkout failed"
     }
+
+    & (Join-Path $checkoutPath "scripts\verify-generated-emoji-baseline.ps1")
+    if ($LASTEXITCODE -ne 0) {
+        throw "Generated Emoji Baseline verification from the clean checkout failed"
+    }
 }
 finally {
     Pop-Location

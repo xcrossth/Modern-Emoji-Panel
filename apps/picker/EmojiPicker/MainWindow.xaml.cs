@@ -118,6 +118,86 @@ namespace EmojiPicker
         internal int PendingInsertionCount => insertionQueue.PendingCount;
         internal bool InsertionQueueFull => insertionQueue.IsFull;
 
+        internal async Task<IReadOnlyList<double>> MeasureWarmOpenToRenderProxyForSmokeAsync(int samples)
+        {
+            var results = new List<double>(samples);
+            var originalShowActivated = ShowActivated;
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            ShowActivated = false;
+            Left = -32000;
+            Top = -32000;
+
+            try
+            {
+                for (var index = 0; index < samples; index++)
+                {
+                    SearchBox.Clear();
+                    LoadCategory(DefaultCategoryKey);
+                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                    Show();
+                    await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Render);
+                    UpdateLayout();
+                    stopwatch.Stop();
+                    results.Add(stopwatch.Elapsed.TotalMilliseconds);
+                    Hide();
+                    await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.ContextIdle);
+                }
+            }
+            finally
+            {
+                Hide();
+                ShowActivated = originalShowActivated;
+            }
+
+            return results;
+        }
+
+        internal async Task<IReadOnlyList<double>> MeasureVirtualizedScrollFramesForSmokeAsync(int samples)
+        {
+            var largestCategory = allEmojis
+                .GroupBy(emoji => emoji.Category, StringComparer.Ordinal)
+                .OrderByDescending(group => group.Count())
+                .First();
+            LoadCategory(largestCategory.Key);
+
+            var originalShowActivated = ShowActivated;
+            WindowStartupLocation = WindowStartupLocation.Manual;
+            ShowActivated = false;
+            Left = -32000;
+            Top = -32000;
+            Show();
+            await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Render);
+            UpdateLayout();
+
+            try
+            {
+                var viewer = FindVisualChild<ScrollViewer>(EmojiGrid)
+                    ?? throw new InvalidOperationException("The virtualized grid ScrollViewer was not created.");
+                if (viewer.ScrollableHeight <= 0)
+                {
+                    throw new InvalidOperationException("The largest category did not produce a scrollable viewport.");
+                }
+
+                var results = new List<double>(samples);
+                for (var index = 0; index < samples; index++)
+                {
+                    var fraction = ((index * 37) % samples) / (double)Math.Max(1, samples - 1);
+                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                    viewer.ScrollToVerticalOffset(viewer.ScrollableHeight * fraction);
+                    await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Render);
+                    stopwatch.Stop();
+                    results.Add(stopwatch.Elapsed.TotalMilliseconds);
+                }
+
+                return results;
+            }
+            finally
+            {
+                Hide();
+                ShowActivated = originalShowActivated;
+            }
+        }
+
         // The items panel hosting the emoji cells; cached after the first lookup.
         // Its ActualWidth is the viewport content width (scrollbar excluded),
         // which is stable regardless of scroll position or container recycling.

@@ -279,7 +279,7 @@ internal sealed class ActivityDataStore
             // A permissions or filesystem error must not turn damaged optional
             // Activity Data into a process-start failure. The UI still reports
             // the reset and the log explains why a backup could not be made.
-            Logger.LogAlways($"Could not back up corrupt {kind} data '{path}': {backupError.Message}");
+            Logger.LogAlways($"Could not back up corrupt {kind} data: {backupError.GetType().Name}");
         }
 
         recoveryNotices.Add(new ActivityRecoveryNotice(
@@ -290,7 +290,7 @@ internal sealed class ActivityDataStore
                 : kind == ActivityDataKind.Recent
                     ? "Recent data was unreadable. It was backed up and reset."
                     : "Learned Ranking data was unreadable. It was backed up and reset."));
-        Logger.LogAlways($"Recovered corrupt {kind} data to '{backupPath}': {cause.Message}");
+        Logger.LogAlways($"Recovered corrupt {kind} data after {cause.GetType().Name}");
 
         if (kind == ActivityDataKind.Recent)
         {
@@ -364,7 +364,7 @@ internal sealed class ActivityDataStore
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            Logger.LogAlways($"Could not persist Activity Data '{fileName}': {ex.Message}");
+            Logger.LogAlways($"Could not persist {Path.GetFileNameWithoutExtension(fileName)} Activity Data: {ex.GetType().Name}");
         }
     }
 

@@ -127,3 +127,11 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 ```
 
 คำสั่งนี้ตรวจลำดับ FIFO, ขอบเขตงานรอ 20 รายการ, การไม่เริ่มงานขนาน, การยกเลิกเฉพาะงานที่ยังไม่เริ่ม, การรอ active operation ก่อน dismiss/handoff และการรักษา committed text จาก Thai IME/dead key ผ่าน state seam ที่ไม่ขึ้นกับ timing จริงของเดสก์ท็อป รายละเอียดอยู่ที่ [Insertion Queue และ Typing Handoff](../docs/insertion-queue-and-typing-handoff.md)
+
+## ตรวจ Settings, Welcome และความเป็นส่วนตัว
+
+```powershell
+pwsh scripts/verify-settings-privacy.ps1
+```
+
+ตรวจ Settings model เดียว, hotkey/autostart/ภาษา/ธีม/สีผิว/Insertion Mode, Advanced Paste delay และ reset, Welcome ครั้งแรก, คำสั่งล้าง Activity Data, diagnostic logging แบบ opt-in ที่ไม่เก็บเนื้อหาผู้ใช้ และการไม่มี runtime network, telemetry, sync หรือ upload code รายละเอียดอยู่ที่ [Settings, Welcome และความเป็นส่วนตัว](../docs/settings-welcome-and-privacy.md)

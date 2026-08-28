@@ -25,9 +25,11 @@ namespace EmojiPicker
         /// </summary>
         public static void Initialize()
         {
-            Apply(IsSystemDark());
+            Apply(ResolveDark(Settings.Current.ThemePreference));
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         }
+
+        internal static void Refresh() => Apply(ResolveDark(Settings.Current.ThemePreference));
 
         public static void Shutdown()
         {
@@ -37,6 +39,11 @@ namespace EmojiPicker
         private static void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
         {
             if (e.Category != UserPreferenceCategory.General)
+            {
+                return;
+            }
+
+            if (Settings.Current.ThemePreference != AppThemePreference.System)
             {
                 return;
             }
@@ -100,5 +107,12 @@ namespace EmojiPicker
                 return false; // default to light if the setting can't be read
             }
         }
+
+        internal static bool ResolveDark(AppThemePreference preference, bool? systemDark = null) => preference switch
+        {
+            AppThemePreference.Dark => true,
+            AppThemePreference.Light => false,
+            _ => systemDark ?? IsSystemDark(),
+        };
     }
 }

@@ -16,7 +16,6 @@ namespace EmojiPicker
 {
     public partial class MainWindow : Window
     {
-        private const int MaxRecentEmojis = 24;
         private const string RecentCategoryKey = "Recent";
         private const string SearchHeader = "Search results";
 
@@ -29,15 +28,12 @@ namespace EmojiPicker
         private static readonly TimeSpan SearchDebounce = TimeSpan.FromMilliseconds(120);
         internal static readonly TimeSpan HoverPreviewDelay = TimeSpan.FromMilliseconds(400);
 
-        private static readonly string RecentEmojisFile = Path.Combine(
-            ProductIdentity.DataDirectory,
-            "recent.json");
-
         private const string DefaultCategoryKey = "Smileys & Emotion";
 
         private readonly DispatcherTimer searchTimer;
         private readonly DispatcherTimer previewTimer;
         private readonly bool persistUserActivity;
+        private readonly ActivityDataStore activityData;
         private EmojiSearchIndex searchIndex;
         private List<Emoji> baselineEmojis = new List<Emoji>();
         private List<Emoji> allEmojis = new List<Emoji>();
@@ -46,7 +42,6 @@ namespace EmojiPicker
         private string currentCategory = DefaultCategoryKey;
         private bool bundledAssetsAvailable;
         private bool isShowing;
-        private bool recentsDirty;
         private bool allowProcessExit;
         private Emoji? failedInsertionEmoji;
         private Emoji? pendingPreviewEmoji;
@@ -76,12 +71,16 @@ namespace EmojiPicker
             Width = Math.Clamp(Settings.Current.PickerWidth, MinWidth, 900);
             Height = Math.Clamp(Settings.Current.PickerHeight, MinHeight, 900);
             InitializeEmojis(catalogOverride);
-            searchIndex = new EmojiSearchIndex(allEmojis);
+            activityData = loadUserActivity
+                ? new ActivityDataStore(
+                    ProductIdentity.DataDirectory,
+                    resolvedIdForSequence: sequence => baselineEmojis
+                        .FirstOrDefault(entry => string.Equals(entry.Character, sequence, StringComparison.Ordinal))?.Id)
+                : ActivityDataStore.CreateTransient();
+            searchIndex = new EmojiSearchIndex(allEmojis, activityData.GetLearnedScores);
             InitializeSkinTonePicker();
-            if (loadUserActivity)
-            {
-                LoadRecentEmojis();
-            }
+            RefreshRecentEmojis();
+            ShowActivityRecoveryNotice();
 
             searchTimer = new DispatcherTimer { Interval = SearchDebounce };
             searchTimer.Tick += (_, _) => RunSearch();
@@ -455,7 +454,7 @@ namespace EmojiPicker
             currentSkinTone = option.Preference;
             Settings.SetGlobalSkinTone(currentSkinTone);
             RebuildResolvedEntries();
-            searchIndex = new EmojiSearchIndex(allEmojis);
+            searchIndex = new EmojiSearchIndex(allEmojis, activityData.GetLearnedScores);
 
             var selectedCategoryIndex = Math.Max(0, categories.FindIndex(category => category.Key == currentCategory));
             categories = CreateCategories(allEmojis);
@@ -1031,7 +1030,8 @@ namespace EmojiPicker
             var continueSession = PickerSessionState.ContinuesAfter(gesture);
             var snapshot = CaptureViewSnapshot();
             Logger.Log($"CommitEmoji: gesture={gesture} continue={continueSession} '{emoji.Character}' -> target={App.PreviousForegroundWindow}");
-            AddToRecentEmojis(emoji);
+            RecordActivity(emoji);
+            ActivityNoticePanel.Visibility = Visibility.Collapsed;
             HideInsertionError();
             insertionInProgress = true;
             AnnounceStatus($"Sending {emoji.Name}.", busy: true);
@@ -1203,12 +1203,6 @@ namespace EmojiPicker
 
         private void PersistSessionState()
         {
-            if (recentsDirty)
-            {
-                SaveRecentEmojis();
-                recentsDirty = false;
-            }
-
             if (persistUserActivity && IsLoaded && Left > -30000)
             {
                 Settings.SetPickerSize(ActualWidth > 0 ? ActualWidth : Width, ActualHeight > 0 ? ActualHeight : Height);
@@ -1254,79 +1248,65 @@ namespace EmojiPicker
             DismissPicker(PickerDismissReason.ExternalPointer);
         }
 
-        private void AddToRecentEmojis(Emoji emoji)
+        private void RecordActivity(Emoji emoji)
         {
-            // Remove if already exists
-            recentEmojis.RemoveAll(item => item.Character == emoji.Character);
-
-            // Add to beginning
-            recentEmojis.Insert(0, emoji);
-
-            // Keep only the most recent MaxRecentEmojis
-            if (recentEmojis.Count > MaxRecentEmojis)
-            {
-                recentEmojis.RemoveAt(recentEmojis.Count - 1);
-            }
-
-            recentsDirty = true;
-            Logger.Log($"AddToRecent '{emoji.Character}' -> recents now {recentEmojis.Count}");
+            // Selection is Activity Data regardless of the later insertion
+            // outcome. Emoji.Id is the stable base entry; the resolved ID and
+            // Unicode sequence preserve the exact chosen skin-tone/override.
+            activityData.RecordSelection(emoji.Id, emoji.ResolvedEntryId, emoji.Character);
+            RefreshRecentEmojis();
+            Logger.Log($"RecordActivity -> recents now {recentEmojis.Count}");
         }
 
-        private void LoadRecentEmojis()
+        private void RefreshRecentEmojis()
         {
-            try
+            recentEmojis = activityData.RecentEntries
+                .Select(saved => baselineEmojis.FirstOrDefault(entry =>
+                    string.Equals(entry.Id, saved.ResolvedEntryId, StringComparison.Ordinal) &&
+                    string.Equals(entry.Character, saved.UnicodeSequence, StringComparison.Ordinal)))
+                .OfType<Emoji>()
+                .Select(entry => variantCatalog!.RestoreResolved(entry).ToPresentation())
+                .ToList();
+        }
+
+        private void ShowActivityRecoveryNotice()
+        {
+            if (activityData.RecoveryNotices.Count == 0)
             {
-                if (!File.Exists(RecentEmojisFile))
-                {
-                    return;
-                }
-
-                var characters = JsonSerializer.Deserialize<List<string>>(File.ReadAllText(RecentEmojisFile));
-                if (characters == null)
-                {
-                    return;
-                }
-
-                recentEmojis = characters
-                    .Distinct() // a corrupt/legacy file could contain duplicates
-                    .Select(character => baselineEmojis.FirstOrDefault(item => item.Character == character))
-                    .OfType<Emoji>()
-                    .Select(entry => variantCatalog!.RestoreResolved(entry).ToPresentation())
-                    .Take(MaxRecentEmojis)
-                    .ToList();
+                return;
             }
-            catch (Exception)
+
+            var thai = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "th";
+            ActivityNoticeText.Text = thai
+                ? "ข้อมูลกิจกรรมบางส่วนอ่านไม่ได้ ระบบสำรองไฟล์เดิมและรีเซ็ตเฉพาะส่วนนั้นแล้ว"
+                : "Some activity data was unreadable. The original was backed up and only that part was reset.";
+            ActivityNoticePanel.Visibility = Visibility.Visible;
+        }
+
+        internal void ClearRecentActivity()
+        {
+            activityData.ClearRecent();
+            RefreshRecentEmojis();
+            if (currentCategory == RecentCategoryKey && string.IsNullOrWhiteSpace(SearchBox.Text))
             {
-                // A corrupt or unreadable recents file should never stop the app from starting
-                recentEmojis = new List<Emoji>();
+                LoadCategory(RecentCategoryKey);
             }
         }
 
-        private void SaveRecentEmojis()
-        {
-            try
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(RecentEmojisFile)!);
-                var json = JsonSerializer.Serialize(recentEmojis.Select(item => item.Character));
+        internal void ResetLearnedRanking() => activityData.ResetLearnedRanking();
 
-                // Write to a temp file then atomically swap it in, so a crash or
-                // power loss mid-write can't leave a truncated recent.json
-                var tmp = RecentEmojisFile + ".tmp";
-                File.WriteAllText(tmp, json);
-                if (File.Exists(RecentEmojisFile))
-                {
-                    File.Replace(tmp, RecentEmojisFile, null);
-                }
-                else
-                {
-                    File.Move(tmp, RecentEmojisFile);
-                }
-            }
-            catch (Exception)
+        internal void ClearAllActivity()
+        {
+            activityData.ClearAllActivity();
+            RefreshRecentEmojis();
+            if (currentCategory == RecentCategoryKey && string.IsNullOrWhiteSpace(SearchBox.Text))
             {
-                // Losing the recents list is not worth interrupting the user for
+                LoadCategory(RecentCategoryKey);
             }
         }
+
+        private void ActivityNoticeDismissButton_Click(object sender, RoutedEventArgs e) =>
+            ActivityNoticePanel.Visibility = Visibility.Collapsed;
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {

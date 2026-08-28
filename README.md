@@ -26,6 +26,7 @@ Modern Emoji Picker คือโครงการสร้าง Emoji Picker �
 - [การส่ง Emoji ไปยังแอปเป้าหมายอย่างปลอดภัย](./docs/safe-insertion.md)
 - [การค้นหาสองภาษาและ Hover Preview](./docs/bilingual-search-hover-preview.md)
 - [สีผิวเริ่มต้นและ Variant Override](./docs/emoji-skin-tone-and-variants.md)
+- [Recent และ Learned Ranking บนเครื่อง](./docs/local-activity-data.md)
 
 ## โครง repository
 

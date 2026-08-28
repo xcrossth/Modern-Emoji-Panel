@@ -20,5 +20,8 @@
     <SolidColorBrush x:Key="PlaceholderBorderBrush" Color="#9A9A9A"/>
     <SolidColorBrush x:Key="PlaceholderForegroundBrush" Color="#666666"/>
     <SolidColorBrush x:Key="RepairBackgroundBrush" Color="#FFF8E1"/>
+    <SolidColorBrush x:Key="ErrorBackgroundBrush" Color="#FDE7E9"/>
+    <SolidColorBrush x:Key="ErrorBorderBrush" Color="#D13438"/>
+    <SolidColorBrush x:Key="ErrorForegroundBrush" Color="#7A0C10"/>
 
 </ResourceDictionary>

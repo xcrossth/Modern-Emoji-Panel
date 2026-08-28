@@ -52,6 +52,11 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Bilingual search and preview verification from the clean checkout failed"
     }
+
+    & (Join-Path $checkoutPath "scripts\verify-emoji-variants.ps1") -SkipBuild
+    if ($LASTEXITCODE -ne 0) {
+        throw "Emoji variant verification from the clean checkout failed"
+    }
 }
 finally {
     Pop-Location

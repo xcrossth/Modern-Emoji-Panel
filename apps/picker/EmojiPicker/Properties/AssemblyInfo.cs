@@ -1,4 +1,7 @@
 using System.Windows;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("EmojiPicker.DomainTests")]
 
 // WPF-specific assembly attributes
 [assembly: ThemeInfo(

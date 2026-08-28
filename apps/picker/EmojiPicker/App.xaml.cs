@@ -51,6 +51,30 @@ namespace EmojiPicker
         {
             base.OnStartup(e);
 
+            var qualificationSmokeIndex = Array.FindIndex(
+                e.Args,
+                argument => string.Equals(argument, "--qualification-smoke", StringComparison.Ordinal));
+            if (qualificationSmokeIndex >= 0)
+            {
+                var reportPath = qualificationSmokeIndex + 1 < e.Args.Length
+                    ? e.Args[qualificationSmokeIndex + 1]
+                    : null;
+                var holdMilliseconds = qualificationSmokeIndex + 2 < e.Args.Length &&
+                    int.TryParse(e.Args[qualificationSmokeIndex + 2], out var parsedHold)
+                        ? Math.Clamp(parsedHold, 0, 10_000)
+                        : 0;
+                if (string.IsNullOrWhiteSpace(reportPath))
+                {
+                    Shutdown(2);
+                }
+                else
+                {
+                    RunQualificationSmoke(reportPath, holdMilliseconds);
+                }
+
+                return;
+            }
+
             var searchPreviewSmokeIndex = Array.FindIndex(
                 e.Args,
                 argument => string.Equals(argument, "--search-preview-smoke", StringComparison.Ordinal));
@@ -206,6 +230,30 @@ namespace EmojiPicker
             showGraceAnchorUtc = DateTime.UtcNow;
             singleInstance!.ShowRequested += OnShowRequested;
             singleInstance.StartListening();
+        }
+
+        private void RunQualificationSmoke(string reportPath, int holdMilliseconds)
+        {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            ThemeManager.Initialize();
+
+            var smokeWindow = new MainWindow(loadUserActivity: false);
+            smokeWindow.PreWarm();
+            Dispatcher.BeginInvoke(
+                new Action(async () =>
+                {
+                    var exitCode = await QualificationSmoke.RunAsync(smokeWindow, reportPath);
+                    if (holdMilliseconds > 0)
+                    {
+                        await Task.Delay(holdMilliseconds);
+                    }
+
+                    smokeWindow.PrepareForProcessExit();
+                    smokeWindow.Close();
+                    ThemeManager.Shutdown();
+                    Shutdown(exitCode);
+                }),
+                DispatcherPriority.ContextIdle);
         }
 
         private void RunFoundationSmoke()

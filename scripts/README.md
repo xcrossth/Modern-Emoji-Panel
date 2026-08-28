@@ -135,3 +135,11 @@ pwsh scripts/verify-settings-privacy.ps1
 ```
 
 ตรวจ Settings model เดียว, hotkey/autostart/ภาษา/ธีม/สีผิว/Insertion Mode, Advanced Paste delay และ reset, Welcome ครั้งแรก, คำสั่งล้าง Activity Data, diagnostic logging แบบ opt-in ที่ไม่เก็บเนื้อหาผู้ใช้ และการไม่มี runtime network, telemetry, sync หรือ upload code รายละเอียดอยู่ที่ [Settings, Welcome และความเป็นส่วนตัว](../docs/settings-welcome-and-privacy.md)
+
+## รับรอง automated qualification
+
+```powershell
+pwsh scripts/verify-qualification.ps1 -OutputPath docs/qualification/results/automated-win10-19045.json
+```
+
+คำสั่งนี้รัน regression suite ที่สร้างไว้ใน Ticket 01–12 แล้ววัด warm open-to-render proxy, search, virtualized scroll, working set และ decode/cache จาก self-contained Release process ตรวจ performance budgets, accessibility/High Contrast wiring, ขนาด publish และเฝ้าดู TCP/UDP socket ของ process ระหว่าง smoke จริง ผลที่ได้ไม่แทน manual matrix, packet capture, hotkey-to-visible จริง หรือผลบน Windows 11 ดูขอบเขตและแบบบันทึกผลที่ [การรับรองคุณภาพ](../docs/qualification/README.md)

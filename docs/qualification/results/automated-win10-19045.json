@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "measuredAtUtc": "2026-08-28T15:03:00.5074543+07:00",
+  "runtime": {
+    "framework": "10.0.11",
+    "operatingSystem": "Microsoft Windows NT 10.0.19045.0",
+    "processArchitecture": "X64"
+  },
+  "modern": {
+    "warmOpenToRenderProxy": {
+      "samples": 20,
+      "medianMilliseconds": 7.8445,
+      "p95Milliseconds": 9.6573,
+      "maximumMilliseconds": 87.4384
+    },
+    "search": {
+      "samples": 1000,
+      "medianMilliseconds": 0.9704,
+      "p95Milliseconds": 1.318,
+      "maximumMilliseconds": 29.4841
+    },
+    "virtualizedScrollFrame": {
+      "samples": 100,
+      "medianMilliseconds": 11.8616,
+      "p95Milliseconds": 41.3767,
+      "maximumMilliseconds": 48.4778
+    },
+    "idleWorkingSetMiB": 12.7578125,
+    "gridDecode": {
+      "samples": 128,
+      "medianMilliseconds": 0.3906,
+      "p95Milliseconds": 0.679,
+      "maximumMilliseconds": 35.6707
+    },
+    "cacheHit": {
+      "samples": 128,
+      "medianMilliseconds": 0.0003,
+      "p95Milliseconds": 0.0007,
+      "maximumMilliseconds": 0.0009
+    },
+    "cachedImages": 256
+  },
+  "budgets": {
+    "warmOpenP95Milliseconds": 100,
+    "searchP95Milliseconds": 10,
+    "scrollP95Milliseconds": 60,
+    "scrollMaximumMilliseconds": 150,
+    "idleWorkingSetMiB": 128,
+    "gridDecodeP95Milliseconds": 15,
+    "cacheHitP95Milliseconds": 2,
+    "maximumCachedImages": 256
+  },
+  "checks": {
+    "warmOpenProxyP95": true,
+    "searchP95": true,
+    "scrollP95": true,
+    "scrollMaximum": true,
+    "idleWorkingSet": true,
+    "gridDecodeP95": true,
+    "cacheHitP95": true,
+    "cacheBound": true,
+    "accessibleName": true,
+    "dpiDecodeWidths": true,
+    "highContrastThemeResolution": true
+  },
+  "passed": true,
+  "limitations": [
+    "warmOpenToRenderProxy bypasses the global keyboard hook, target capture and foreground activation",
+    "scroll timing measures dispatcher render-priority completion; it is not GPU frame telemetry",
+    "idle working set is one post-trim sample from this qualification process"
+  ],
+  "qualificationHost": {
+    "windowsProductName": "Windows 10 Enterprise N",
+    "windowsVersion": "2009",
+    "osBuildNumber": "19045",
+    "osArchitecture": "64-bit",
+    "processor": "Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz",
+    "totalPhysicalMemoryBytes": 85785321472,
+    "dotnetSdk": "10.0.400",
+    "gitCommit": "bd0f261a9c171542de9ec534558aa84f315f29fd"
+  },
+  "runtimeNetwork": {
+    "staticRuntimeSourceScanPassed": true,
+    "socketMonitor": "Get-NetTCPConnection + Get-NetUDPEndpoint",
+    "sampleIntervalMilliseconds": 50,
+    "samples": 29,
+    "observedSocketCount": 0,
+    "observedSockets": [],
+    "passed": true,
+    "interpretation": "ไม่พบ TCP connection หรือ UDP endpoint ของ process ระหว่าง qualification smoke; ผลนี้ไม่ใช่ packet-capture certification"
+  },
+  "packages": {
+    "rawNotoAssetBytes": 127309639,
+    "selfContainedPublishBytes": 312784054,
+    "selfContainedPublishBudgetBytes": 367001600,
+    "selfContainedPublishPassed": true,
+    "portableZipBytes": null,
+    "installerBytes": null
+  },
+  "upstreamBaseline": {
+    "source": "apps/picker/CHANGELOG.md (imported Classic history)",
+    "reportedWarmOpenApproxMilliseconds": 35,
+    "reportedSteadyStateOpenApproxMilliseconds": 40,
+    "reportedIdleWorkingSetApproxMiB": 20,
+    "searchLatency": null,
+    "scrollStalls": null,
+    "decodeCache": null,
+    "packageSizes": null
+  },
+  "automatedRegressionSuite": {
+    "runInThisInvocation": true,
+    "scopes": [
+      "generator",
+      "search tiers",
+      "ranking",
+      "variants",
+      "Recent",
+      "persistence recovery",
+      "queue",
+      "target validation",
+      "insertion modes",
+      "clipboard rules",
+      "settings/privacy"
+    ],
+    "releasePreconditions": "รอ Ticket 14: release script, installer และ portable ZIP ยังไม่มีใน commit นี้"
+  },
+  "unresolvedQualification": [
+    "warm hotkey-to-visible จริงยังต้องวัดด้วย global hotkey และ foreground app จริง",
+    "upstream ไม่มีตัวเลข search, scroll, decode/cache และ package ที่ทำซ้ำได้ใน repository",
+    "installer และ portable ZIP size รอ Ticket 14",
+    "manual app/OS/accessibility/DPI/input/clipboard matrices ยังต้องทดสอบตาม docs/qualification/manual-matrices.md"
+  ]
+}

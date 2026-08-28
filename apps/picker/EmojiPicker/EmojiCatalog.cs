@@ -37,6 +37,8 @@ internal static class EmojiCatalog
                 var asset = element.GetProperty("asset");
                 var englishName = english.GetProperty("shortName").GetString() ?? string.Empty;
                 var thaiName = thai.GetProperty("shortName").GetString() ?? englishName;
+                var englishKeywords = ReadKeywords(english);
+                var thaiKeywords = ReadKeywords(thai);
                 var localizedName = CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "th"
                     ? thaiName
                     : englishName;
@@ -49,17 +51,22 @@ internal static class EmojiCatalog
                     thaiName: thaiName,
                     category: element.GetProperty("group").GetString() ?? string.Empty,
                     canonicalSequence: element.GetProperty("canonicalSequence").GetString() ?? string.Empty,
-                    keywords: JoinSearchTerms(english, thai),
+                    englishKeywords: englishKeywords,
+                    thaiKeywords: thaiKeywords,
                     emojiVersion: element.GetProperty("emojiVersion").GetString() ?? string.Empty,
                     assetPath: asset.GetProperty("png128").GetString() ?? string.Empty,
+                    previewAssetPath: asset.GetProperty("png512").GetString() ?? string.Empty,
                     order: element.GetProperty("order").GetInt32(),
                     popularity: 99));
             }
 
             var canonicalAssetDirectory = ResolveBundledPath(assetRoot, "vendor/noto-emoji/v2.051/png/128");
+            var previewAssetDirectory = ResolveBundledPath(assetRoot, "vendor/noto-emoji/v2.051/png/512");
             var regionFlagDirectory = ResolveBundledPath(assetRoot, "vendor/noto-emoji/v2.051/third_party/region-flags/png");
             var assetSetAvailable = Directory.Exists(canonicalAssetDirectory) &&
                 Directory.EnumerateFiles(canonicalAssetDirectory, "*.png").Any() &&
+                Directory.Exists(previewAssetDirectory) &&
+                Directory.EnumerateFiles(previewAssetDirectory, "*.png").Any() &&
                 Directory.Exists(regionFlagDirectory) &&
                 Directory.EnumerateFiles(regionFlagDirectory, "*.png").Any();
 
@@ -81,27 +88,14 @@ internal static class EmojiCatalog
         return Path.GetFullPath(Path.Combine(assetRoot, normalized));
     }
 
-    private static string JoinSearchTerms(JsonElement english, JsonElement thai)
+    private static IReadOnlyList<string> ReadKeywords(JsonElement language)
     {
-        var terms = new List<string>();
-        AppendLanguage(english, terms);
-        AppendLanguage(thai, terms);
-        return string.Join(' ', terms.Distinct(StringComparer.OrdinalIgnoreCase));
-    }
-
-    private static void AppendLanguage(JsonElement language, List<string> terms)
-    {
-        if (language.GetProperty("shortName").GetString() is { Length: > 0 } shortName)
-        {
-            terms.Add(shortName);
-        }
-
-        foreach (var keyword in language.GetProperty("keywords").EnumerateArray())
-        {
-            if (keyword.GetString() is { Length: > 0 } value)
-            {
-                terms.Add(value);
-            }
-        }
+        return language.GetProperty("keywords")
+            .EnumerateArray()
+            .Select(keyword => keyword.GetString())
+            .OfType<string>()
+            .Where(keyword => keyword.Length > 0)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToArray();
     }
 }

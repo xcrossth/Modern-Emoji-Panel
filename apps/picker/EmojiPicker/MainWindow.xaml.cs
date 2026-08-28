@@ -27,6 +27,7 @@ namespace EmojiPicker
         // How long to wait after the last keystroke before filtering, so typing
         // stays smooth instead of re-rendering the grid on every character
         private static readonly TimeSpan SearchDebounce = TimeSpan.FromMilliseconds(120);
+        internal static readonly TimeSpan HoverPreviewDelay = TimeSpan.FromMilliseconds(400);
 
         private static readonly string RecentEmojisFile = Path.Combine(
             ProductIdentity.DataDirectory,
@@ -35,6 +36,8 @@ namespace EmojiPicker
         private const string DefaultCategoryKey = "Smileys & Emotion";
 
         private readonly DispatcherTimer searchTimer;
+        private readonly DispatcherTimer previewTimer;
+        private readonly EmojiSearchIndex searchIndex;
         private List<Emoji> allEmojis = new List<Emoji>();
         private List<Emoji> recentEmojis = new List<Emoji>();
         private List<EmojiCategory> categories = new List<EmojiCategory>();
@@ -44,6 +47,9 @@ namespace EmojiPicker
         private bool recentsDirty;
         private bool allowProcessExit;
         private Emoji? failedInsertionEmoji;
+        private Emoji? pendingPreviewEmoji;
+        private ListBoxItem? pendingPreviewTarget;
+        private PreviewOrigin previewOrigin;
 
         public MainWindow()
             : this(loadUserActivity: true)
@@ -59,6 +65,7 @@ namespace EmojiPicker
         {
             InitializeComponent();
             InitializeEmojis(catalogOverride);
+            searchIndex = new EmojiSearchIndex(allEmojis);
             if (loadUserActivity)
             {
                 LoadRecentEmojis();
@@ -66,6 +73,8 @@ namespace EmojiPicker
 
             searchTimer = new DispatcherTimer { Interval = SearchDebounce };
             searchTimer.Tick += (_, _) => RunSearch();
+            previewTimer = new DispatcherTimer { Interval = HoverPreviewDelay };
+            previewTimer.Tick += (_, _) => OpenPendingHoverPreview();
 
             CategoryTabs.ItemsSource = categories;
             CategoryTabs.SelectedIndex = categories.FindIndex(category => category.Key == currentCategory);
@@ -80,6 +89,11 @@ namespace EmojiPicker
         internal bool InsertionErrorVisible => InsertionErrorPanel.Visibility == Visibility.Visible;
         internal bool ExplicitCopyAvailable => ExplicitCopyButton.IsEnabled && ExplicitCopyButton.Visibility == Visibility.Visible;
         internal void ShowInsertionFailureForSmoke(Emoji emoji, string message) => ShowInsertionError(emoji, message);
+        internal bool IsPreviewOpen => EmojiPreviewPopup.IsOpen;
+        internal string PreviewLocalizedNameText => PreviewLocalizedName.Text;
+        internal string PreviewEnglishNameText => PreviewEnglishName.Text;
+        internal string PreviewVersionText => PreviewEmojiVersion.Text;
+        internal string PreviewAssetPath => PreviewArtwork.AssetPath;
 
         // The items panel hosting the emoji cells; cached after the first lookup.
         // Its ActualWidth is the viewport content width (scrollbar excluded),
@@ -174,6 +188,7 @@ namespace EmojiPicker
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             isShowing = true;
 
+            HidePreview();
             SearchBox.Clear();
 
             // Open on Recent when there is history (like the Windows 10 picker),
@@ -451,6 +466,7 @@ namespace EmojiPicker
 
         private void ShowEmojis(List<Emoji> emojis)
         {
+            HidePreview();
             EmojiGrid.ItemsSource = emojis;
             EmojiGrid.SelectedIndex = emojis.Count > 0 ? 0 : -1;
             if (EmojiGrid.SelectedItem != null)
@@ -507,6 +523,7 @@ namespace EmojiPicker
             }
 
             searchTimer.Stop();
+            HidePreview();
             if (string.IsNullOrWhiteSpace(SearchBox.Text))
             {
                 // Clearing the box should restore the category instantly
@@ -527,72 +544,28 @@ namespace EmojiPicker
                 return;
             }
 
-            // Trim so an accidental trailing space doesn't zero out the results
-            var searchText = SearchBox.Text.Trim();
+            // Normalize in the immutable bilingual index so UI locale never
+            // changes which English or Thai CLDR metadata can be discovered.
+            var searchText = SearchBox.Text;
             if (searchText.Length == 0)
             {
                 return;
             }
 
-            // Rank matches by quality, then by real-world usage:
-            //  - word-start matches (name or keyword) come before mid-word ones
-            //  - within that, order by Unicode usage-frequency tier, with
-            //    keyword-only matches handicapped one tier so a hidden tag needs
-            //    to be genuinely more popular to outrank a visible name match
-            //    (e.g. "spl": 💦's "splash" keyword beats 🖐️ "…fingers splayed",
-            //    but "whi": ⚪ "white circle" still beats 💟's "white" tag)
-            var scored = new List<(Emoji Emoji, int Tier, int Score, bool IsName, int Index)>();
-            for (var i = 0; i < allEmojis.Count; i++)
-            {
-                var emoji = allEmojis[i];
-                var nameWordStart = HasWordStartMatch(emoji.Name, searchText);
-                var keywordWordStart = HasWordStartMatch(emoji.Keywords, searchText);
-                var nameContains = nameWordStart || emoji.Name.Contains(searchText, StringComparison.OrdinalIgnoreCase);
-                var keywordContains = keywordWordStart || emoji.Keywords.Contains(searchText, StringComparison.OrdinalIgnoreCase);
-
-                if (!nameContains && !keywordContains)
-                {
-                    continue;
-                }
-
-                var tier = nameWordStart || keywordWordStart ? 0 : 1;
-                var isName = tier == 0 ? nameWordStart : nameContains;
-                var score = emoji.Popularity + (isName ? 0 : 1);
-                scored.Add((emoji, tier, score, isName, i));
-            }
-
-            var filteredEmojis = scored
-                .OrderBy(match => match.Tier)
-                .ThenBy(match => match.Score)
-                .ThenByDescending(match => match.IsName)
-                .ThenBy(match => match.Index)
+            var matches = searchIndex.Search(searchText);
+            var filteredEmojis = matches
                 .Select(match => match.Emoji)
                 .ToList();
 
-            Logger.Log($"Search '{searchText}' -> {scored.Count(match => match.Tier == 0)} word-start + " +
-                $"{scored.Count(match => match.Tier == 1)} substring; top: " +
-                string.Join(", ", filteredEmojis.Take(3).Select(emoji => emoji.Name)));
+            Logger.Log($"Search query -> exact={matches.Count(match => match.Tier == EmojiMatchTier.ExactShortName)}, " +
+                $"prefix={matches.Count(match => match.Tier == EmojiMatchTier.ShortNameTermPrefix)}, " +
+                $"keyword={matches.Count(match => match.Tier == EmojiMatchTier.Keyword)}, " +
+                $"substring={matches.Count(match => match.Tier == EmojiMatchTier.Substring)}");
             CategoryHeader.Text = SearchHeader;
             ShowEmojis(filteredEmojis);
         }
 
-        // True when the query appears at the start of any word (words separated
-        // by spaces or hyphens, as in Unicode names and emojibase tags)
-        private static bool HasWordStartMatch(string text, string query)
-        {
-            var index = text.IndexOf(query, StringComparison.OrdinalIgnoreCase);
-            while (index >= 0)
-            {
-                if (index == 0 || text[index - 1] == ' ' || text[index - 1] == '-')
-                {
-                    return true;
-                }
-
-                index = text.IndexOf(query, index + 1, StringComparison.OrdinalIgnoreCase);
-            }
-
-            return false;
-        }
+        internal IReadOnlyList<EmojiSearchMatch> SearchForSmoke(string query) => searchIndex.Search(query);
 
         private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
         {
@@ -601,6 +574,30 @@ namespace EmojiPicker
             // instead of hijacking them for grid nav / emoji commit.
             if (e.Key == Key.ImeProcessed || e.Key == Key.DeadCharProcessed)
             {
+                return;
+            }
+
+            if (e.Key == Key.Escape && (EmojiPreviewPopup.IsOpen || previewTimer.IsEnabled))
+            {
+                HidePreview();
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.F1)
+            {
+                OpenKeyboardPreview();
+                e.Handled = true;
+                return;
+            }
+
+            if (e.Key == Key.F && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                HidePreview();
+                SearchBox.Focus();
+                Keyboard.Focus(SearchBox);
+                SearchBox.SelectAll();
+                e.Handled = true;
                 return;
             }
 
@@ -669,6 +666,7 @@ namespace EmojiPicker
                 return;
             }
 
+            HidePreview();
             var index = EmojiGrid.SelectedIndex < 0 ? 0 : EmojiGrid.SelectedIndex + delta;
             EmojiGrid.SelectedIndex = Math.Clamp(index, 0, EmojiGrid.Items.Count - 1);
             EmojiGrid.ScrollIntoView(EmojiGrid.SelectedItem);
@@ -692,6 +690,105 @@ namespace EmojiPicker
             }
         }
 
+        private void EmojiItem_MouseEnter(object sender, MouseEventArgs e)
+        {
+            if (sender is not ListBoxItem { DataContext: Emoji emoji } target)
+            {
+                return;
+            }
+
+            HidePreview();
+            pendingPreviewEmoji = emoji;
+            pendingPreviewTarget = target;
+            previewTimer.Start();
+        }
+
+        private void EmojiItem_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (sender == pendingPreviewTarget ||
+                (previewOrigin == PreviewOrigin.Pointer && sender == EmojiPreviewPopup.PlacementTarget))
+            {
+                HidePreview();
+            }
+        }
+
+        private void OpenPendingHoverPreview()
+        {
+            previewTimer.Stop();
+            if (pendingPreviewEmoji == null || pendingPreviewTarget == null || !pendingPreviewTarget.IsMouseOver)
+            {
+                pendingPreviewEmoji = null;
+                pendingPreviewTarget = null;
+                return;
+            }
+
+            OpenPreview(pendingPreviewEmoji, pendingPreviewTarget, PreviewOrigin.Pointer);
+        }
+
+        private void OpenKeyboardPreview()
+        {
+            var emoji = Keyboard.FocusedElement is ListBoxItem { DataContext: Emoji focused }
+                ? focused
+                : EmojiGrid.SelectedItem as Emoji;
+            if (emoji == null)
+            {
+                return;
+            }
+
+            EmojiGrid.ScrollIntoView(emoji);
+            EmojiGrid.UpdateLayout();
+            var target = EmojiGrid.ItemContainerGenerator.ContainerFromItem(emoji) as ListBoxItem;
+            if (target != null)
+            {
+                OpenPreview(emoji, target, PreviewOrigin.Keyboard);
+            }
+        }
+
+        private void OpenPreview(Emoji emoji, ListBoxItem target, PreviewOrigin origin)
+        {
+            previewTimer.Stop();
+            pendingPreviewEmoji = null;
+            pendingPreviewTarget = null;
+            previewOrigin = origin;
+
+            EmojiPreviewPopup.IsOpen = false;
+            EmojiPreviewPopup.PlacementTarget = target;
+            PreviewArtwork.AssetPath = emoji.PreviewAssetPath;
+            PreviewLocalizedName.Text = emoji.Name;
+            PreviewEnglishName.Text = emoji.EnglishName;
+            PreviewEnglishName.Visibility = string.Equals(
+                emoji.Name,
+                emoji.EnglishName,
+                StringComparison.CurrentCultureIgnoreCase)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+            PreviewEmojiVersion.Text = $"Emoji {emoji.EmojiVersion}";
+            System.Windows.Automation.AutomationProperties.SetName(
+                EmojiPreviewPopup.Child,
+                $"{emoji.Name}, Emoji {emoji.EmojiVersion}");
+            EmojiPreviewPopup.IsOpen = true;
+        }
+
+        private void HidePreview()
+        {
+            previewTimer?.Stop();
+            pendingPreviewEmoji = null;
+            pendingPreviewTarget = null;
+            previewOrigin = PreviewOrigin.None;
+            if (EmojiPreviewPopup != null)
+            {
+                EmojiPreviewPopup.IsOpen = false;
+            }
+        }
+
+        internal bool OpenSelectedPreviewForSmoke()
+        {
+            OpenKeyboardPreview();
+            return EmojiPreviewPopup.IsOpen;
+        }
+
+        internal void ClosePreviewForSmoke() => HidePreview();
+
         private void TabItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {
             // Select the category on mouse-up (like emoji commit), which lands even
@@ -709,6 +806,7 @@ namespace EmojiPicker
 
         private void CommitEmoji(Emoji emoji)
         {
+            HidePreview();
             Logger.Log($"CommitEmoji: '{emoji.Character}' -> target={App.PreviousForegroundWindow}");
             AddToRecentEmojis(emoji);
             HideInsertionError();
@@ -788,6 +886,7 @@ namespace EmojiPicker
         public void DismissPicker()
         {
             searchTimer.Stop(); // no point filtering a hidden grid
+            HidePreview();
             if (recentsDirty)
             {
                 SaveRecentEmojis();
@@ -923,6 +1022,12 @@ namespace EmojiPicker
 
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            if (e.Handled)
+            {
+                base.OnKeyDown(e);
+                return;
+            }
+
             if (e.Key == Key.Escape)
             {
                 // First Esc clears an active search (back to the category);
@@ -941,6 +1046,13 @@ namespace EmojiPicker
             base.OnKeyDown(e);
         }
 
+        private enum PreviewOrigin
+        {
+            None,
+            Pointer,
+            Keyboard,
+        }
+
     }
 
     public class Emoji
@@ -954,9 +1066,13 @@ namespace EmojiPicker
         public string CanonicalSequence { get; }
         public string EmojiVersion { get; }
         public string AssetPath { get; }
+        public string PreviewAssetPath { get; }
         public int Order { get; }
 
-        /// <summary>Extra search terms (emojibase tags), e.g. "splash" for 💦.</summary>
+        public IReadOnlyList<string> EnglishKeywords { get; }
+        public IReadOnlyList<string> ThaiKeywords { get; }
+
+        /// <summary>Combined CLDR search terms retained for diagnostics and compatibility.</summary>
         public string Keywords { get; }
 
         /// <summary>Usage-popularity tier from Unicode's frequency data
@@ -971,9 +1087,11 @@ namespace EmojiPicker
             string thaiName,
             string category,
             string canonicalSequence,
-            string keywords,
+            IReadOnlyList<string> englishKeywords,
+            IReadOnlyList<string> thaiKeywords,
             string emojiVersion,
             string assetPath,
+            string previewAssetPath,
             int order,
             int popularity)
         {
@@ -984,9 +1102,12 @@ namespace EmojiPicker
             ThaiName = thaiName;
             Category = category;
             CanonicalSequence = canonicalSequence;
-            Keywords = keywords;
+            EnglishKeywords = englishKeywords;
+            ThaiKeywords = thaiKeywords;
+            Keywords = string.Join(' ', englishKeywords.Concat(thaiKeywords));
             EmojiVersion = emojiVersion;
             AssetPath = assetPath;
+            PreviewAssetPath = previewAssetPath;
             Order = order;
             Popularity = popularity;
         }

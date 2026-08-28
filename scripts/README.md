@@ -18,6 +18,14 @@
 
 คำสั่งนี้ตรวจ subtree ancestry/tree hash, SDK feature band, target framework, architecture, central package versions, lock file, active workflow, build, self-contained publish, WPF browse/search smoke และรูปแบบโค้ด smoke path ไม่ใช้ mutex, global hook, tray หรือ Activity Data จึงรันร่วมกับ Classic Emoji Picker ที่ติดตั้งอยู่ได้
 
+## ตรวจ product identity และ lifecycle
+
+```powershell
+.\scripts\verify-product-identity.ps1
+```
+
+คำสั่งนี้ตรวจ executable/assembly, mutex, named event, Run value, data directory, Inno AppId, WiX UpgradeCode, artifact names และการไม่ reuse icon ของ Classic พร้อมรัน smoke สำหรับ secondary-launch signal กับ Classic Conflict seam โดยไม่ติดตั้ง global hook ไม่เปิด tray และไม่อ่านหรือเขียนข้อมูลผู้ใช้
+
 หลัง commit แล้ว สามารถพิสูจน์การ build จาก checkout ใหม่ที่ไม่มีไฟล์ build ค้างได้ด้วย:
 
     .\scripts\test-clean-checkout.ps1

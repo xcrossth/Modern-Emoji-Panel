@@ -19,16 +19,14 @@ namespace EmojiPicker
     }
 
     /// <summary>
-    /// User settings persisted as JSON in %APPDATA%\ClassicEmojiPicker\settings.json,
+    /// User settings persisted as JSON in %APPDATA%\ModernEmojiPicker\settings.json,
     /// alongside recent.json and the debug log. Missing or unreadable settings fall
     /// back to defaults; a default file is written on first run so it is easy to find
     /// and edit by hand.
     /// </summary>
     internal sealed class Settings
     {
-        private static readonly string Dir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "ClassicEmojiPicker");
+        private static readonly string Dir = ProductIdentity.DataDirectory;
 
         private static readonly string FilePath = Path.Combine(Dir, "settings.json");
 

@@ -21,6 +21,7 @@ Modern Emoji Picker คือโครงการสร้าง Emoji Picker �
 - [Architecture Decision Records](./docs/adr/)
 - [ผลทดสอบ Noto PNG 128 เทียบ 512](./docs/research/asset-visual-spike/README.md)
 - [แหล่งข้อมูล Emoji Baseline](./docs/emoji-baseline-sources.md)
+- [การสร้าง Emoji Baseline](./docs/emoji-baseline-generator.md)
 
 ## โครง repository
 

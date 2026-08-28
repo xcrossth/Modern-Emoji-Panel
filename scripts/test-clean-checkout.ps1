@@ -77,6 +77,11 @@ try {
     if ($LASTEXITCODE -ne 0) {
         throw "Settings and privacy verification from the clean checkout failed"
     }
+
+    & (Join-Path $checkoutPath "scripts\verify-qualification.ps1") -SkipBuild -SkipRegressionSuite
+    if ($LASTEXITCODE -ne 0) {
+        throw "Qualification verification from the clean checkout failed"
+    }
 }
 finally {
     Pop-Location

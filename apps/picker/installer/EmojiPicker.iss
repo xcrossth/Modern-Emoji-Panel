@@ -1,4 +1,4 @@
-; Inno Setup script for Classic Emoji Picker
+; Inno Setup script for Modern Emoji Picker
 ;
 ; Two variants share this script:
 ;   Full (default) - expects a self-contained publish (dotnet publish -r win-x64
@@ -11,7 +11,7 @@
 ;
 ; Install modes: per-user is the default (no UAC). A startup dialog offers
 ; "install for all users" (elevates, installs to Program Files, HKLM Run key).
-; Command line for silent installs (Classic-EmojiPicker-v<ver>-setup-win-x64.exe):
+; Command line for silent installs (Modern-Emoji-Picker-v<ver>-setup-win-x64.exe):
 ;   per-user:  <setup>.exe /VERYSILENT /SUPPRESSMSGBOXES /CURRENTUSER /TASKS=startup
 ;   all-users: <setup>.exe /VERYSILENT /SUPPRESSMSGBOXES /ALLUSERS /TASKS=startup
 ;     (run from an elevated shell for unattended use; otherwise UAC prompts)
@@ -27,30 +27,30 @@
   #define PublishDir "..\EmojiPicker\bin\Release\net10.0-windows\win-x64\publish"
 #endif
 
-#define AppName "Classic Emoji Picker"
-#define AppExe "EmojiPicker.exe"
-#define AppPublisher "Platima"
-#define AppUrl "https://github.com/platima/Classic-EmojiPicker"
+#define AppName "Modern Emoji Picker"
+#define AppExe "ModernEmojiPicker.exe"
+#define AppPublisher "X CroSs"
+#define AppUrl "https://github.com/xcrossth/Modern-Emoji-Panel"
 
 [Setup]
-AppId={{B6C3E1A2-7F4D-4C9E-9B21-1E2A3C4D5E6F}
+AppId={{6AFB6AF4-F41A-412A-8749-9BF9FD673855}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppPublisher={#AppPublisher}
 AppSupportURL={#AppUrl}
-DefaultDirName={autopf}\Classic Emoji Picker
+DefaultDirName={autopf}\Modern Emoji Picker
 DefaultGroupName={#AppName}
 DisableProgramGroupPage=yes
 UninstallDisplayIcon={app}\{#AppExe}
 ; Just the name in Apps & Features; the version has its own column (otherwise
-; Inno's default shows "Classic Emoji Picker version x.y.z", duplicating it)
+; Inno's default shows "Modern Emoji Picker version x.y.z", duplicating it)
 UninstallDisplayName={#AppName}
 OutputDir=.\output
 ; Standardised artifact name: <product>-v<version>-<type>-<os>-<arch>
 #ifdef FrameworkDependent
-OutputBaseFilename=Classic-EmojiPicker-v{#AppVersion}-setup-lite-win-x64
+OutputBaseFilename=Modern-Emoji-Picker-v{#AppVersion}-setup-lite-win-x64
 #else
-OutputBaseFilename=Classic-EmojiPicker-v{#AppVersion}-setup-win-x64
+OutputBaseFilename=Modern-Emoji-Picker-v{#AppVersion}-setup-win-x64
 #endif
 Compression=lzma2
 SolidCompression=yes
@@ -66,7 +66,7 @@ WizardStyle=modern
 Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [Tasks]
-Name: "startup"; Description: "Start Classic Emoji Picker automatically when I sign in (recommended, needed for the Win+. shortcut)"; GroupDescription: "Startup:"
+Name: "startup"; Description: "Start Modern Emoji Picker automatically when I sign in (recommended, needed for the Win+. shortcut)"; GroupDescription: "Startup:"
 
 [Files]
 Source: "{#PublishDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
@@ -82,11 +82,11 @@ Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 ; HKCU, so both values can exist; the single-instance mutex makes the second
 ; logon start a no-op.
 Root: HKA; Subkey: "Software\Microsoft\Windows\CurrentVersion\Run"; \
-    ValueType: string; ValueName: "ClassicEmojiPicker"; ValueData: """{app}\{#AppExe}"""; \
+    ValueType: string; ValueName: "ModernEmojiPicker"; ValueData: """{app}\{#AppExe}"""; \
     Tasks: startup; Flags: uninsdeletevalue
 
 [Run]
-Filename: "{app}\{#AppExe}"; Description: "Launch Classic Emoji Picker now"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\{#AppExe}"; Description: "Launch Modern Emoji Picker now"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 ; Stop the resident app before removing files so the exe isn't locked
@@ -96,7 +96,7 @@ Filename: "{cmd}"; Parameters: "/C taskkill /IM {#AppExe} /F"; Flags: runhidden;
 const
   // Inno's uninstall registration for this AppId (per mode: HKLM for
   // all-users, HKCU for per-user)
-  UninstallRegKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{B6C3E1A2-7F4D-4C9E-9B21-1E2A3C4D5E6F}_is1';
+  UninstallRegKey = 'Software\Microsoft\Windows\CurrentVersion\Uninstall\{6AFB6AF4-F41A-412A-8749-9BF9FD673855}_is1';
   RunRegKey = 'Software\Microsoft\Windows\CurrentVersion\Run';
 
 #ifdef FrameworkDependent
@@ -154,7 +154,7 @@ begin
       + 'which was not found on this computer.' #13#10 #13#10
       + 'Open the Microsoft download page now? Install ".NET Desktop Runtime 10" '
       + 'from there, then run this setup again.' #13#10 #13#10
-      + '(Alternatively, download the full Classic Emoji Picker installer '
+      + '(Alternatively, download the full Modern Emoji Picker installer '
       + 'instead - it includes everything and needs no separate runtime.)',
       mbConfirmation, MB_YESNO) = IDYES then
     begin
@@ -171,7 +171,7 @@ begin
   begin
     if IsAdminInstallMode and RegKeyExists(HKCU, UninstallRegKey) then
     begin
-      if MsgBox('Classic Emoji Picker is already installed for the current user. '
+      if MsgBox('Modern Emoji Picker is already installed for the current user. '
         + 'Installing for all users as well would leave two copies.' #13#10 #13#10
         + 'Continue anyway? (Consider uninstalling the per-user copy first.)',
         mbConfirmation, MB_YESNO) = IDNO then
@@ -181,7 +181,7 @@ begin
     end
     else if (not IsAdminInstallMode) and RegKeyExists(HKLM, UninstallRegKey) then
     begin
-      if MsgBox('Classic Emoji Picker is already installed for all users. '
+      if MsgBox('Modern Emoji Picker is already installed for all users. '
         + 'Installing for the current user as well would leave two copies.' #13#10 #13#10
         + 'Continue anyway? (Consider uninstalling the all-users copy first.)',
         mbConfirmation, MB_YESNO) = IDNO then
@@ -199,6 +199,6 @@ begin
   // left stale (pointing at a deleted exe) - clean up this user's copy too
   if (CurUninstallStep = usPostUninstall) and IsAdminInstallMode then
   begin
-    RegDeleteValue(HKCU, RunRegKey, 'ClassicEmojiPicker');
+    RegDeleteValue(HKCU, RunRegKey, 'ModernEmojiPicker');
   end;
 end;

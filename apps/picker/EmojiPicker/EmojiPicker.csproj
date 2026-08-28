@@ -8,7 +8,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <ApplicationIcon>Resources\app.ico</ApplicationIcon>
+    <AssemblyName>ModernEmojiPicker</AssemblyName>
 
     <!-- Code Analysis -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -19,10 +19,12 @@
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
 
     <!-- Application Info -->
-    <AssemblyTitle>Classic Emoji Picker</AssemblyTitle>
-    <AssemblyDescription>Lightweight classic-style emoji picker for Windows</AssemblyDescription>
-    <AssemblyProduct>Classic Emoji Picker</AssemblyProduct>
-    <AssemblyCopyright>Copyright © Platima 2025-2026</AssemblyCopyright>
+    <AssemblyTitle>Modern Emoji Picker</AssemblyTitle>
+    <AssemblyDescription>Modern Unicode emoji picker for Windows</AssemblyDescription>
+    <AssemblyProduct>Modern Emoji Picker</AssemblyProduct>
+    <Authors>X CroSs</Authors>
+    <Company>X CroSs</Company>
+    <AssemblyCopyright>Copyright © X CroSs 2026</AssemblyCopyright>
     <AssemblyVersion>0.1.9.0</AssemblyVersion>
     <FileVersion>0.1.9.0</FileVersion>
     <Version>0.1.9</Version>
@@ -35,10 +37,9 @@
     <Using Remove="System.Windows.Forms" />
   </ItemGroup>
 
-  <!-- Embed the icon so it can be loaded at runtime for the tray via pack URI,
-       in addition to being the executable's icon (ApplicationIcon above) -->
   <ItemGroup>
-    <Resource Include="Resources\app.ico" />
+    <!-- Ticket 14 will add new branded artwork. The imported Classic icon is
+         intentionally not embedded or assigned to the Modern executable. -->
     <!-- Emoji search keywords/tags keyed by emoji; union of emojibase (MIT,
          annotations derived from Unicode CLDR) and emojilib (MIT, community
          associations like "laugh" for 😅, similar to the Windows 10 panel) -->

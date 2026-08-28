@@ -119,3 +119,11 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 ```
 
 คำสั่งนี้ตรวจ Recent แบบ MRU 50 รายการและ resolved sequence, Learned Ranking ที่มี half-life 90 วันโดยไม่ข้าม match tier, schema แบบระบุเวอร์ชัน, atomic write, migration, การสำรองและรีเซ็ตไฟล์เสียแบบแยกส่วน ตลอดจน Clear Recent, Reset learned ranking และ Clear all activity รายละเอียดอยู่ที่ [Recent และ Learned Ranking บนเครื่อง](../docs/local-activity-data.md)
+
+## ตรวจ Settings, Welcome และความเป็นส่วนตัว
+
+```powershell
+pwsh scripts/verify-settings-privacy.ps1
+```
+
+ตรวจ Settings model เดียว, hotkey/autostart/ภาษา/ธีม/สีผิว/Insertion Mode, Advanced Paste delay และ reset, Welcome ครั้งแรก, คำสั่งล้าง Activity Data, diagnostic logging แบบ opt-in ที่ไม่เก็บเนื้อหาผู้ใช้ และการไม่มี runtime network, telemetry, sync หรือ upload code รายละเอียดอยู่ที่ [Settings, Welcome และความเป็นส่วนตัว](../docs/settings-welcome-and-privacy.md)

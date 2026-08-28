@@ -5,6 +5,20 @@ using System.Text.Json.Serialization;
 
 namespace EmojiPicker
 {
+    internal enum UiLanguagePreference
+    {
+        System,
+        English,
+        Thai,
+    }
+
+    internal enum AppThemePreference
+    {
+        System,
+        Light,
+        Dark,
+    }
+
     /// <summary>How the chosen emoji is delivered to the target app.</summary>
     internal enum EmojiInsertMode
     {
@@ -26,11 +40,37 @@ namespace EmojiPicker
     /// </summary>
     internal sealed class Settings
     {
+        internal const int CurrentSchemaVersion = 1;
+        internal const int DefaultPasteRestoreDelayMs = 250;
+        internal const int MinimumPasteRestoreDelayMs = 50;
+        internal const int MaximumPasteRestoreDelayMs = 5000;
+
         private static readonly string Dir = ProductIdentity.DataDirectory;
 
         private static readonly string FilePath = Path.Combine(Dir, "settings.json");
 
         public static Settings Current { get; private set; } = new Settings();
+
+        [JsonPropertyName("schemaVersion")]
+        public int SchemaVersion { get; set; } = CurrentSchemaVersion;
+
+        [JsonPropertyName("hotkeyEnabled")]
+        public bool HotkeyEnabled { get; set; } = true;
+
+        [JsonPropertyName("hotkeyGesture")]
+        public string HotkeyGesture { get; set; } = HotkeyBinding.Default.SettingValue;
+
+        [JsonPropertyName("uiLanguage")]
+        public string UiLanguage { get; set; } = "system";
+
+        [JsonPropertyName("theme")]
+        public string Theme { get; set; } = "system";
+
+        [JsonPropertyName("diagnosticLoggingEnabled")]
+        public bool DiagnosticLoggingEnabled { get; set; }
+
+        [JsonPropertyName("welcomeShown")]
+        public bool WelcomeShown { get; set; }
 
         /// <summary>
         /// How emoji are inserted: "hybrid" (default) types simple emoji and pastes
@@ -49,7 +89,7 @@ namespace EmojiPicker
         /// configurable. Clamped to 50-5000 ms at use.
         /// </summary>
         [JsonPropertyName("pasteRestoreDelayMs")]
-        public int PasteRestoreDelayMs { get; set; } = 250;
+        public int PasteRestoreDelayMs { get; set; } = DefaultPasteRestoreDelayMs;
 
         /// <summary>
         /// Global skin tone applied to every Emoji Entry that supports a
@@ -78,6 +118,25 @@ namespace EmojiPicker
         public SkinTonePreference PreferredSkinTone =>
             SkinTonePreferenceNames.ParseSettingValue(GlobalSkinTone);
 
+        [JsonIgnore]
+        public UiLanguagePreference LanguagePreference => UiLanguage?.Trim().ToLowerInvariant() switch
+        {
+            "th" => UiLanguagePreference.Thai,
+            "en" => UiLanguagePreference.English,
+            _ => UiLanguagePreference.System,
+        };
+
+        [JsonIgnore]
+        public AppThemePreference ThemePreference => Theme?.Trim().ToLowerInvariant() switch
+        {
+            "light" => AppThemePreference.Light,
+            "dark" => AppThemePreference.Dark,
+            _ => AppThemePreference.System,
+        };
+
+        [JsonIgnore]
+        public HotkeyBinding ParsedHotkey => HotkeyBinding.Parse(HotkeyGesture);
+
         /// <summary>Reads the settings file (writing defaults if absent). Call once at startup.</summary>
         public static void Load()
         {
@@ -87,8 +146,45 @@ namespace EmojiPicker
             {
                 Save(); // create a default file users can discover and edit
             }
+        }
 
-            Logger.Log($"Settings: emojiInsertMode={Current.InsertMode}, globalSkinTone={Current.PreferredSkinTone}");
+        internal static void ReplaceCurrent(Settings settings)
+        {
+            Current = settings.Normalize();
+            Save();
+        }
+
+        internal Settings Normalize()
+        {
+            SchemaVersion = CurrentSchemaVersion;
+            HotkeyGesture = HotkeyBinding.Parse(HotkeyGesture).SettingValue;
+            UiLanguage = LanguagePreference switch
+            {
+                UiLanguagePreference.Thai => "th",
+                UiLanguagePreference.English => "en",
+                _ => "system",
+            };
+            Theme = ThemePreference.ToString().ToLowerInvariant();
+            EmojiInsertMode = InsertMode switch
+            {
+                EmojiPicker.EmojiInsertMode.Paste => "paste",
+                EmojiPicker.EmojiInsertMode.Keystroke => "keystroke",
+                _ => "hybrid",
+            };
+            GlobalSkinTone = PreferredSkinTone.ToSettingValue();
+            PasteRestoreDelayMs = Math.Clamp(
+                PasteRestoreDelayMs,
+                MinimumPasteRestoreDelayMs,
+                MaximumPasteRestoreDelayMs);
+            PickerWidth = Math.Clamp(PickerWidth, 320, 900);
+            PickerHeight = Math.Clamp(PickerHeight, 360, 900);
+            return this;
+        }
+
+        internal void ResetAdvancedDefaults()
+        {
+            PasteRestoreDelayMs = DefaultPasteRestoreDelayMs;
+            DiagnosticLoggingEnabled = false;
         }
 
         public static void SetGlobalSkinTone(SkinTonePreference preference)
@@ -113,7 +209,7 @@ namespace EmojiPicker
                     return new Settings();
                 }
 
-                return JsonSerializer.Deserialize<Settings>(File.ReadAllText(filePath)) ?? new Settings();
+                return (JsonSerializer.Deserialize<Settings>(File.ReadAllText(filePath)) ?? new Settings()).Normalize();
             }
             catch (Exception)
             {
@@ -123,6 +219,7 @@ namespace EmojiPicker
 
         internal void SaveTo(string filePath)
         {
+            Normalize();
             var directory = Path.GetDirectoryName(filePath);
             if (!string.IsNullOrEmpty(directory))
             {

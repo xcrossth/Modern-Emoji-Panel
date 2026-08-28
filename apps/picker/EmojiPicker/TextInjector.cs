@@ -258,7 +258,7 @@ namespace EmojiPicker
             }
             catch (Exception ex)
             {
-                Logger.Log($"Explicit copy failed ({ex.Message})");
+                Logger.Log($"Explicit copy failed ({ex.GetType().Name})");
                 return false;
             }
         }
@@ -280,7 +280,7 @@ namespace EmojiPicker
             }
             catch (Exception ex)
             {
-                Logger.Log($"Clipboard set failed ({ex.Message})");
+                Logger.Log($"Clipboard set failed ({ex.GetType().Name})");
                 return false;
             }
         }
@@ -379,7 +379,7 @@ namespace EmojiPicker
             }
             catch (Exception ex)
             {
-                Logger.Log($"Paste: full clipboard restore failed ({ex.Message}); trying text");
+                Logger.Log($"Paste: full clipboard restore failed ({ex.GetType().Name}); trying text");
                 return false;
             }
         }

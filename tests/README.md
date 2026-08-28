@@ -11,5 +11,6 @@
 - `scripts/verify-emoji-variants.ps1` สำหรับสีผิวเริ่มต้น, Variant Override แบบหนึ่งครั้ง และการเข้าถึง fully-qualified sequence ทุกตัว
 - `scripts/verify-picker-session.ps1` สำหรับ Browse/Search Mode, Commit Gesture, dismissal/focus policy, placement, ขนาดหน้าต่าง และ accessibility state
 - `scripts/verify-activity-data.ps1` สำหรับ Recent MRU, Learned Ranking, schema/migration, atomic persistence, corruption recovery และคำสั่งล้าง Activity Data
+- `scripts/verify-settings-privacy.ps1` สำหรับ Settings model เดียว, ภาษา fallback, theme/hotkey/insertion choices, advanced reset, Welcome และ privacy-safe logging
 
 เมื่อเพิ่ม test project ให้เพิ่มเข้า `ModernEmojiPanel.sln` และเก็บ NuGet lock file ของ project นั้นใน Git

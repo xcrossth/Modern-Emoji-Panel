@@ -4,13 +4,30 @@
 
 **Blocked by:** 06: ค้นหา Emoji ไทย–อังกฤษและดู Hover Preview; 08: ส่ง Emoji หนึ่งรายการไปยังแอปเป้าหมายอย่างปลอดภัย
 
-**Status:** ready-for-agent
+**Status:** resolved
 
-- [ ] Picker เปิดใน Browse Mode ด้วย query ว่าง และใช้ arrow keys เพื่อเลื่อน selection ได้
-- [ ] click ส่งแล้วคง Picker, Enter ส่งแล้ว dismiss และ Shift+Enter ส่งแล้วคง Picker ตาม Commit Gesture ที่กำหนด
-- [ ] หลัง click หรือ Shift+Enter Picker กลับมา active โดยคง selection, query, category และ scroll เดิม
-- [ ] Esc ใน Search Mode ครั้งแรกกลับ Browse Mode และ Esc ถัดไป dismiss; Esc ใน Browse Mode dismiss ได้ทันที
-- [ ] close button และ click ภายนอกจริง dismiss ได้ โดย click ภายนอกเคารพ focus ของหน้าต่างที่ผู้ใช้คลิกและไม่แย่งกลับ
-- [ ] Picker เปิดใกล้ text caret หรือ fallback กลางหน้าต่างเป้าหมายบน monitor เดียวกัน พร้อม clamp ใน working area
-- [ ] หน้าต่างปรับขนาดและจำขนาดได้ รองรับ multi-monitor/DPI และการกด hotkey ซ้ำขณะเปิดไม่เปิด Windows panel ซ้อน
-- [ ] focus, selection, busy และ error states ถูกประกาศให้ accessibility API ใช้งานได้
+- [x] Picker เปิดใน Browse Mode ด้วย query ว่าง และใช้ arrow keys เพื่อเลื่อน selection ได้
+- [x] click ส่งแล้วคง Picker, Enter ส่งแล้ว dismiss และ Shift+Enter ส่งแล้วคง Picker ตาม Commit Gesture ที่กำหนด
+- [x] หลัง click หรือ Shift+Enter Picker กลับมา active โดยคง selection, query, category และ scroll เดิม
+- [x] Esc ใน Search Mode ครั้งแรกกลับ Browse Mode และ Esc ถัดไป dismiss; Esc ใน Browse Mode dismiss ได้ทันที
+- [x] close button และ click ภายนอกจริง dismiss ได้ โดย click ภายนอกเคารพ focus ของหน้าต่างที่ผู้ใช้คลิกและไม่แย่งกลับ
+- [x] Picker เปิดใกล้ text caret หรือ fallback กลางหน้าต่างเป้าหมายบน monitor เดียวกัน พร้อม clamp ใน working area
+- [x] หน้าต่างปรับขนาดและจำขนาดได้ รองรับ multi-monitor/DPI และการกด hotkey ซ้ำขณะเปิดไม่เปิด Windows panel ซ้อน
+- [x] focus, selection, busy และ error states ถูกประกาศให้ accessibility API ใช้งานได้
+
+## Answer
+
+เพิ่ม state model ของ Picker Session ที่แยก Browse/Search Mode, Commit Gesture และ dismissal focus policy ออกจาก WPF shell แล้ว เชื่อม click/Enter/Shift+Enter เข้ากับ insertion path โดยซ่อน Picker ชั่วคราวและ restore view snapshot เฉพาะ gesture ที่ดำเนิน session ต่อ ส่วน click ภายนอก dismiss โดยไม่ activate target เดิมซ้ำ
+
+การวางหน้าต่างใช้ text caret ก่อน แล้ว fallback กึ่งกลางหน้าต่างเป้าหมายบน monitor เดียวกัน พร้อม clamp ใน working area ตาม DPI หน้าต่างปรับขนาดได้และเก็บขนาดใน settings ขณะที่ query/category/ตำแหน่งไม่ถูกนำข้าม session การประกาศสถานะใช้ UI Automation live region, ItemStatus, accessible name และ focus indicator
+
+หลักฐานการตรวจสอบ:
+
+- `scripts/verify-picker-session.ps1`: ผ่าน 12 policy checks และ WPF wiring checks โดยไม่ส่ง input จริง
+- `scripts/verify-foundation.ps1 -SkipPublish`: ผ่านด้วย .NET SDK 10.0.400, build 0 warnings/errors และ WPF smoke
+- `scripts/verify-safe-insertion.ps1 -SkipBuild`: ผ่าน 18 policy checks
+- `scripts/verify-search-preview.ps1 -SkipBuild`: ผ่าน 3,944 entries และ 100 searches
+- `scripts/verify-noto-grid.ps1 -SkipBuild`: ผ่าน 3,944 entries, 9 categories และ DPI 100–250%
+- `scripts/verify-emoji-variants.ps1 -SkipBuild`: ผ่าน 3,944 baseline sequences
+
+ข้อจำกัดการตรวจ: ไม่ใช้ screenshot helper ตามข้อจำกัด Windows 10 build 19045 ของ repository การคลิก desktop จริงและ screen reader matrix จะถูกรวมใน qualification ticket 13; Ticket นี้ตรวจ transition/focus policy ผ่าน pure smoke seam และ WPF accessibility wiring

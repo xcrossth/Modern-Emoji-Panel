@@ -6,9 +6,11 @@
         Title="Modern Emoji Picker"
         Height="440"
         Width="400"
+        MinHeight="360"
+        MinWidth="320"
         WindowStyle="None"
         AllowsTransparency="True"
-        ResizeMode="NoResize"
+        ResizeMode="CanResizeWithGrip"
         WindowStartupLocation="CenterScreen"
         Topmost="True"
         ShowActivated="True"
@@ -17,6 +19,7 @@
         TextOptions.TextRenderingMode="Auto"
         UseLayoutRounding="True"
         ShowInTaskbar="False"
+        AutomationProperties.Name="Modern Emoji Picker"
         MouseLeftButtonDown="MainWindow_MouseLeftButtonDown"
         PreviewKeyDown="MainWindow_PreviewKeyDown"
         Deactivated="MainWindow_Deactivated"
@@ -112,6 +115,10 @@
                             <Trigger Property="IsSelected" Value="True">
                                 <Setter TargetName="Root" Property="Background" Value="{DynamicResource SelectionBrush}"/>
                             </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="Root" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Root" Property="BorderThickness" Value="2"/>
+                            </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -183,6 +190,7 @@
                              CaretBrush="{DynamicResource SearchForegroundBrush}"
                              BorderBrush="{DynamicResource SearchBorderBrush}"
                              BorderThickness="1"
+                             GotKeyboardFocus="SearchBox_GotKeyboardFocus"
                              TextChanged="SearchBox_TextChanged"/>
                     <TextBlock Text="Keep typing to find an emoji"
                                FontSize="12"
@@ -235,6 +243,8 @@
                          VirtualizingPanel.VirtualizationMode="Recycling"
                          VirtualizingPanel.CacheLength="1,1"
                          VirtualizingPanel.CacheLengthUnit="Page"
+                         AutomationProperties.LiveSetting="Assertive"
+                         SelectionChanged="EmojiGrid_SelectionChanged"
                          ItemContainerStyle="{StaticResource EmojiItemStyle}">
                     <ListBox.Resources>
                         <Style TargetType="ScrollBar" BasedOn="{StaticResource ThemedScrollBar}"/>
@@ -407,5 +417,23 @@
                 BorderBrush="Transparent"
                 Click="CloseButton_Click"
                 Cursor="Hand"/>
+
+        <!-- A live region exposes mode, selection, busy and result state without
+             adding visual noise to the compact Picker surface. -->
+        <TextBlock x:Name="AutomationStatusText"
+                   Width="1"
+                   Height="1"
+                   Opacity="0"
+                   IsHitTestVisible="False"
+                   AutomationProperties.Name="Picker status"
+                   AutomationProperties.LiveSetting="Assertive"/>
+
+        <ResizeGrip HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Width="18"
+                    Height="18"
+                    Margin="0,0,3,3"
+                    Cursor="SizeNWSE"
+                    AutomationProperties.Name="Resize picker"/>
     </Grid>
 </Window>

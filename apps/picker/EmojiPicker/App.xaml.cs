@@ -111,6 +111,20 @@ namespace EmojiPicker
                 return;
             }
 
+            var pickerSessionSmokeIndex = Array.FindIndex(
+                e.Args,
+                argument => string.Equals(argument, "--picker-session-smoke", StringComparison.Ordinal));
+            if (pickerSessionSmokeIndex >= 0)
+            {
+                var reportPath = pickerSessionSmokeIndex + 1 < e.Args.Length
+                    ? e.Args[pickerSessionSmokeIndex + 1]
+                    : null;
+                Shutdown(string.IsNullOrWhiteSpace(reportPath)
+                    ? 2
+                    : PickerSessionSmoke.Run(reportPath));
+                return;
+            }
+
             // Only one resident instance may own the global hook and tray icon
             if (!SingleInstanceCoordinator.TryAcquire(
                     ProductIdentity.MutexName,
@@ -462,6 +476,12 @@ namespace EmojiPicker
 
         private void OnHotkeyPressed(IntPtr targetWindow)
         {
+            if (picker?.IsPickerSessionOpen == true)
+            {
+                Logger.Log("Hotkey while open -> ignored");
+                return;
+            }
+
             // Resolve the focused control and caret here (UI thread), off the hook
             // thread. The target app still has focus (our window isn't shown yet),
             // so this is the same state the hook would have captured - but a hung
@@ -471,14 +491,6 @@ namespace EmojiPicker
                 TextInjector.TryGetCaretRect(targetWindow, out var rect) ? rect : null;
 
             Logger.Log($"Hotkey pressed; target={targetWindow} focus={focusWindow} caret={(caretRect.HasValue ? caretRect.Value.ToString() : "none")}");
-
-            // Repeating Win+. while the picker is already open is intentionally a
-            // no-op. Never replace the original insertion target with the picker.
-            if (picker != null && targetWindow == new System.Windows.Interop.WindowInteropHelper(picker).Handle)
-            {
-                Logger.Log("Hotkey while open -> ignored");
-                return;
-            }
 
             PreviousForegroundWindow = targetWindow;
             PreviousFocusWindow = focusWindow;
@@ -507,6 +519,12 @@ namespace EmojiPicker
 
             Dispatcher.BeginInvoke(new Action(() =>
             {
+                if (picker?.IsPickerSessionOpen == true)
+                {
+                    Logger.Log("Show requested while open -> ignored");
+                    return;
+                }
+
                 // Ignore signals right after startup ONLY when a duplicate logon
                 // start is actually possible (both the HKLM all-users and HKCU
                 // per-user Run values present); that duplicate would otherwise

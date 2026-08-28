@@ -37,6 +37,7 @@ namespace EmojiPicker
 
         private readonly DispatcherTimer searchTimer;
         private readonly DispatcherTimer previewTimer;
+        private readonly bool persistUserActivity;
         private EmojiSearchIndex searchIndex;
         private List<Emoji> baselineEmojis = new List<Emoji>();
         private List<Emoji> allEmojis = new List<Emoji>();
@@ -55,6 +56,8 @@ namespace EmojiPicker
         private SkinTonePreference currentSkinTone = SkinTonePreference.Neutral;
         private bool skinTonePickerReady;
         private bool variantMenuOpen;
+        private readonly PickerSessionState sessionState = new();
+        private bool insertionInProgress;
 
         public MainWindow()
             : this(loadUserActivity: true)
@@ -69,6 +72,9 @@ namespace EmojiPicker
         internal MainWindow(bool loadUserActivity, EmojiCatalogLoadResult? catalogOverride)
         {
             InitializeComponent();
+            persistUserActivity = loadUserActivity;
+            Width = Math.Clamp(Settings.Current.PickerWidth, MinWidth, 900);
+            Height = Math.Clamp(Settings.Current.PickerHeight, MinHeight, 900);
             InitializeEmojis(catalogOverride);
             searchIndex = new EmojiSearchIndex(allEmojis);
             InitializeSkinTonePicker();
@@ -100,6 +106,9 @@ namespace EmojiPicker
         internal string PreviewEnglishNameText => PreviewEnglishName.Text;
         internal string PreviewVersionText => PreviewEmojiVersion.Text;
         internal string PreviewAssetPath => PreviewArtwork.AssetPath;
+        internal PickerInputMode InputMode => sessionState.Mode;
+        internal bool IsPickerSessionOpen => IsVisible;
+        internal string AccessibilityStatus => AutomationStatusText.Text;
 
         // The items panel hosting the emoji cells; cached after the first lookup.
         // Its ActualWidth is the viewport content width (scrollbar excluded),
@@ -190,9 +199,19 @@ namespace EmojiPicker
         /// </summary>
         public void ShowPicker()
         {
+            // A repeated hotkey while the Picker Session is open is a strict no-op.
+            // In particular it must not reset query/category or leak through to the
+            // Windows emoji panel underneath our hook.
+            if (IsVisible)
+            {
+                Logger.Log("ShowPicker ignored because the Picker Session is already open");
+                return;
+            }
+
             // Ignore focus-loss triggered while we are bringing the window up
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
             isShowing = true;
+            sessionState.Begin();
 
             HidePreview();
             SearchBox.Clear();
@@ -221,8 +240,8 @@ namespace EmojiPicker
                 ForceForeground(handle);
             }
 
-            SearchBox.Focus();
-            Keyboard.Focus(SearchBox);
+            FocusBrowseGrid();
+            AnnounceStatus("Browse mode. Use arrow keys to choose an emoji.", busy: false);
 
             Logger.Log($"ShowPicker done in {stopwatch.ElapsedMilliseconds}ms: Left={Left:F0} Top={Top:F0} " +
                 $"W={Width} H={Height} foreground={NativeMethods.GetForegroundWindow()} thisHwnd={handle}");
@@ -255,80 +274,51 @@ namespace EmojiPicker
 
         private void PositionNearCursor()
         {
-            // Anchor at the target app's text caret when it exposed one at hotkey
-            // time (like the Windows 10 panel); otherwise at the mouse pointer.
-            // The anchor is a small rectangle: the picker opens below its bottom
-            // edge, or above its top edge when there's no room below.
-            int anchorX, anchorTop, anchorBottom;
-            string anchor;
-            if (App.PreviousCaretRect is System.Drawing.Rectangle caret)
+            // Prefer the captured text caret. When a target does not expose one,
+            // center on that same target window and monitor (not the mouse, which
+            // may already have moved to a different display).
+            System.Drawing.Rectangle? targetRect = null;
+            if (App.PreviousForegroundWindow != IntPtr.Zero &&
+                NativeMethods.GetWindowRect(App.PreviousForegroundWindow, out var nativeTargetRect))
             {
-                anchorX = caret.Left;
-                anchorTop = caret.Top;
-                anchorBottom = caret.Bottom;
-                anchor = "caret";
-            }
-            else if (NativeMethods.GetCursorPos(out var cursor))
-            {
-                anchorX = cursor.X;
-                anchorTop = cursor.Y;
-                anchorBottom = cursor.Y;
-                anchor = "mouse";
-            }
-            else
-            {
-                WindowStartupLocation = WindowStartupLocation.CenterScreen;
-                return;
+                targetRect = System.Drawing.Rectangle.FromLTRB(
+                    nativeTargetRect.Left,
+                    nativeTargetRect.Top,
+                    nativeTargetRect.Right,
+                    nativeTargetRect.Bottom);
             }
 
             // The anchor and Screen.WorkingArea are in physical pixels, but WPF's
             // Left/Top are in device-independent units. Convert with the window's DPI
             // scale, or the panel lands off-screen on scaled/high-DPI displays.
             var hwnd = new WindowInteropHelper(this).EnsureHandle();
-            double scale = NativeMethods.GetDpiForWindow(hwnd) / 96.0;
+            var dpiWindow = App.PreviousForegroundWindow != IntPtr.Zero
+                ? App.PreviousForegroundWindow
+                : hwnd;
+            double scale = NativeMethods.GetDpiForWindow(dpiWindow) / 96.0;
             if (scale <= 0)
             {
                 scale = 1.0;
             }
 
-            var screen = System.Windows.Forms.Screen.FromPoint(new System.Drawing.Point(anchorX, anchorBottom));
+            var screen = App.PreviousCaretRect is System.Drawing.Rectangle caret
+                ? System.Windows.Forms.Screen.FromPoint(new System.Drawing.Point(caret.Left, caret.Bottom))
+                : App.PreviousForegroundWindow != IntPtr.Zero
+                    ? System.Windows.Forms.Screen.FromHandle(App.PreviousForegroundWindow)
+                    : System.Windows.Forms.Screen.PrimaryScreen!;
             var area = screen.WorkingArea;
-
-            // Work in physical pixels, then convert the top-left to DIPs for WPF.
-            var physicalWidth = Width * scale;
-            var physicalHeight = Height * scale;
-            const int gap = 8;
-
-            // Horizontal: align the picker's left edge with the anchor, clamped
-            // within the anchor's monitor.
-            double left = Math.Max(area.Left, Math.Min(anchorX + gap, area.Right - physicalWidth));
-
-            // Vertical: prefer below the anchor; if it won't fit (e.g. the caret is
-            // near the bottom of the screen), open *above* it like the Windows 10
-            // picker; otherwise clamp within the monitor.
-            double top;
-            string vplace;
-            if (anchorBottom + gap + physicalHeight <= area.Bottom)
-            {
-                top = anchorBottom + gap;
-                vplace = "below";
-            }
-            else if (anchorTop - gap - physicalHeight >= area.Top)
-            {
-                top = anchorTop - gap - physicalHeight;
-                vplace = "above";
-            }
-            else
-            {
-                top = Math.Max(area.Top, Math.Min(anchorBottom + gap, area.Bottom - physicalHeight));
-                vplace = "clamped";
-            }
+            var placement = PickerPlacement.Calculate(
+                App.PreviousCaretRect,
+                targetRect,
+                area,
+                (int)Math.Ceiling(Width * scale),
+                (int)Math.Ceiling(Height * scale));
 
             WindowStartupLocation = WindowStartupLocation.Manual;
-            Left = left / scale;
-            Top = top / scale;
+            Left = placement.Left / scale;
+            Top = placement.Top / scale;
 
-            Logger.Log($"PositionNearCursor: anchor={anchor}({anchorX},{anchorTop}-{anchorBottom}) scale={scale} vplace={vplace} " +
+            Logger.Log($"PositionPicker: anchor={placement.Anchor} scale={scale} " +
                 $"area=[{area.Left},{area.Top},{area.Right},{area.Bottom}] => DIP Left={Left:F0} Top={Top:F0}");
         }
 
@@ -355,9 +345,34 @@ namespace EmojiPicker
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            // The Windows 10 picker is ready to search the moment it opens
-            SearchBox.Focus();
-            Keyboard.Focus(SearchBox);
+            if (sessionState.Mode == PickerInputMode.Browse)
+            {
+                FocusBrowseGrid();
+            }
+        }
+
+        private void FocusBrowseGrid()
+        {
+            sessionState.EnterBrowse();
+            EmojiGrid.Focus();
+            Keyboard.Focus(EmojiGrid);
+            if (EmojiGrid.SelectedItem != null)
+            {
+                EmojiGrid.ScrollIntoView(EmojiGrid.SelectedItem);
+                EmojiGrid.UpdateLayout();
+                FocusSelectedEmojiContainer();
+            }
+        }
+
+        private void FocusSelectedEmojiContainer()
+        {
+            if (sessionState.Mode == PickerInputMode.Browse &&
+                EmojiGrid.SelectedItem != null &&
+                EmojiGrid.ItemContainerGenerator.ContainerFromItem(EmojiGrid.SelectedItem) is ListBoxItem item)
+            {
+                item.Focus();
+                Keyboard.Focus(item);
+            }
         }
 
         private void MainWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -588,9 +603,14 @@ namespace EmojiPicker
                     SearchBox.Clear(); // triggers TextChanged, which loads the category
                 }
 
-                // Typing must keep working after a tab is clicked
-                SearchBox.Focus();
+                FocusBrowseGrid();
             }
+        }
+
+        private void SearchBox_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            sessionState.EnterSearch();
+            AnnounceStatus("Search mode. Type an English or Thai name.", busy: false);
         }
 
         private void SearchBox_TextChanged(object sender, TextChangedEventArgs e)
@@ -609,6 +629,7 @@ namespace EmojiPicker
             }
             else
             {
+                sessionState.EnterSearch();
                 // Debounce: filter once typing pauses, not on every keystroke
                 searchTimer.Start();
             }
@@ -641,6 +662,7 @@ namespace EmojiPicker
                 $"substring={matches.Count(match => match.Tier == EmojiMatchTier.Substring)}");
             CategoryHeader.Text = SearchHeader;
             ShowEmojis(filteredEmojis);
+            AnnounceStatus($"Search results: {filteredEmojis.Count} emoji.", busy: false);
         }
 
         internal IReadOnlyList<EmojiSearchMatch> SearchForSmoke(string query) => searchIndex.Search(query);
@@ -672,6 +694,7 @@ namespace EmojiPicker
             if (e.Key == Key.F && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
             {
                 HidePreview();
+                sessionState.EnterSearch();
                 SearchBox.Focus();
                 Keyboard.Focus(SearchBox);
                 SearchBox.SelectAll();
@@ -694,7 +717,9 @@ namespace EmojiPicker
                         RunSearch();
                     }
 
-                    CommitSelectedEmoji();
+                    CommitSelectedEmoji((Keyboard.Modifiers & ModifierKeys.Shift) != 0
+                        ? CommitGesture.ShiftEnter
+                        : CommitGesture.Enter);
                     e.Handled = true;
                     break;
                 case Key.Tab:
@@ -768,14 +793,32 @@ namespace EmojiPicker
             var index = EmojiGrid.SelectedIndex < 0 ? 0 : EmojiGrid.SelectedIndex + delta;
             EmojiGrid.SelectedIndex = Math.Clamp(index, 0, EmojiGrid.Items.Count - 1);
             EmojiGrid.ScrollIntoView(EmojiGrid.SelectedItem);
+            EmojiGrid.UpdateLayout();
+            FocusSelectedEmojiContainer();
             Logger.Log($"MoveSelection delta={delta} (columns={ColumnsPerRow}) -> index {EmojiGrid.SelectedIndex}");
         }
 
-        private void CommitSelectedEmoji()
+        private void EmojiGrid_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (EmojiGrid.SelectedItem is Emoji emoji)
             {
-                CommitEmoji(emoji);
+                AnnounceStatus($"Selected {emoji.Name}.", busy: insertionInProgress);
+            }
+        }
+
+        private void AnnounceStatus(string message, bool busy)
+        {
+            AutomationStatusText.Text = message;
+            System.Windows.Automation.AutomationProperties.SetItemStatus(
+                EmojiGrid,
+                busy ? $"Busy. {message}" : message);
+        }
+
+        private void CommitSelectedEmoji(CommitGesture gesture)
+        {
+            if (EmojiGrid.SelectedItem is Emoji emoji)
+            {
+                CommitEmoji(emoji, gesture);
             }
         }
 
@@ -784,7 +827,7 @@ namespace EmojiPicker
             if (sender is ListBoxItem { DataContext: Emoji emoji })
             {
                 e.Handled = true;
-                CommitEmoji(emoji);
+                CommitEmoji(emoji, CommitGesture.Pointer);
             }
         }
 
@@ -836,7 +879,7 @@ namespace EmojiPicker
                         Height = 24,
                     },
                 };
-                menuItem.Click += (_, _) => CommitEmoji(selection.ToPresentation());
+                menuItem.Click += (_, _) => CommitEmoji(selection.ToPresentation(), CommitGesture.Pointer);
                 menu.Items.Add(menuItem);
             }
 
@@ -976,13 +1019,23 @@ namespace EmojiPicker
             }
         }
 
-        private void CommitEmoji(Emoji emoji)
+        private void CommitEmoji(Emoji emoji, CommitGesture gesture)
         {
+            if (insertionInProgress)
+            {
+                AnnounceStatus("Busy sending the previous emoji.", busy: true);
+                return;
+            }
+
             HidePreview();
-            Logger.Log($"CommitEmoji: '{emoji.Character}' -> target={App.PreviousForegroundWindow}");
+            var continueSession = PickerSessionState.ContinuesAfter(gesture);
+            var snapshot = CaptureViewSnapshot();
+            Logger.Log($"CommitEmoji: gesture={gesture} continue={continueSession} '{emoji.Character}' -> target={App.PreviousForegroundWindow}");
             AddToRecentEmojis(emoji);
             HideInsertionError();
-            DismissPicker();
+            insertionInProgress = true;
+            AnnounceStatus($"Sending {emoji.Name}.", busy: true);
+            Hide();
 
             // Defer the insertion until the current input event has finished
             // processing: injecting keystrokes from inside a key/mouse handler
@@ -1003,15 +1056,82 @@ namespace EmojiPicker
                     result = InsertionResult.Failure("The emoji could not be sent safely.");
                 }
 
+                insertionInProgress = false;
                 if (!result.Accepted)
                 {
                     Logger.Log($"Insert failed without retry or retarget: {result.Message}");
-                    ShowInsertionError(emoji, result.Message ?? "The emoji could not be sent safely.");
+                    ShowInsertionError(
+                        emoji,
+                        result.Message ?? "The emoji could not be sent safely.",
+                        snapshot);
+                }
+                else if (continueSession)
+                {
+                    RestorePickerAfterCommit(snapshot);
+                    AnnounceStatus($"Sent {emoji.Name}. Picker remains open.", busy: false);
+                }
+                else
+                {
+                    PersistSessionState();
                 }
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
 
-        private void ShowInsertionError(Emoji emoji, string message)
+        private PickerViewSnapshot CaptureViewSnapshot()
+        {
+            var scroll = FindVisualChild<ScrollViewer>(EmojiGrid)?.VerticalOffset ?? 0;
+            return new PickerViewSnapshot(
+                sessionState.Mode,
+                SearchBox.Text,
+                currentCategory,
+                (EmojiGrid.SelectedItem as Emoji)?.Character,
+                scroll);
+        }
+
+        private void RestorePickerAfterCommit(PickerViewSnapshot snapshot)
+        {
+            currentCategory = snapshot.Category;
+            if (!string.Equals(SearchBox.Text, snapshot.Query, StringComparison.Ordinal))
+            {
+                SearchBox.Text = snapshot.Query;
+            }
+
+            isShowing = true;
+            Show();
+            Activate();
+            var handle = new WindowInteropHelper(this).Handle;
+            if (handle != IntPtr.Zero)
+            {
+                ForceForeground(handle);
+            }
+
+            if (snapshot.Mode == PickerInputMode.Search)
+            {
+                sessionState.EnterSearch();
+                SearchBox.Focus();
+                Keyboard.Focus(SearchBox);
+            }
+            else
+            {
+                FocusBrowseGrid();
+            }
+
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                var selected = EmojiGrid.Items.Cast<Emoji>().FirstOrDefault(item =>
+                    string.Equals(item.Character, snapshot.SelectedCharacter, StringComparison.Ordinal));
+                if (selected != null)
+                {
+                    EmojiGrid.SelectedItem = selected;
+                    EmojiGrid.ScrollIntoView(selected);
+                }
+
+                FindVisualChild<ScrollViewer>(EmojiGrid)?.ScrollToVerticalOffset(snapshot.VerticalOffset);
+                isShowing = false;
+            }), DispatcherPriority.Loaded);
+        }
+
+        private void ShowInsertionError(Emoji emoji, string message, PickerViewSnapshot? snapshot = null)
         {
             failedInsertionEmoji = emoji;
             InsertionErrorText.Text = message;
@@ -1019,11 +1139,8 @@ namespace EmojiPicker
 
             // The picker was hidden before target activation. Bring the same shell
             // back without resetting query/category/selection/scroll.
-            isShowing = true;
-            Show();
-            Activate();
-            SearchBox.Focus();
-            Dispatcher.BeginInvoke(new Action(() => isShowing = false), DispatcherPriority.Background);
+            RestorePickerAfterCommit(snapshot ?? CaptureViewSnapshot());
+            AnnounceStatus($"Error. {message}", busy: false);
         }
 
         private void HideInsertionError()
@@ -1052,20 +1169,22 @@ namespace EmojiPicker
 
         /// <summary>
         /// Hides the resident picker (it is reused on the next hotkey press)
-        /// and persists the recents list. Public so the hotkey can toggle the
-        /// picker closed when pressed while it is already open.
+        /// and persists the recents list. A repeated hotkey is handled as a no-op
+        /// by the resident application rather than toggling this session closed.
         /// </summary>
-        public void DismissPicker()
+        public void DismissPicker() => DismissPicker(PickerDismissReason.CloseButton);
+
+        private void DismissPicker(PickerDismissReason reason)
         {
             searchTimer.Stop(); // no point filtering a hidden grid
             HidePreview();
-            if (recentsDirty)
-            {
-                SaveRecentEmojis();
-                recentsDirty = false;
-            }
-
+            PersistSessionState();
             Hide();
+
+            if (PickerSessionState.ReturnsFocusAfter(reason))
+            {
+                TextInjector.TryRestoreCapturedTarget(App.PreviousForegroundWindow, App.PreviousFocusWindow);
+            }
 
             // Give the memory back while we idle in the tray; ContextIdle runs
             // after the hide (and any pending insertion) has fully settled
@@ -1078,13 +1197,22 @@ namespace EmojiPicker
         /// </summary>
         public void PrepareForProcessExit()
         {
+            PersistSessionState();
+            allowProcessExit = true;
+        }
+
+        private void PersistSessionState()
+        {
             if (recentsDirty)
             {
                 SaveRecentEmojis();
                 recentsDirty = false;
             }
 
-            allowProcessExit = true;
+            if (persistUserActivity && IsLoaded && Left > -30000)
+            {
+                Settings.SetPickerSize(ActualWidth > 0 ? ActualWidth : Width, ActualHeight > 0 ? ActualHeight : Height);
+            }
         }
 
         protected override void OnClosing(CancelEventArgs e)
@@ -1092,7 +1220,7 @@ namespace EmojiPicker
             if (!allowProcessExit)
             {
                 e.Cancel = true;
-                DismissPicker();
+                DismissPicker(PickerDismissReason.CloseButton);
                 return;
             }
 
@@ -1107,6 +1235,12 @@ namespace EmojiPicker
                 return;
             }
 
+            if (insertionInProgress)
+            {
+                Logger.Log("Deactivated ignored (insertion in progress)");
+                return;
+            }
+
             // Ignore the transient deactivation that can occur while we are still
             // bringing the window to the foreground, or it would hide immediately
             if (isShowing)
@@ -1117,7 +1251,7 @@ namespace EmojiPicker
 
             // Dismiss when focus leaves the panel, like the Windows 10 picker
             Logger.Log("Deactivated -> dismiss");
-            DismissPicker();
+            DismissPicker(PickerDismissReason.ExternalPointer);
         }
 
         private void AddToRecentEmojis(Emoji emoji)
@@ -1196,7 +1330,7 @@ namespace EmojiPicker
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            DismissPicker();
+            DismissPicker(PickerDismissReason.CloseButton);
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
@@ -1209,15 +1343,16 @@ namespace EmojiPicker
 
             if (e.Key == Key.Escape)
             {
-                // First Esc clears an active search (back to the category);
-                // Esc with nothing to clear closes the picker
-                if (SearchBox.Text.Trim().Length > 0)
+                var outcome = sessionState.Escape();
+                if (!outcome.Dismiss)
                 {
                     SearchBox.Clear(); // TextChanged restores the category
+                    FocusBrowseGrid();
+                    AnnounceStatus("Browse mode. Press Escape again to close.", busy: false);
                 }
                 else
                 {
-                    DismissPicker();
+                    DismissPicker(PickerDismissReason.Escape);
                 }
 
                 e.Handled = true;
@@ -1231,6 +1366,13 @@ namespace EmojiPicker
             Pointer,
             Keyboard,
         }
+
+        private sealed record PickerViewSnapshot(
+            PickerInputMode Mode,
+            string Query,
+            string Category,
+            string? SelectedCharacter,
+            double VerticalOffset);
 
     }
 

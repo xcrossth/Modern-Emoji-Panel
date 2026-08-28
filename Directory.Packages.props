@@ -5,7 +5,6 @@
 
   <ItemGroup>
     <!-- Dependencies inherited from the pinned Classic Picker foundation. -->
-    <PackageVersion Include="Emoji.Wpf" Version="0.3.4" />
     <PackageVersion Include="VirtualizingWrapPanel" Version="2.5.2" />
   </ItemGroup>
 </Project>

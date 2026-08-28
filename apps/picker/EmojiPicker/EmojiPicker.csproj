@@ -40,10 +40,6 @@
   <ItemGroup>
     <!-- Ticket 14 will add new branded artwork. The imported Classic icon is
          intentionally not embedded or assigned to the Modern executable. -->
-    <!-- Emoji search keywords/tags keyed by emoji; union of emojibase (MIT,
-         annotations derived from Unicode CLDR) and emojilib (MIT, community
-         associations like "laugh" for 😅, similar to the Windows 10 panel) -->
-    <Resource Include="Resources\keywords.json" />
     <!-- Usage-popularity tier (0 = most used) keyed by emoji; parsed from
          Unicode's published emoji-frequency data
          (https://home.unicode.org/emoji/emoji-frequency/), supplemented with
@@ -53,8 +49,24 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Emoji.Wpf" />
     <PackageReference Include="VirtualizingWrapPanel" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Preserve repository-relative paths from the generated manifest. The
+         runtime is offline and resolves every image through Emoji Asset Provider. -->
+    <Content Include="..\..\..\data\emoji-baseline\17.0\emoji.json"
+             Link="EmojiBaseline\data\emoji-baseline\17.0\emoji.json"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\..\vendor\noto-emoji\v2.051\png\128\**\*.png"
+             Link="EmojiBaseline\vendor\noto-emoji\v2.051\png\128\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="..\..\..\vendor\noto-emoji\v2.051\third_party\region-flags\png\**\*.png"
+             Link="EmojiBaseline\vendor\noto-emoji\v2.051\third_party\region-flags\png\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Trade a little allocation speed for a smaller retained heap (0-9; higher

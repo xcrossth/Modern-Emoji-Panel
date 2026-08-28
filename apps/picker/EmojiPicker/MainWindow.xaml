@@ -59,9 +59,9 @@
         <!-- Emoji cell in the grid -->
         <Style x:Key="EmojiItemStyle" TargetType="ListBoxItem">
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Focusable" Value="False"/>
-            <Setter Property="ToolTip" Value="{Binding Name}"/>
+            <Setter Property="Focusable" Value="True"/>
             <Setter Property="AutomationProperties.Name" Value="{Binding Name}"/>
+            <Setter Property="AutomationProperties.HelpText" Value="Press F1 for a large preview"/>
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
             <Setter Property="Template">
@@ -117,6 +117,8 @@
                 </Setter.Value>
             </Setter>
             <EventSetter Event="PreviewMouseLeftButtonUp" Handler="EmojiItem_MouseLeftButtonUp"/>
+            <EventSetter Event="MouseEnter" Handler="EmojiItem_MouseEnter"/>
+            <EventSetter Event="MouseLeave" Handler="EmojiItem_MouseLeave"/>
         </Style>
 
         <!-- Minimal theme-aware scrollbar so the dark grid doesn't show a light track -->
@@ -213,7 +215,7 @@
                          Margin="5,2,5,8"
                          Background="Transparent"
                          BorderThickness="0"
-                         Focusable="False"
+                         Focusable="True"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          ScrollViewer.CanContentScroll="True"
                          VirtualizingPanel.IsVirtualizing="True"
@@ -280,6 +282,74 @@
                 </ListBox>
             </Grid>
         </Border>
+
+        <!-- Non-activating detail surface. It uses the manifest's 512 role and
+             never takes keyboard focus away from the search box or focused tile. -->
+        <Popup x:Name="EmojiPreviewPopup"
+               AllowsTransparency="True"
+               Focusable="False"
+               IsHitTestVisible="False"
+               Placement="Right"
+               HorizontalOffset="8"
+               StaysOpen="True">
+            <Border Padding="14"
+                    MaxWidth="220"
+                    CornerRadius="8"
+                    Background="{DynamicResource WindowBackgroundBrush}"
+                    BorderBrush="{DynamicResource WindowBorderBrush}"
+                    BorderThickness="1"
+                    Focusable="False">
+                <Border.Effect>
+                    <DropShadowEffect Color="Black" Direction="315" ShadowDepth="3" Opacity="0.35" BlurRadius="7"/>
+                </Border.Effect>
+                <StackPanel Focusable="False">
+                    <Grid Width="160" Height="160" HorizontalAlignment="Center">
+                        <Border BorderBrush="{DynamicResource PlaceholderBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="5">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsAssetUnavailable, ElementName=PreviewArtwork}"
+                                                     Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <TextBlock Text="?"
+                                       FontSize="28"
+                                       Foreground="{DynamicResource PlaceholderForegroundBrush}"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <local:NotoEmojiImage x:Name="PreviewArtwork"
+                                              DecodeSizeDip="160"
+                                              Width="160"
+                                              Height="160"/>
+                    </Grid>
+                    <TextBlock x:Name="PreviewLocalizedName"
+                               Margin="0,10,0,0"
+                               FontSize="14"
+                               FontWeight="SemiBold"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               Foreground="{DynamicResource HeaderForegroundBrush}"/>
+                    <TextBlock x:Name="PreviewEnglishName"
+                               Margin="0,3,0,0"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               TextAlignment="Center"
+                               Foreground="{DynamicResource WatermarkForegroundBrush}"/>
+                    <TextBlock x:Name="PreviewEmojiVersion"
+                               Margin="0,7,0,0"
+                               FontSize="11"
+                               TextAlignment="Center"
+                               Foreground="{DynamicResource WatermarkForegroundBrush}"/>
+                </StackPanel>
+            </Border>
+        </Popup>
 
         <!-- Close Button (top-right corner) -->
         <Button HorizontalAlignment="Right"

@@ -17,7 +17,9 @@ Picker โหลดรายการ 3,944 รายการจาก Emoji Ba
 - ตัวโหลดทำงานเบื้องหลัง, รวมคำขอภาพเดียวกัน และเก็บ LRU cache ไม่เกิน 256 ภาพ
 - `BitmapImage` ทุกภาพใช้ `OnLoad` แล้ว `Freeze()` ก่อนส่งให้ UI เพื่อไม่ให้ภาพถูกแก้ไขภายหลัง
 
-หาก PNG ของรายการเดียวอ่านไม่ได้ tile จะแสดง placeholder และชื่อยังอยู่ใน tooltip/accessibility name ผู้ใช้ยังเลือก Unicode sequence เดิมได้ หาก baseline หรือชุด artwork หาย แอปจะแสดงคำแนะนำให้ Repair/Reinstall แทนการ crash
+หาก PNG ของรายการเดียวอ่านไม่ได้ tile จะแสดง placeholder และชื่อยังอยู่ใน accessible name ผู้ใช้ยังเลือก Unicode sequence เดิมได้ หาก baseline หรือชุด artwork หาย แอปจะแสดงคำแนะนำให้ Repair/Reinstall แทนการ crash
+
+การค้นหาและภาพขยาย 512 อธิบายแยกใน [การค้นหาสองภาษาและ Hover Preview](./bilingual-search-hover-preview.md)
 
 ## การตรวจสอบ
 

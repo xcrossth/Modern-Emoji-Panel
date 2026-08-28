@@ -52,6 +52,26 @@ namespace EmojiPicker
         {
             base.OnStartup(e);
 
+            var searchPreviewSmokeIndex = Array.FindIndex(
+                e.Args,
+                argument => string.Equals(argument, "--search-preview-smoke", StringComparison.Ordinal));
+            if (searchPreviewSmokeIndex >= 0)
+            {
+                var reportPath = searchPreviewSmokeIndex + 1 < e.Args.Length
+                    ? e.Args[searchPreviewSmokeIndex + 1]
+                    : null;
+                if (string.IsNullOrWhiteSpace(reportPath))
+                {
+                    Shutdown(2);
+                }
+                else
+                {
+                    RunSearchPreviewSmoke(reportPath);
+                }
+
+                return;
+            }
+
             // A deterministic smoke path lets the monorepo verify that the WPF
             // shell, generated Emoji Baseline and Noto artwork initialise on the current OS
             // without taking the user's global hook, tray or Classic mutex. It
@@ -241,6 +261,176 @@ namespace EmojiPicker
         }
 
         private void FinishFoundationSmoke(MainWindow smokeWindow, int exitCode)
+        {
+            smokeWindow.PrepareForProcessExit();
+            smokeWindow.Close();
+            ThemeManager.Shutdown();
+            Shutdown(exitCode);
+        }
+
+        private void RunSearchPreviewSmoke(string reportPath)
+        {
+            ShutdownMode = ShutdownMode.OnExplicitShutdown;
+            ThemeManager.Initialize();
+
+            var catalog = EmojiCatalog.Load();
+            var smokeWindow = new MainWindow(loadUserActivity: false, catalog);
+            smokeWindow.PreWarm();
+            Dispatcher.BeginInvoke(
+                new Action(async () =>
+                {
+                    var synthetic = CreateSearchTierFixtures();
+                    var syntheticMatches = new EmojiSearchIndex(synthetic).Search("  HEART  ");
+                    var expectedIds = new[]
+                    {
+                        "exact-early",
+                        "exact-late",
+                        "prefix",
+                        "keyword",
+                        "substring",
+                    };
+                    var expectedTiers = new[]
+                    {
+                        EmojiMatchTier.ExactShortName,
+                        EmojiMatchTier.ExactShortName,
+                        EmojiMatchTier.ShortNameTermPrefix,
+                        EmojiMatchTier.Keyword,
+                        EmojiMatchTier.Substring,
+                    };
+                    var tierOrderingPassed = syntheticMatches.Select(match => match.Emoji.Id).SequenceEqual(expectedIds) &&
+                        syntheticMatches.Select(match => match.Tier).SequenceEqual(expectedTiers);
+
+                    var englishResults = smokeWindow.SearchForSmoke("grinning face");
+                    var thaiResults = smokeWindow.SearchForSmoke("หน้ายิ้มยิงฟัน");
+                    var englishKeywordResults = smokeWindow.SearchForSmoke("cheerful");
+                    var thaiKeywordResults = smokeWindow.SearchForSmoke("ยิ้มกว้าง");
+
+                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                    for (var i = 0; i < 100; i++)
+                    {
+                        _ = smokeWindow.SearchForSmoke(i % 2 == 0 ? "face" : "หัวใจ");
+                    }
+
+                    stopwatch.Stop();
+
+                    smokeWindow.EmojiGrid.UpdateLayout();
+                    var selected = smokeWindow.EmojiGrid.SelectedItem as Emoji;
+                    var selectedContainer = selected == null
+                        ? null
+                        : smokeWindow.EmojiGrid.ItemContainerGenerator.ContainerFromItem(selected) as System.Windows.Controls.ListBoxItem;
+                    var accessibleNamePassed = selected != null && selectedContainer != null &&
+                        string.Equals(
+                            System.Windows.Automation.AutomationProperties.GetName(selectedContainer),
+                            selected.Name,
+                            StringComparison.Ordinal);
+                    var focusBefore = System.Windows.Input.Keyboard.FocusedElement;
+                    var previewOpened = smokeWindow.OpenSelectedPreviewForSmoke();
+                    var focusAfter = System.Windows.Input.Keyboard.FocusedElement;
+                    var previewImage = selected == null
+                        ? null
+                        : await NotoEmojiAssetProvider.Shared.LoadAsync(selected.PreviewAssetPath, 160);
+                    var englishSecondaryExpected = selected != null &&
+                        !string.Equals(selected.Name, selected.EnglishName, StringComparison.CurrentCultureIgnoreCase);
+                    var previewDetailsPassed = selected != null && previewOpened &&
+                        string.Equals(smokeWindow.PreviewLocalizedNameText, selected.Name, StringComparison.Ordinal) &&
+                        string.Equals(smokeWindow.PreviewEnglishNameText, selected.EnglishName, StringComparison.Ordinal) &&
+                        string.Equals(smokeWindow.PreviewVersionText, $"Emoji {selected.EmojiVersion}", StringComparison.Ordinal) &&
+                        string.Equals(smokeWindow.PreviewAssetPath, selected.PreviewAssetPath, StringComparison.Ordinal) &&
+                        (smokeWindow.PreviewEnglishName.Visibility == Visibility.Visible) == englishSecondaryExpected &&
+                        previewImage != null && previewImage.IsFrozen &&
+                        ReferenceEquals(focusBefore, focusAfter);
+                    smokeWindow.ClosePreviewForSmoke();
+                    var previewDismissed = !smokeWindow.IsPreviewOpen;
+
+                    var report = new
+                    {
+                        catalogEntries = catalog.Entries.Count,
+                        tierOrderingPassed,
+                        englishNamePassed = englishResults.FirstOrDefault().Emoji?.Id == "emoji-1f600" &&
+                            englishResults.FirstOrDefault().Tier == EmojiMatchTier.ExactShortName,
+                        thaiNamePassed = thaiResults.FirstOrDefault().Emoji?.Id == "emoji-1f600" &&
+                            thaiResults.FirstOrDefault().Tier == EmojiMatchTier.ExactShortName,
+                        englishKeywordPassed = englishKeywordResults.Any(match => match.Emoji.Id == "emoji-1f600" &&
+                            match.Tier == EmojiMatchTier.Keyword),
+                        thaiKeywordPassed = thaiKeywordResults.Any(match => match.Emoji.Id == "emoji-1f600" &&
+                            match.Tier == EmojiMatchTier.Keyword),
+                        searchIterations = 100,
+                        searchElapsedMilliseconds = stopwatch.ElapsedMilliseconds,
+                        hoverDelayMilliseconds = global::EmojiPicker.MainWindow.HoverPreviewDelay.TotalMilliseconds,
+                        accessibleNamePassed,
+                        previewDetailsPassed,
+                        previewDismissed,
+                        previewUses512Role = selected?.PreviewAssetPath.Contains("/png/512/", StringComparison.Ordinal) == true,
+                        previewDecodedPixelWidth = (previewImage as System.Windows.Media.Imaging.BitmapSource)?.PixelWidth ?? 0,
+                    };
+
+                    try
+                    {
+                        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportPath))!);
+                        File.WriteAllText(
+                            reportPath,
+                            System.Text.Json.JsonSerializer.Serialize(
+                                report,
+                                new System.Text.Json.JsonSerializerOptions { WriteIndented = true }));
+
+                        var passed = report.catalogEntries == 3944 &&
+                            report.tierOrderingPassed &&
+                            report.englishNamePassed &&
+                            report.thaiNamePassed &&
+                            report.englishKeywordPassed &&
+                            report.thaiKeywordPassed &&
+                            report.hoverDelayMilliseconds == 400 &&
+                            report.accessibleNamePassed &&
+                            report.previewDetailsPassed &&
+                            report.previewDismissed &&
+                            report.previewUses512Role &&
+                            report.previewDecodedPixelWidth == 160;
+                        FinishSearchPreviewSmoke(smokeWindow, passed ? 0 : 1);
+                    }
+                    catch
+                    {
+                        FinishSearchPreviewSmoke(smokeWindow, 1);
+                    }
+                }),
+                DispatcherPriority.ContextIdle);
+        }
+
+        private static IReadOnlyList<Emoji> CreateSearchTierFixtures()
+        {
+            return
+            [
+                CreateSearchFixture("exact-late", "heart", 30),
+                CreateSearchFixture("prefix", "red heart shape", 2),
+                CreateSearchFixture("keyword", "love symbol", 1, englishKeywords: ["heart"]),
+                CreateSearchFixture("substring", "sweetheart", 0),
+                CreateSearchFixture("exact-early", "heart", 5),
+            ];
+        }
+
+        private static Emoji CreateSearchFixture(
+            string id,
+            string englishName,
+            int order,
+            IReadOnlyList<string>? englishKeywords = null)
+        {
+            return new Emoji(
+                id,
+                "x",
+                englishName,
+                englishName,
+                "ทดสอบ",
+                "Symbols",
+                id,
+                englishKeywords ?? [],
+                [],
+                "17.0",
+                "grid.png",
+                "preview.png",
+                order,
+                99);
+        }
+
+        private void FinishSearchPreviewSmoke(MainWindow smokeWindow, int exitCode)
         {
             smokeWindow.PrepareForProcessExit();
             smokeWindow.Close();

@@ -79,3 +79,11 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 ```
 
 คำสั่งนี้ build Picker แล้วตรวจว่า Emoji 17 ครบ 3,944 รายการในหมวดมาตรฐาน, PNG 128 ทุกภาพถูก bundle ตาม manifest, runtime ไม่อ้าง `Emoji.Wpf` และ WPF smoke ผ่านทั้ง lazy decode, frozen image, cache bound, DPI 100–250%, missing-image fallback และคำแนะนำ Repair/Reinstall เมื่อชุด asset หาย รายละเอียดอยู่ที่ [การแสดง Emoji 17 ด้วย Noto grid](../docs/noto-grid-runtime.md)
+
+## ตรวจการค้นหาสองภาษาและ Hover Preview
+
+```powershell
+.\scripts\verify-search-preview.ps1
+```
+
+คำสั่งนี้ตรวจชื่อและ keyword ไทย–อังกฤษ, match tiers สี่ระดับ, CLDR tie-break, accessible name, การคง keyboard focus, delay 400 ms, รายละเอียด preview และ coverage ของ Noto PNG 512 ทั้ง 3,944 รายการ พร้อมวัด guardrail ของการค้นหา 100 ครั้งโดยไม่ใช้เครือข่าย รายละเอียดอยู่ที่ [การค้นหาสองภาษาและ Hover Preview](../docs/bilingual-search-hover-preview.md)

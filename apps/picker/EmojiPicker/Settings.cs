@@ -59,6 +59,13 @@ namespace EmojiPicker
         [JsonPropertyName("globalSkinTone")]
         public string GlobalSkinTone { get; set; } = "neutral";
 
+        /// <summary>Last user-selected Picker size in device-independent pixels.</summary>
+        [JsonPropertyName("pickerWidth")]
+        public double PickerWidth { get; set; } = 400;
+
+        [JsonPropertyName("pickerHeight")]
+        public double PickerHeight { get; set; } = 440;
+
         [JsonIgnore]
         public EmojiInsertMode InsertMode => EmojiInsertMode?.Trim().ToLowerInvariant() switch
         {
@@ -87,6 +94,13 @@ namespace EmojiPicker
         public static void SetGlobalSkinTone(SkinTonePreference preference)
         {
             Current.GlobalSkinTone = preference.ToSettingValue();
+            Save();
+        }
+
+        public static void SetPickerSize(double width, double height)
+        {
+            Current.PickerWidth = Math.Clamp(width, 320, 900);
+            Current.PickerHeight = Math.Clamp(height, 360, 900);
             Save();
         }
 

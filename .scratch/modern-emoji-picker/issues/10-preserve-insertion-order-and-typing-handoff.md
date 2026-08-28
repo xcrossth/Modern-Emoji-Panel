@@ -4,7 +4,7 @@
 
 **Blocked by:** 09: ควบคุม Picker Session ด้วย keyboard, pointer และ focus
 
-**Status:** ready-for-agent
+**Status:** claimed
 
 - [ ] Insertion Queue รับงานรอสูงสุด 20 รายการและรักษา click order ให้ตรงกับ insertion order โดยไม่ส่งขนาน
 - [ ] UI และ accessibility state แสดง pending/busy และเมื่อ queue เต็มจะหยุดรับชั่วคราวโดยไม่ drop click แบบเงียบ

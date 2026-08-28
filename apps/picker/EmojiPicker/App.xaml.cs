@@ -125,6 +125,20 @@ namespace EmojiPicker
                 return;
             }
 
+            var insertionQueueSmokeIndex = Array.FindIndex(
+                e.Args,
+                argument => string.Equals(argument, "--insertion-queue-smoke", StringComparison.Ordinal));
+            if (insertionQueueSmokeIndex >= 0)
+            {
+                var reportPath = insertionQueueSmokeIndex + 1 < e.Args.Length
+                    ? e.Args[insertionQueueSmokeIndex + 1]
+                    : null;
+                Shutdown(string.IsNullOrWhiteSpace(reportPath)
+                    ? 2
+                    : InsertionQueueSmoke.Run(reportPath));
+                return;
+            }
+
             // Only one resident instance may own the global hook and tray icon
             if (!SingleInstanceCoordinator.TryAcquire(
                     ProductIdentity.MutexName,
@@ -684,8 +698,13 @@ namespace EmojiPicker
 
         private void ExitApplication()
         {
-            picker?.PrepareForProcessExit();
-            Shutdown();
+            if (picker == null)
+            {
+                Shutdown();
+                return;
+            }
+
+            picker.RequestProcessExit(() => Shutdown());
         }
 
         private static bool IsStartupEnabled()

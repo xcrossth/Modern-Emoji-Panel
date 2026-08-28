@@ -17,6 +17,7 @@ namespace EmojiPicker
     public partial class MainWindow : Window
     {
         private const int MaxRecentEmojis = 24;
+        private const int MaxPendingInsertions = 20;
         private const string RecentCategoryKey = "Recent";
         private const string SearchHeader = "Search results";
 
@@ -48,7 +49,7 @@ namespace EmojiPicker
         private bool isShowing;
         private bool recentsDirty;
         private bool allowProcessExit;
-        private Emoji? failedInsertionEmoji;
+        private string? failedInsertionText;
         private Emoji? pendingPreviewEmoji;
         private ListBoxItem? pendingPreviewTarget;
         private PreviewOrigin previewOrigin;
@@ -57,7 +58,12 @@ namespace EmojiPicker
         private bool skinTonePickerReady;
         private bool variantMenuOpen;
         private readonly PickerSessionState sessionState = new();
+        private readonly InsertionQueue<InsertionWorkItem> insertionQueue = new(MaxPendingInsertions);
+        private DispatcherOperation? insertionPumpOperation;
+        private bool insertionPumpRunning;
         private bool insertionInProgress;
+        private PickerViewSnapshot? lastInsertionSnapshot;
+        private Action? processExitAfterQueue;
 
         public MainWindow()
             : this(loadUserActivity: true)
@@ -109,6 +115,8 @@ namespace EmojiPicker
         internal PickerInputMode InputMode => sessionState.Mode;
         internal bool IsPickerSessionOpen => IsVisible;
         internal string AccessibilityStatus => AutomationStatusText.Text;
+        internal int PendingInsertionCount => insertionQueue.PendingCount;
+        internal bool InsertionQueueFull => insertionQueue.IsFull;
 
         // The items panel hosting the emoji cells; cached after the first lookup.
         // Its ActualWidth is the viewport content width (scrollbar excluded),
@@ -706,8 +714,9 @@ namespace EmojiPicker
             // key so Alt+T and Alt+Down remain keyboard-accessible.
             var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-            // Win10 picker behaviour: typing searches while the arrow keys move
-            // the grid selection and Enter commits it, wherever focus happens to be
+            // Browse navigation remains key-based. Printable text is handled by
+            // PreviewTextInput below so raw keys, dead-key prefixes and IME pre-edit
+            // are never replayed as if they were committed text.
             switch (key)
             {
                 case Key.Enter:
@@ -769,6 +778,21 @@ namespace EmojiPicker
             }
         }
 
+        private void MainWindow_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (sessionState.Mode != PickerInputMode.Browse ||
+                !TypingHandoffInput.TryCaptureCommittedText(e.Text, out var committedText))
+            {
+                return;
+            }
+
+            // Capture the exact committed TextInput once. This deliberately does
+            // not handle PreviewKeyDown, TextInputStart or TextInputUpdate: shortcut
+            // chords, Thai IME pre-edit and dead-key prefixes stay with WPF/IME.
+            e.Handled = true;
+            BeginTypingHandoff(committedText);
+        }
+
         private void SwitchCategory(int direction)
         {
             var count = categories.Count;
@@ -802,7 +826,7 @@ namespace EmojiPicker
         {
             if (EmojiGrid.SelectedItem is Emoji emoji)
             {
-                AnnounceStatus($"Selected {emoji.Name}.", busy: insertionInProgress);
+                AnnounceStatus($"Selected {emoji.Name}.", busy: insertionQueue.HasWork);
             }
         }
 
@@ -1021,60 +1045,260 @@ namespace EmojiPicker
 
         private void CommitEmoji(Emoji emoji, CommitGesture gesture)
         {
-            if (insertionInProgress)
-            {
-                AnnounceStatus("Busy sending the previous emoji.", busy: true);
-                return;
-            }
-
             HidePreview();
             var continueSession = PickerSessionState.ContinuesAfter(gesture);
             var snapshot = CaptureViewSnapshot();
-            Logger.Log($"CommitEmoji: gesture={gesture} continue={continueSession} '{emoji.Character}' -> target={App.PreviousForegroundWindow}");
+            var work = new InsertionWorkItem(emoji, snapshot);
+            var enqueue = insertionQueue.Enqueue(work);
+            if (enqueue.Status == QueueEnqueueStatus.Full)
+            {
+                UpdateInsertionQueueStatus(queueFullAttempted: true);
+                AnnounceStatus(
+                    $"Insertion queue is full with {enqueue.Capacity} waiting. Please wait before selecting another emoji.",
+                    busy: true);
+                return;
+            }
+
+            if (enqueue.Status == QueueEnqueueStatus.Stopped)
+            {
+                AnnounceStatus("The Picker is closing and cannot accept another emoji.", busy: true);
+                return;
+            }
+
+            Logger.Log($"CommitEmoji queued: gesture={gesture} pending={enqueue.PendingCount} target={App.PreviousForegroundWindow}");
             AddToRecentEmojis(emoji);
             HideInsertionError();
-            insertionInProgress = true;
-            AnnounceStatus($"Sending {emoji.Name}.", busy: true);
+            if (!continueSession)
+            {
+                insertionQueue.StopAfterDrain(QueueTerminalIntent.AfterCommit());
+            }
+
+            UpdateInsertionQueueStatus();
+            AnnounceStatus(
+                enqueue.PendingCount == 1
+                    ? $"Queued {emoji.Name} for sending."
+                    : $"Queued {emoji.Name}. {enqueue.PendingCount} pending.",
+                busy: true);
+
+            // Background priority deliberately lets already-posted rapid click/key
+            // events enter the bounded FIFO before the first adapter hides the shell.
+            ScheduleInsertionPump(DispatcherPriority.Background);
+        }
+
+        private void ScheduleInsertionPump(DispatcherPriority priority, bool replacePending = false)
+        {
+            if (insertionPumpRunning)
+            {
+                return;
+            }
+
+            if (insertionPumpOperation is { Status: DispatcherOperationStatus.Pending } pendingOperation)
+            {
+                if (!replacePending)
+                {
+                    return;
+                }
+
+                pendingOperation.Abort();
+            }
+
+            insertionPumpOperation = Dispatcher.BeginInvoke(new Action(async () =>
+            {
+                insertionPumpOperation = null;
+                await PumpInsertionQueueAsync();
+            }), priority);
+        }
+
+        private async Task PumpInsertionQueueAsync()
+        {
+            if (insertionPumpRunning)
+            {
+                return;
+            }
+
+            insertionPumpRunning = true;
+            try
+            {
+                while (insertionQueue.TryStartNext(out var work) && work != null)
+                {
+                    insertionInProgress = true;
+                    UpdateInsertionQueueStatus();
+                    AnnounceStatus(
+                        insertionQueue.PendingCount == 0
+                            ? $"Sending {work.Emoji.Name}."
+                            : $"Sending {work.Emoji.Name}. {insertionQueue.PendingCount} pending.",
+                        busy: true);
+                    Hide();
+
+                    InsertionResult result;
+                    try
+                    {
+                        // Every FIFO item independently revalidates the one target
+                        // captured before this Picker Session. Failure never retargets.
+                        result = await TextInjector.TryInsertAsync(
+                            App.PreviousForegroundWindow,
+                            App.PreviousFocusWindow,
+                            work.Emoji.Character);
+                    }
+                    catch (Exception ex)
+                    {
+                        Logger.LogAlways($"Insert threw: {ex}");
+                        result = InsertionResult.Failure("The emoji could not be sent safely.");
+                    }
+
+                    insertionInProgress = false;
+                    insertionQueue.CompleteActive();
+                    lastInsertionSnapshot = work.Snapshot;
+
+                    if (!result.Accepted &&
+                        insertionQueue.TerminalIntent?.Kind is not QueueTerminalKind.Dismiss and
+                        not QueueTerminalKind.TypingHandoff)
+                    {
+                        Logger.Log($"Queued insert failed without retry or retarget: {result.Message}");
+                        var cancelled = insertionQueue.CancelPendingAndStop();
+                        Logger.Log($"Insertion failure cancelled {cancelled} not-started item(s)");
+                        insertionQueue.Reset();
+                        UpdateInsertionQueueStatus();
+                        ShowInsertionError(
+                            work.Emoji.Character,
+                            result.Message ?? "The emoji could not be sent safely.",
+                            work.Snapshot);
+                        lastInsertionSnapshot = null;
+                        return;
+                    }
+                }
+
+                if (insertionQueue.IsTerminalReady)
+                {
+                    await FinalizeQueueTerminationAsync();
+                    return;
+                }
+
+                if (lastInsertionSnapshot != null)
+                {
+                    var completedSnapshot = lastInsertionSnapshot;
+                    var completedName = (EmojiGrid.SelectedItem as Emoji)?.Name ?? "emoji";
+                    insertionQueue.Reset();
+                    lastInsertionSnapshot = null;
+                    UpdateInsertionQueueStatus();
+
+                    // The user may choose another window while the Picker is hidden
+                    // for insertion. Never reactivate the Picker over that explicit
+                    // focus change.
+                    if (NativeMethods.GetForegroundWindow() != App.PreviousForegroundWindow)
+                    {
+                        Logger.Log("Insertion completed after foreground changed; Picker remains dismissed");
+                        FinalizeHiddenDismiss(returnFocusToTarget: false);
+                        return;
+                    }
+
+                    RestorePickerAfterCommit(completedSnapshot);
+                    AnnounceStatus($"Sent {completedName}. Picker remains open.", busy: false);
+                }
+            }
+            finally
+            {
+                insertionInProgress = false;
+                insertionPumpRunning = false;
+            }
+        }
+
+        private void BeginTypingHandoff(string committedText)
+        {
+            HidePreview();
+            HideInsertionError();
+            var cancelled = insertionQueue.StopAndCancelPending(
+                QueueTerminalIntent.TypingHandoff(committedText));
+            Logger.Log($"Typing Handoff started; cancelled {cancelled} not-started insertion(s)");
+            UpdateInsertionQueueStatus();
+            AnnounceStatus("Returning committed text to the original target.", busy: true);
             Hide();
 
-            // Defer the insertion until the current input event has finished
-            // processing: injecting keystrokes from inside a key/mouse handler
-            // corrupts the injected Unicode sequence
-            Dispatcher.BeginInvoke(new Action(async () =>
+            // Input priority prevents another desktop key message overtaking target
+            // activation. Only the already-committed TextInput is buffered/re-sent.
+            ScheduleInsertionPump(DispatcherPriority.Input, replacePending: true);
+        }
+
+        private async Task FinalizeQueueTerminationAsync()
+        {
+            var intent = insertionQueue.TerminalIntent
+                ?? throw new InvalidOperationException("A terminal queue has no terminal intent.");
+
+            if (intent.Kind == QueueTerminalKind.TypingHandoff)
             {
-                // Insert only into the target captured before the picker opened.
-                // Failure never retargets and never silently copies.
-                InsertionResult result;
+                var committedText = intent.CommittedText
+                    ?? throw new InvalidOperationException("Typing Handoff has no committed text.");
+                InsertionResult handoff;
                 try
                 {
-                    result = await TextInjector.TryInsertAsync(
-                        App.PreviousForegroundWindow, App.PreviousFocusWindow, emoji.Character);
+                    handoff = await TextInjector.TryInsertAsync(
+                        App.PreviousForegroundWindow,
+                        App.PreviousFocusWindow,
+                        committedText);
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogAlways($"Insert threw: {ex}");
-                    result = InsertionResult.Failure("The emoji could not be sent safely.");
+                    Logger.LogAlways($"Typing Handoff threw: {ex.GetType().Name}");
+                    handoff = InsertionResult.Failure("The first typed input could not be handed off safely.");
                 }
 
-                insertionInProgress = false;
-                if (!result.Accepted)
+                insertionQueue.Reset();
+                UpdateInsertionQueueStatus();
+                if (!handoff.Accepted)
                 {
-                    Logger.Log($"Insert failed without retry or retarget: {result.Message}");
                     ShowInsertionError(
-                        emoji,
-                        result.Message ?? "The emoji could not be sent safely.",
-                        snapshot);
+                        committedText,
+                        handoff.Message ?? "The first typed input could not be handed off safely.",
+                        lastInsertionSnapshot ?? CaptureViewSnapshot());
+                    lastInsertionSnapshot = null;
+                    return;
                 }
-                else if (continueSession)
-                {
-                    RestorePickerAfterCommit(snapshot);
-                    AnnounceStatus($"Sent {emoji.Name}. Picker remains open.", busy: false);
-                }
-                else
-                {
-                    PersistSessionState();
-                }
-            }), System.Windows.Threading.DispatcherPriority.Background);
+
+                lastInsertionSnapshot = null;
+                FinalizeHiddenDismiss(returnFocusToTarget: false);
+                return;
+            }
+
+            var returnFocus = intent.ReturnFocusToTarget;
+            insertionQueue.Reset();
+            lastInsertionSnapshot = null;
+            UpdateInsertionQueueStatus();
+            FinalizeHiddenDismiss(returnFocus);
+        }
+
+        private void UpdateInsertionQueueStatus(bool queueFullAttempted = false)
+        {
+            string? status = null;
+            if (queueFullAttempted || insertionQueue.IsFull)
+            {
+                status = $"Queue full • {insertionQueue.PendingCount} pending";
+            }
+            else if (insertionQueue.Active is InsertionWorkItem)
+            {
+                status = insertionQueue.PendingCount == 0
+                    ? "Sending"
+                    : $"Sending • {insertionQueue.PendingCount} pending";
+            }
+            else if (insertionQueue.PendingCount > 0)
+            {
+                status = $"{insertionQueue.PendingCount} pending";
+            }
+            else if (insertionQueue.TerminalIntent?.Kind == QueueTerminalKind.TypingHandoff)
+            {
+                status = "Typing handoff";
+            }
+
+            InsertionQueueStatusText.Text = status ?? string.Empty;
+            InsertionQueueStatusText.Visibility = status == null ? Visibility.Collapsed : Visibility.Visible;
+            EmojiGrid.IsHitTestVisible = insertionQueue.IsAccepting && !insertionQueue.IsFull;
+            if (status != null)
+            {
+                System.Windows.Automation.AutomationProperties.SetItemStatus(EmojiGrid, $"Busy. {status}");
+            }
+            else
+            {
+                System.Windows.Automation.AutomationProperties.SetItemStatus(EmojiGrid, string.Empty);
+            }
         }
 
         private PickerViewSnapshot CaptureViewSnapshot()
@@ -1133,9 +1357,20 @@ namespace EmojiPicker
 
         private void ShowInsertionError(Emoji emoji, string message, PickerViewSnapshot? snapshot = null)
         {
-            failedInsertionEmoji = emoji;
+            ShowInsertionError(emoji.Character, message, snapshot);
+            System.Windows.Automation.AutomationProperties.SetName(
+                ExplicitCopyButton,
+                "Copy selected emoji to clipboard");
+        }
+
+        private void ShowInsertionError(string recoverableText, string message, PickerViewSnapshot? snapshot = null)
+        {
+            failedInsertionText = recoverableText;
             InsertionErrorText.Text = message;
             InsertionErrorPanel.Visibility = Visibility.Visible;
+            System.Windows.Automation.AutomationProperties.SetName(
+                ExplicitCopyButton,
+                "Copy unsent text to clipboard");
 
             // The picker was hidden before target activation. Bring the same shell
             // back without resetting query/category/selection/scroll.
@@ -1145,19 +1380,22 @@ namespace EmojiPicker
 
         private void HideInsertionError()
         {
-            failedInsertionEmoji = null;
+            failedInsertionText = null;
             InsertionErrorPanel.Visibility = Visibility.Collapsed;
             InsertionErrorText.Text = string.Empty;
+            System.Windows.Automation.AutomationProperties.SetName(
+                ExplicitCopyButton,
+                "Copy selected emoji to clipboard");
         }
 
         private void ExplicitCopyButton_Click(object sender, RoutedEventArgs e)
         {
-            if (failedInsertionEmoji == null)
+            if (failedInsertionText == null)
             {
                 return;
             }
 
-            if (TextInjector.CopyExplicit(failedInsertionEmoji.Character))
+            if (TextInjector.CopyExplicit(failedInsertionText))
             {
                 InsertionErrorText.Text = "Copied to the clipboard. It will appear in clipboard history when enabled.";
             }
@@ -1178,10 +1416,26 @@ namespace EmojiPicker
         {
             searchTimer.Stop(); // no point filtering a hidden grid
             HidePreview();
+            if (insertionQueue.HasWork || insertionPumpRunning || insertionQueue.TerminalIntent != null ||
+                insertionPumpOperation is { Status: DispatcherOperationStatus.Pending })
+            {
+                var cancelled = insertionQueue.StopAndCancelPending(QueueTerminalIntent.Dismiss(reason));
+                Logger.Log($"Dismiss requested; cancelled {cancelled} not-started insertion(s)");
+                UpdateInsertionQueueStatus();
+                Hide();
+                ScheduleInsertionPump(DispatcherPriority.Input, replacePending: true);
+                return;
+            }
+
+            FinalizeHiddenDismiss(PickerSessionState.ReturnsFocusAfter(reason));
+        }
+
+        private void FinalizeHiddenDismiss(bool returnFocusToTarget)
+        {
             PersistSessionState();
             Hide();
 
-            if (PickerSessionState.ReturnsFocusAfter(reason))
+            if (returnFocusToTarget)
             {
                 TextInjector.TryRestoreCapturedTarget(App.PreviousForegroundWindow, App.PreviousFocusWindow);
             }
@@ -1189,6 +1443,29 @@ namespace EmojiPicker
             // Give the memory back while we idle in the tray; ContextIdle runs
             // after the hide (and any pending insertion) has fully settled
             Dispatcher.BeginInvoke(new Action(MemoryTrimmer.Trim), DispatcherPriority.ContextIdle);
+
+            var exit = processExitAfterQueue;
+            processExitAfterQueue = null;
+            if (exit != null)
+            {
+                PrepareForProcessExit();
+                exit();
+            }
+        }
+
+        public void RequestProcessExit(Action exit)
+        {
+            ArgumentNullException.ThrowIfNull(exit);
+            if (insertionQueue.HasWork || insertionPumpRunning ||
+                insertionPumpOperation is { Status: DispatcherOperationStatus.Pending })
+            {
+                processExitAfterQueue = exit;
+                DismissPicker(PickerDismissReason.ProcessExit);
+                return;
+            }
+
+            PrepareForProcessExit();
+            exit();
         }
 
         /// <summary>
@@ -1235,9 +1512,16 @@ namespace EmojiPicker
                 return;
             }
 
-            if (insertionInProgress)
+            if (insertionInProgress || insertionQueue.TerminalIntent != null)
             {
-                Logger.Log("Deactivated ignored (insertion in progress)");
+                Logger.Log("Deactivated ignored (insertion queue or handoff in progress)");
+                return;
+            }
+
+            if (insertionQueue.HasWork)
+            {
+                Logger.Log("Deactivated with pending insertion -> cancel and respect external focus");
+                DismissPicker(PickerDismissReason.ExternalPointer);
                 return;
             }
 
@@ -1366,6 +1650,10 @@ namespace EmojiPicker
             Pointer,
             Keyboard,
         }
+
+        private sealed record InsertionWorkItem(
+            Emoji Emoji,
+            PickerViewSnapshot Snapshot);
 
         private sealed record PickerViewSnapshot(
             PickerInputMode Mode,

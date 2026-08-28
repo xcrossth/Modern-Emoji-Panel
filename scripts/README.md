@@ -111,3 +111,11 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 ```
 
 คำสั่งนี้ตรวจ Browse/Search Mode, Esc, click/Enter/Shift+Enter, นโยบายคืน focus, placement บน working area หลาย monitor, การจำขนาด และ accessibility state โดยไม่ส่ง input จริง รายละเอียดอยู่ที่ [Picker Session, focus และการวางหน้าต่าง](../docs/picker-session-and-focus.md)
+
+## ตรวจ Insertion Queue และ Typing Handoff
+
+```powershell
+.\scripts\verify-insertion-queue.ps1
+```
+
+คำสั่งนี้ตรวจลำดับ FIFO, ขอบเขตงานรอ 20 รายการ, การไม่เริ่มงานขนาน, การยกเลิกเฉพาะงานที่ยังไม่เริ่ม, การรอ active operation ก่อน dismiss/handoff และการรักษา committed text จาก Thai IME/dead key ผ่าน state seam ที่ไม่ขึ้นกับ timing จริงของเดสก์ท็อป รายละเอียดอยู่ที่ [Insertion Queue และ Typing Handoff](../docs/insertion-queue-and-typing-handoff.md)

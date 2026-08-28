@@ -77,6 +77,8 @@ Assert(baseIds.Contains(Find("1F1F9 1F1ED").Id), "Thailand flag must remain brow
 Assert(baseIds.Contains(Find("0031 FE0F 20E3").Id), "Keycap sequence must remain browsable.");
 Assert(baseIds.Contains(Find("1F468 200D 1F469 200D 1F467").Id), "Complex ZWJ family must remain browsable.");
 
+ActivityDataSmoke.Run();
+
 var defaultSettings = new Settings();
 Assert(defaultSettings.PreferredSkinTone == SkinTonePreference.Neutral,
     "A fresh profile must default to neutral yellow.");
@@ -104,7 +106,7 @@ finally
 
 Console.WriteLine(
     $"Emoji variant verification passed: {catalog.Entries.Count} baseline sequences, " +
-    $"{variants.BaseEntries.Count} browse entries, global tone and one-shot mixed overrides");
+    $"{variants.BaseEntries.Count} browse entries, global tone, mixed overrides and local Activity Data");
 return;
 
 Emoji Find(string canonicalSequence) => catalog.Entries.Single(entry =>

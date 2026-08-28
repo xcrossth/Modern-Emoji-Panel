@@ -21,9 +21,13 @@ internal readonly record struct EmojiSearchMatch(Emoji Emoji, EmojiMatchTier Tie
 internal sealed class EmojiSearchIndex
 {
     private readonly IReadOnlyList<IndexedEmoji> entries;
+    private readonly Func<IReadOnlyDictionary<string, double>> learnedScores;
 
-    public EmojiSearchIndex(IEnumerable<Emoji> emojis)
+    public EmojiSearchIndex(
+        IEnumerable<Emoji> emojis,
+        Func<IReadOnlyDictionary<string, double>>? learnedScores = null)
     {
+        this.learnedScores = learnedScores ?? (() => new Dictionary<string, double>());
         entries = emojis
             .Select(emoji => new IndexedEmoji(
                 emoji,
@@ -44,11 +48,15 @@ internal sealed class EmojiSearchIndex
             return [];
         }
 
+        var scoreSnapshot = learnedScores();
         return entries
             .Select(entry => Classify(entry, normalizedQuery))
             .Where(match => match.HasValue)
             .Select(match => match!.Value)
             .OrderBy(match => match.Tier)
+            // Preference can reorder only peers in the same match tier. The
+            // baseline CLDR order remains the deterministic final tie-breaker.
+            .ThenByDescending(match => scoreSnapshot.GetValueOrDefault(match.Emoji.Id))
             .ThenBy(match => match.Emoji.Order)
             .ThenBy(match => match.Emoji.Id, StringComparer.Ordinal)
             .ToArray();

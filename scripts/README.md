@@ -111,3 +111,11 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 ```
 
 คำสั่งนี้ตรวจ Browse/Search Mode, Esc, click/Enter/Shift+Enter, นโยบายคืน focus, placement บน working area หลาย monitor, การจำขนาด และ accessibility state โดยไม่ส่ง input จริง รายละเอียดอยู่ที่ [Picker Session, focus และการวางหน้าต่าง](../docs/picker-session-and-focus.md)
+
+## ตรวจ Recent และ Learned Ranking
+
+```powershell
+.\scripts\verify-activity-data.ps1
+```
+
+คำสั่งนี้ตรวจ Recent แบบ MRU 50 รายการและ resolved sequence, Learned Ranking ที่มี half-life 90 วันโดยไม่ข้าม match tier, schema แบบระบุเวอร์ชัน, atomic write, migration, การสำรองและรีเซ็ตไฟล์เสียแบบแยกส่วน ตลอดจน Clear Recent, Reset learned ranking และ Clear all activity รายละเอียดอยู่ที่ [Recent และ Learned Ranking บนเครื่อง](../docs/local-activity-data.md)

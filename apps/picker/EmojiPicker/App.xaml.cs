@@ -1,9 +1,5 @@
 using System;
-using System.Drawing;
-using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Threading;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
@@ -14,10 +10,7 @@ namespace EmojiPicker
 {
     public partial class App : Application
     {
-        private const string MutexName = "ClassicEmojiPicker.SingleInstance";
-        private const string ShowEventName = "ClassicEmojiPicker.Show";
         private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-        private const string RunValueName = "ClassicEmojiPicker";
 
         /// <summary>
         /// The foreground window when the hotkey fired; selected emoji are inserted
@@ -43,16 +36,16 @@ namespace EmojiPicker
         // exist, the second logon start would otherwise pop the picker open
         private static readonly TimeSpan StartupShowGrace = TimeSpan.FromSeconds(3);
 
-        private Mutex? instanceMutex;
-        private EventWaitHandle? showEvent;
+        private readonly ClassicConflictDetector classicConflictDetector = new ClassicConflictDetector();
+        private SingleInstanceCoordinator? singleInstance;
         private MainWindow? picker;
         private HotkeyListener? hotkey;
         private NotifyIcon? trayIcon;
-        private Thread? showThread;
+        private ToolStripMenuItem? classicConflictItem;
         private System.Windows.Threading.DispatcherTimer? hookRearmTimer;
-        private volatile bool shuttingDown;
         private DateTime showGraceAnchorUtc;
         private bool graceActive;
+        private bool? classicConflictActive;
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -69,21 +62,26 @@ namespace EmojiPicker
                 return;
             }
 
-            // Only one resident instance may own the global hook and tray icon
-            instanceMutex = new Mutex(true, MutexName, out var isNew);
-            if (!isNew)
+            var identitySmokeIndex = Array.FindIndex(
+                e.Args,
+                argument => string.Equals(argument, "--product-identity-smoke", StringComparison.Ordinal));
+            if (identitySmokeIndex >= 0)
             {
-                // Already running: ask that instance to open the picker (so running
-                // the shortcut again behaves like a launcher), then exit
-                try
-                {
-                    EventWaitHandle.OpenExisting(ShowEventName).Set();
-                }
-                catch (Exception)
-                {
-                    // The primary may be mid-startup or shutting down; nothing to do
-                }
+                var reportPath = identitySmokeIndex + 1 < e.Args.Length
+                    ? e.Args[identitySmokeIndex + 1]
+                    : null;
+                Shutdown(string.IsNullOrWhiteSpace(reportPath)
+                    ? 2
+                    : ProductIdentitySmoke.Run(reportPath));
+                return;
+            }
 
+            // Only one resident instance may own the global hook and tray icon
+            if (!SingleInstanceCoordinator.TryAcquire(
+                    ProductIdentity.MutexName,
+                    ProductIdentity.ShowEventName,
+                    out singleInstance))
+            {
                 Shutdown();
                 return;
             }
@@ -92,12 +90,6 @@ namespace EmojiPicker
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             Logger.Log($"=== Startup v{version} ===");
             Settings.Load();
-
-            // Create the run-again event now, before the heavy warm-up below, so a
-            // relaunch during startup can signal it instead of failing to open a
-            // not-yet-created event. The auto-reset event latches the signal until
-            // the show-event loop starts (after the picker exists).
-            showEvent = new EventWaitHandle(false, EventResetMode.AutoReset, ShowEventName);
 
             // The 3s show-grace only needs to suppress the one duplicate logon start
             // that happens when both the all-users (HKLM) and per-user (HKCU)
@@ -111,7 +103,7 @@ namespace EmojiPicker
             {
                 Logger.LogAlways($"UNHANDLED (UI, continuing): {args.Exception}");
                 args.Handled = true;
-                trayIcon?.ShowBalloonTip(4000, "Classic Emoji Picker",
+                trayIcon?.ShowBalloonTip(4000, ProductIdentity.ProductName,
                     $"Something went wrong; details in {Logger.LogPath}", ToolTipIcon.Warning);
             };
             AppDomain.CurrentDomain.UnhandledException += (_, args) =>
@@ -126,10 +118,8 @@ namespace EmojiPicker
             picker = new MainWindow();
             picker.PreWarm(); // warm the render path so the first hotkey open is fast
 
-            hotkey = new HotkeyListener();
-            hotkey.HotkeyPressed += OnHotkeyPressed;
-            hotkey.Start();
-            Logger.Log("Keyboard hook installed");
+            CreateTrayIcon();
+            RefreshHotkeyOwnership(showConflictNotification: true);
 
             // Windows can silently drop a low-level hook (callback timeout, secure
             // desktop, session switch). Re-arm on session change and on a periodic
@@ -139,7 +129,7 @@ namespace EmojiPicker
             {
                 Interval = TimeSpan.FromSeconds(60),
             };
-            hookRearmTimer.Tick += (_, _) => hotkey?.Rearm();
+            hookRearmTimer.Tick += (_, _) => RefreshHotkeyOwnership(showConflictNotification: false);
             hookRearmTimer.Start();
 
             // Now that the picker exists, start handling run-again signals (a signal
@@ -148,10 +138,8 @@ namespace EmojiPicker
             // signal latched during a slow warm-up must still fall inside the grace
             // window when the loop finally consumes it, or the picker would pop open.
             showGraceAnchorUtc = DateTime.UtcNow;
-            showThread = new Thread(ShowEventLoop) { IsBackground = true };
-            showThread.Start();
-
-            CreateTrayIcon();
+            singleInstance!.ShowRequested += OnShowRequested;
+            singleInstance.StartListening();
         }
 
         private void RunFoundationSmoke()
@@ -166,6 +154,15 @@ namespace EmojiPicker
                 new Action(() =>
                 {
                     if (!smokeWindow.IsLoaded || smokeWindow.CategoryTabs.Items.Count != 7 || smokeWindow.EmojiGrid.Items.Count == 0)
+                    {
+                        FinishFoundationSmoke(smokeWindow, exitCode: 1);
+                        return;
+                    }
+
+                    // A normal window close must only dismiss the resident picker.
+                    // OnClosing cancels this Close, leaving the reusable shell loaded.
+                    smokeWindow.Close();
+                    if (!smokeWindow.IsLoaded || smokeWindow.IsVisible)
                     {
                         FinishFoundationSmoke(smokeWindow, exitCode: 1);
                         return;
@@ -190,7 +187,8 @@ namespace EmojiPicker
 
         private void FinishFoundationSmoke(MainWindow smokeWindow, int exitCode)
         {
-            smokeWindow.Hide();
+            smokeWindow.PrepareForProcessExit();
+            smokeWindow.Close();
             ThemeManager.Shutdown();
             Shutdown(exitCode);
         }
@@ -207,18 +205,12 @@ namespace EmojiPicker
 
             Logger.Log($"Hotkey pressed; target={targetWindow} focus={focusWindow} caret={(caretRect.HasValue ? caretRect.Value.ToString() : "none")}");
 
-            // Win+. while the picker is open dismisses it (like the Windows 10
-            // panel). Without this, the hook would capture the picker itself as
-            // the insertion target and the chosen emoji would go nowhere.
+            // Repeating Win+. while the picker is already open is intentionally a
+            // no-op. Never replace the original insertion target with the picker.
             if (picker != null && targetWindow == new System.Windows.Interop.WindowInteropHelper(picker).Handle)
             {
-                if (picker.IsVisible)
-                {
-                    Logger.Log("Hotkey while open -> toggle dismiss");
-                    picker.DismissPicker();
-                }
-
-                return; // hidden-but-captured is a stale race; keep the old target
+                Logger.Log("Hotkey while open -> ignored");
+                return;
             }
 
             PreviousForegroundWindow = targetWindow;
@@ -233,58 +225,60 @@ namespace EmojiPicker
             // thread, which owns the hook's message loop
             Dispatcher.BeginInvoke(new Action(() =>
             {
-                hotkey?.Rearm();
-                Logger.Log($"Session switch ({e.Reason}) -> hook re-armed");
+                RefreshHotkeyOwnership(showConflictNotification: false);
+                Logger.Log($"Session switch ({e.Reason}) -> hotkey ownership refreshed");
             }));
         }
 
-        private void ShowEventLoop()
+        private void OnShowRequested()
         {
-            while (showEvent != null && showEvent.WaitOne())
+            // Snapshot the foreground state on the signal thread, at signal time.
+            var target = NativeMethods.GetForegroundWindow();
+            var focus = TextInjector.GetFocusedControl(target);
+            System.Drawing.Rectangle? caret =
+                TextInjector.TryGetCaretRect(target, out var caretRect) ? caretRect : null;
+
+            Dispatcher.BeginInvoke(new Action(() =>
             {
-                if (shuttingDown)
+                // Ignore signals right after startup ONLY when a duplicate logon
+                // start is actually possible (both the HKLM all-users and HKCU
+                // per-user Run values present); that duplicate would otherwise
+                // pop the picker. Otherwise a run-again is a real user relaunch.
+                if (graceActive && DateTime.UtcNow - showGraceAnchorUtc < StartupShowGrace)
                 {
+                    Logger.Log("Show requested (run-again) ignored during startup grace");
                     return;
                 }
 
-                // Snapshot the foreground state on this thread, at signal time
-                var target = NativeMethods.GetForegroundWindow();
-                var focus = TextInjector.GetFocusedControl(target);
-                System.Drawing.Rectangle? caret =
-                    TextInjector.TryGetCaretRect(target, out var caretRect) ? caretRect : null;
+                Logger.Log("Show requested (run-again)");
 
-                Dispatcher.BeginInvoke(new Action(() =>
+                // Don't let the picker become its own insertion target when
+                // it is already open; keep whatever target it had.
+                if (picker == null || target != new System.Windows.Interop.WindowInteropHelper(picker).Handle)
                 {
-                    // Ignore signals right after startup ONLY when a duplicate logon
-                    // start is actually possible (both the HKLM all-users and HKCU
-                    // per-user Run values present); that duplicate would otherwise
-                    // pop the picker. Otherwise a run-again is a real user relaunch.
-                    if (graceActive && DateTime.UtcNow - showGraceAnchorUtc < StartupShowGrace)
-                    {
-                        Logger.Log("Show requested (run-again) ignored during startup grace");
-                        return;
-                    }
+                    PreviousForegroundWindow = target;
+                    PreviousFocusWindow = focus;
+                    PreviousCaretRect = caret;
+                }
 
-                    Logger.Log("Show requested (run-again)");
-
-                    // Don't let the picker become its own insertion target when
-                    // it is already open; keep whatever target it had
-                    if (picker == null || target != new System.Windows.Interop.WindowInteropHelper(picker).Handle)
-                    {
-                        PreviousForegroundWindow = target;
-                        PreviousFocusWindow = focus;
-                        PreviousCaretRect = caret;
-                    }
-
-                    picker?.ShowPicker();
-                }));
-            }
+                picker?.ShowPicker();
+            }));
         }
 
         private void CreateTrayIcon()
         {
             var menu = new ContextMenuStrip();
-            menu.Items.Add("Open Emoji Picker", null, (_, _) => ShowPickerFromTray());
+            menu.Items.Add("Open Modern Emoji Picker", null, (_, _) => ShowPickerFromTray());
+            menu.Items.Add(new ToolStripSeparator());
+
+            classicConflictItem = new ToolStripMenuItem("Classic Conflict: Win + . is disabled")
+            {
+                Enabled = false,
+                Visible = false,
+            };
+            menu.Items.Add(classicConflictItem);
+            menu.Items.Add("Check for Classic again", null, (_, _) =>
+                RefreshHotkeyOwnership(showConflictNotification: true));
             menu.Items.Add(new ToolStripSeparator());
 
             var startupItem = new ToolStripMenuItem("Start with Windows")
@@ -316,19 +310,21 @@ namespace EmojiPicker
                 loggingItem.Checked = on;
                 trayIcon?.ShowBalloonTip(
                     4000,
-                    "Classic Emoji Picker",
+                    ProductIdentity.ProductName,
                     on ? $"Debug logging ON\n{Logger.LogPath}" : "Debug logging OFF",
                     ToolTipIcon.Info);
             };
             menu.Items.Add(loggingItem);
 
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("Exit", null, (_, _) => Shutdown());
+            menu.Items.Add("Exit Modern Emoji Picker", null, (_, _) => ExitApplication());
 
             trayIcon = new NotifyIcon
             {
-                Icon = LoadTrayIcon(),
-                Text = "Classic Emoji Picker",
+                // Ticket 14 supplies branded artwork. Until then use a neutral
+                // system icon rather than reusing Classic's shipped icon.
+                Icon = System.Drawing.SystemIcons.Application,
+                Text = ProductIdentity.ProductName,
                 Visible = true,
                 ContextMenuStrip = menu,
             };
@@ -347,24 +343,64 @@ namespace EmojiPicker
             picker?.ShowPicker();
         }
 
-        private static Icon LoadTrayIcon()
+        private void RefreshHotkeyOwnership(bool showConflictNotification)
         {
-            try
+            var conflict = classicConflictDetector.IsClassicRunning();
+            var conflictChanged = classicConflictActive != conflict;
+            classicConflictActive = conflict;
+
+            if (classicConflictItem != null)
             {
-                var uri = new Uri("pack://application:,,,/Resources/app.ico");
-                var stream = GetResourceStream(uri)?.Stream;
-                if (stream != null)
-                {
-                    return new Icon(stream);
-                }
-            }
-            catch (Exception)
-            {
-                // Fall through to the shipped application icon
+                classicConflictItem.Visible = conflict;
             }
 
-            var exePath = Environment.ProcessPath;
-            return (exePath != null ? Icon.ExtractAssociatedIcon(exePath) : null) ?? SystemIcons.Application;
+            if (conflict)
+            {
+                if (hotkey != null)
+                {
+                    hotkey.Dispose();
+                    hotkey = null;
+                    Logger.Log("Classic conflict detected -> Modern hotkey hook removed");
+                }
+
+                if ((showConflictNotification || conflictChanged) && trayIcon != null)
+                {
+                    trayIcon.ShowBalloonTip(
+                        10000,
+                        "Classic Emoji Picker is running",
+                        "Modern did not take Win + . and did not stop Classic. Choose Exit from Classic's tray menu, then choose 'Check for Classic again' here.",
+                        ToolTipIcon.Warning);
+                }
+
+                return;
+            }
+
+            if (hotkey == null)
+            {
+                hotkey = new HotkeyListener();
+                hotkey.HotkeyPressed += OnHotkeyPressed;
+                hotkey.Start();
+                Logger.Log("Modern keyboard hook installed (Classic not detected)");
+            }
+            else
+            {
+                hotkey.Rearm();
+            }
+
+            if (showConflictNotification && conflictChanged && trayIcon != null)
+            {
+                trayIcon.ShowBalloonTip(
+                    4000,
+                    ProductIdentity.ProductName,
+                    "Classic is no longer running. Modern now owns Win + .",
+                    ToolTipIcon.Info);
+            }
+        }
+
+        private void ExitApplication()
+        {
+            picker?.PrepareForProcessExit();
+            Shutdown();
         }
 
         private static bool IsStartupEnabled()
@@ -372,7 +408,7 @@ namespace EmojiPicker
             try
             {
                 using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RunKeyPath);
-                return key?.GetValue(RunValueName) != null;
+                return key?.GetValue(ProductIdentity.RunValueName) != null;
             }
             catch (Exception)
             {
@@ -389,7 +425,7 @@ namespace EmojiPicker
             try
             {
                 using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(RunKeyPath);
-                return key?.GetValue(RunValueName) != null;
+                return key?.GetValue(ProductIdentity.RunValueName) != null;
             }
             catch (Exception)
             {
@@ -412,18 +448,18 @@ namespace EmojiPicker
                     var exePath = Environment.ProcessPath;
                     if (exePath != null)
                     {
-                        key.SetValue(RunValueName, $"\"{exePath}\"");
+                        key.SetValue(ProductIdentity.RunValueName, $"\"{exePath}\"");
                     }
                 }
                 else
                 {
-                    key.DeleteValue(RunValueName, throwOnMissingValue: false);
+                    key.DeleteValue(ProductIdentity.RunValueName, throwOnMissingValue: false);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Could not update the startup setting: {ex.Message}",
-                    "Classic Emoji Picker", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    ProductIdentity.ProductName, MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
 
@@ -441,13 +477,7 @@ namespace EmojiPicker
 
             hotkey?.Dispose();
             ThemeManager.Shutdown();
-
-            // Wake the show-event thread so it observes the flag and exits before
-            // the handle is disposed (disposing mid-WaitOne throws on that thread)
-            shuttingDown = true;
-            showEvent?.Set();
-            showThread?.Join(1000);
-            showEvent?.Dispose();
+            singleInstance?.Dispose();
 
             if (trayIcon != null)
             {
@@ -455,7 +485,6 @@ namespace EmojiPicker
                 trayIcon.Dispose();
             }
 
-            instanceMutex?.Dispose();
             base.OnExit(e);
         }
     }

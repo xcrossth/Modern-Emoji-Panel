@@ -30,8 +30,7 @@ namespace EmojiPicker
         private static readonly TimeSpan SearchDebounce = TimeSpan.FromMilliseconds(120);
 
         private static readonly string RecentEmojisFile = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "ClassicEmojiPicker",
+            ProductIdentity.DataDirectory,
             "recent.json");
 
         // Windows 10's seven picker categories, keyed by the Unicode group names
@@ -68,6 +67,7 @@ namespace EmojiPicker
         private string currentCategory = DefaultCategoryKey;
         private bool isShowing;
         private bool recentsDirty;
+        private bool allowProcessExit;
 
         public MainWindow()
             : this(loadUserActivity: true)
@@ -750,6 +750,33 @@ namespace EmojiPicker
             // Give the memory back while we idle in the tray; ContextIdle runs
             // after the hide (and any pending insertion) has fully settled
             Dispatcher.BeginInvoke(new Action(MemoryTrimmer.Trim), DispatcherPriority.ContextIdle);
+        }
+
+        /// <summary>
+        /// Allows the tray Exit command to close the reusable WPF window while
+        /// keeping every ordinary close gesture as a non-destructive dismissal.
+        /// </summary>
+        public void PrepareForProcessExit()
+        {
+            if (recentsDirty)
+            {
+                SaveRecentEmojis();
+                recentsDirty = false;
+            }
+
+            allowProcessExit = true;
+        }
+
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (!allowProcessExit)
+            {
+                e.Cancel = true;
+                DismissPicker();
+                return;
+            }
+
+            base.OnClosing(e);
         }
 
         private void MainWindow_Deactivated(object sender, EventArgs e)

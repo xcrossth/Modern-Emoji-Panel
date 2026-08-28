@@ -55,3 +55,19 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
     .\scripts\update-emoji-baseline.ps1
 
 คำสั่งนี้เป็นทางเดียวในโครงการที่ดาวน์โหลด source ของ Emoji Baseline โดย fetch เฉพาะ URL และ Git commit ที่ตรึงใน source lock ลง staging directory ชั่วคราว ตรวจ checksum กับ inventory ก่อนแทนที่ไฟล์ใน repository และรัน offline verifier ซ้ำ การ build, test และ release ตามปกติไม่เรียกคำสั่งนี้
+
+## สร้างและตรวจ generated Emoji Baseline
+
+หลัง restore แบบ locked แล้ว สร้าง JSON กลางจาก source ที่ commit ไว้โดยไม่ใช้ network:
+
+```powershell
+.\scripts\generate-emoji-baseline.ps1
+```
+
+ตรวจ source checksum, generator build, full metadata/asset coverage และ determinism แบบ byte-for-byte ด้วย:
+
+```powershell
+.\scripts\verify-generated-emoji-baseline.ps1
+```
+
+รายละเอียด schema, stable ID, asset aliases และรายงาน update อยู่ที่ [การสร้าง Emoji Baseline](../docs/emoji-baseline-generator.md)

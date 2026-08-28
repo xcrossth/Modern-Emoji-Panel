@@ -10,6 +10,7 @@ $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $solutionPath = Join-Path $repositoryRoot "ModernEmojiPanel.sln"
 $projectPath = Join-Path $repositoryRoot "apps\picker\EmojiPicker\EmojiPicker.csproj"
 $lockPath = Join-Path $repositoryRoot "apps\picker\EmojiPicker\packages.lock.json"
+$generatorLockPath = Join-Path $repositoryRoot "tools\emoji-baseline\packages.lock.json"
 $sourceManifestPath = Join-Path $repositoryRoot "docs\upstream\classic-picker.source.json"
 
 function Assert-Condition {
@@ -44,6 +45,7 @@ try {
     Assert-Condition (Test-Path -LiteralPath $solutionPath) "Root solution is missing"
     Assert-Condition (Test-Path -LiteralPath (Join-Path $repositoryRoot "Directory.Packages.props")) "Central package versions are missing"
     Assert-Condition (Test-Path -LiteralPath $lockPath) "Picker NuGet lock file is missing"
+    Assert-Condition (Test-Path -LiteralPath $generatorLockPath) "Generator NuGet lock file is missing"
 
     $sourceManifest = Get-Content -Raw -LiteralPath $sourceManifestPath | ConvertFrom-Json
     $importedTree = (& git rev-parse "$($sourceManifest.importCommit):$($sourceManifest.prefix)").Trim()
@@ -89,7 +91,7 @@ try {
         throw "dotnet format verification failed"
     }
 
-    & git diff --exit-code -- $lockPath
+    & git diff --exit-code -- $lockPath $generatorLockPath
     if ($LASTEXITCODE -ne 0) {
         throw "Locked restore changed packages.lock.json"
     }

@@ -146,6 +146,23 @@ namespace EmojiPicker
             return SendUnicodeKeystrokes(text);
         }
 
+        /// <summary>
+        /// Returns keyboard focus to the exact app/control captured before the Picker
+        /// Session. This is used only by explicit dismissal gestures; an outside click
+        /// deliberately does not call it, so the window chosen by the user keeps focus.
+        /// </summary>
+        internal static bool TryRestoreCapturedTarget(IntPtr targetWindow, IntPtr focusWindow)
+        {
+            if (targetWindow == IntPtr.Zero || !NativeMethods.IsWindow(targetWindow) ||
+                !NativeMethods.SetForegroundWindow(targetWindow))
+            {
+                return false;
+            }
+
+            RestoreFocus(targetWindow, focusWindow);
+            return true;
+        }
+
         private static InsertionResult SendUnicodeKeystrokes(string text)
         {
             // All key-downs first, then all key-ups: the two halves of a surrogate

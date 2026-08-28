@@ -49,7 +49,7 @@ try {
     Assert-Condition ($windowXaml -match 'MouseLeave" Handler="EmojiItem_MouseLeave"') "Emoji tiles do not dismiss pointer preview"
     Assert-Condition ($windowCode -match 'e\.Key == Key\.F1') "F1 does not open the focused tile preview"
     Assert-Condition ($windowCode -match 'e\.Key == Key\.F.*ModifierKeys\.Control') "Ctrl+F does not focus search"
-    Assert-Condition ($windowCode -match '(?s)private void CommitEmoji\(Emoji emoji\).*?HidePreview\(\)') "Starting insert does not dismiss preview"
+    Assert-Condition ($windowCode -match '(?s)private void CommitEmoji\(Emoji emoji, CommitGesture gesture\).*?HidePreview\(\)') "Starting insert does not dismiss preview"
 
     $baseline = Get-Content -Raw -LiteralPath $baselinePath | ConvertFrom-Json
     $entries = @($baseline.entries)

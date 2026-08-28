@@ -1,5 +1,9 @@
 # Automated tests
 
-โฟลเดอร์นี้เป็นรากของ test projects ที่ใช้ร่วมกันใน monorepo ส่วน regression gate ของ foundation ปัจจุบันอยู่ที่ `scripts/verify-foundation.ps1` และ `scripts/test-clean-checkout.ps1`
+โฟลเดอร์นี้เป็นรากของ test projects ที่ใช้ร่วมกันใน monorepo ส่วน regression gate ปัจจุบันอยู่ที่:
+
+- `scripts/verify-foundation.ps1` สำหรับ build/publish และ WPF smoke
+- `scripts/test-clean-checkout.ps1` สำหรับ foundation จาก checkout ใหม่
+- `scripts/verify-generated-emoji-baseline.ps1` สำหรับ source checksum, full Emoji 17 coverage และ generator determinism
 
 เมื่อเพิ่ม test project ให้เพิ่มเข้า `ModernEmojiPanel.sln` และเก็บ NuGet lock file ของ project นั้นใน Git

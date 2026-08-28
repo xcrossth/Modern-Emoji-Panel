@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Classic Emoji Picker - per-machine MSI for silent/enterprise deployment.
+  Modern Emoji Picker - per-machine MSI for silent/enterprise deployment.
   Payload: the SELF-CONTAINED publish (no runtime prerequisite).
 
   Build (WiX v6 dotnet tool + UI/Util extensions at the matching version):
     wix build installer/msi/Package.wxs -arch x64 \
       -d Version=<a.b.c> -d PublishDir=<abs path to publish> \
       -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext \
-      -o ClassicEmojiPicker-v<ver>-win-x64.msi
+      -o Modern-Emoji-Picker-v<ver>-setup-win-x64.msi
 
-  Silent install:   msiexec /i ClassicEmojiPicker-vX.Y.Z-win-x64.msi /qn
+  Silent install:   msiexec /i Modern-Emoji-Picker-vX.Y.Z-setup-win-x64.msi /qn
     AUTOSTART=0     skip the all-users Run key (Win+. then needs a manual start)
     INSTALLFOLDER=  override the install directory
-  Silent uninstall: msiexec /x ClassicEmojiPicker-vX.Y.Z-win-x64.msi /qn
+  Silent uninstall: msiexec /x Modern-Emoji-Picker-vX.Y.Z-setup-win-x64.msi /qn
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
      xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui"
@@ -20,10 +20,10 @@
 
   <!-- UpgradeCode is this product line's permanent identity in MSI terms:
        NEVER change it, and never reuse the Inno AppId -->
-  <Package Name="Classic Emoji Picker"
-           Manufacturer="Platima"
+  <Package Name="Modern Emoji Picker"
+           Manufacturer="X CroSs"
            Version="$(var.Version)"
-           UpgradeCode="899B683B-F905-46AC-A590-05616BFCA4C7"
+           UpgradeCode="EB407AE1-9D49-43A7-AA0A-208EC973479E"
            Scope="perMachine"
            Language="1033"
            Compressed="yes">
@@ -42,7 +42,7 @@
          has no closable top-level window, so terminate by image name (the
          Inno installer's uninstaller does the same via taskkill) -->
     <util:CloseApplication Id="CloseEmojiPicker"
-                           Target="EmojiPicker.exe"
+                           Target="ModernEmojiPicker.exe"
                            CloseMessage="no"
                            RebootPrompt="no"
                            TerminateProcess="0"
@@ -50,10 +50,9 @@
 
     <!-- Add/Remove Programs metadata -->
     <!-- Path relative to the build working directory (the repo root) -->
-    <Icon Id="AppIcon.ico" SourceFile="EmojiPicker\Resources\app.ico" />
-    <Property Id="ARPPRODUCTICON" Value="AppIcon.ico" />
-    <Property Id="ARPURLINFOABOUT" Value="https://github.com/platima/Classic-EmojiPicker" />
-    <Property Id="ARPHELPLINK" Value="https://github.com/platima/Classic-EmojiPicker" />
+    <!-- Ticket 14 supplies a new product icon. Do not reuse Classic artwork. -->
+    <Property Id="ARPURLINFOABOUT" Value="https://github.com/xcrossth/Modern-Emoji-Panel" />
+    <Property Id="ARPHELPLINK" Value="https://github.com/xcrossth/Modern-Emoji-Panel" />
     <!-- ARPNOMODIFY is already set by WixUI_Minimal -->
 
     <!-- Start with Windows for all users; fleets can opt out: AUTOSTART=0.
@@ -66,7 +65,7 @@
          dropped when the client isn't already elevated). -->
     <Property Id="AUTOSTART" Value="1" Secure="yes">
       <RegistrySearch Id="AutostartPersistedSearch" Root="HKLM"
-                      Key="Software\Platima\Classic Emoji Picker"
+                      Key="Software\XCroSs\ModernEmojiPicker"
                       Name="Autostart" Type="raw" />
     </Property>
 
@@ -76,7 +75,7 @@
     <WixVariable Id="WixUILicenseRtf" Value="installer\msi\License.rtf" />
 
     <StandardDirectory Id="ProgramFiles64Folder">
-      <Directory Id="INSTALLFOLDER" Name="Classic Emoji Picker" />
+      <Directory Id="INSTALLFOLDER" Name="Modern Emoji Picker" />
     </StandardDirectory>
 
     <!-- Whole self-contained publish tree; one component per file with
@@ -88,13 +87,13 @@
     <StandardDirectory Id="ProgramMenuFolder">
       <Component Id="StartMenuShortcut">
         <Shortcut Id="AppShortcut"
-                  Name="Classic Emoji Picker"
-                  Description="Windows 10-style emoji picker"
-                  Target="[INSTALLFOLDER]EmojiPicker.exe"
+                  Name="Modern Emoji Picker"
+                  Description="Modern Unicode emoji picker for Windows"
+                  Target="[INSTALLFOLDER]ModernEmojiPicker.exe"
                   WorkingDirectory="INSTALLFOLDER"
-                  Icon="AppIcon.ico" />
+                  />
         <RegistryValue Root="HKLM"
-                       Key="Software\Platima\Classic Emoji Picker"
+                       Key="Software\XCroSs\ModernEmojiPicker"
                        Name="Installed" Type="integer" Value="1" KeyPath="yes" />
       </Component>
     </StandardDirectory>
@@ -102,8 +101,8 @@
     <Component Id="AutostartRunKey" Directory="INSTALLFOLDER" Condition="AUTOSTART=1">
       <RegistryValue Root="HKLM"
                      Key="Software\Microsoft\Windows\CurrentVersion\Run"
-                     Name="ClassicEmojiPicker" Type="string"
-                     Value="&quot;[INSTALLFOLDER]EmojiPicker.exe&quot;" KeyPath="yes" />
+                     Name="ModernEmojiPicker" Type="string"
+                     Value="&quot;[INSTALLFOLDER]ModernEmojiPicker.exe&quot;" KeyPath="yes" />
     </Component>
 
     <!-- Always installed. Remembers the AUTOSTART choice so the RegistrySearch
@@ -117,7 +116,7 @@
          it). The Inno installer, which runs in the user's context, cleans it up. -->
     <Component Id="AutostartState" Directory="INSTALLFOLDER">
       <RegistryValue Root="HKLM"
-                     Key="Software\Platima\Classic Emoji Picker"
+                     Key="Software\XCroSs\ModernEmojiPicker"
                      Name="Autostart" Type="string" Value="[AUTOSTART]" KeyPath="yes" />
     </Component>
 

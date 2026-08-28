@@ -17,9 +17,7 @@ namespace EmojiPicker
 
         private static readonly object Gate = new object();
 
-        private static readonly string Dir = Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-            "ClassicEmojiPicker");
+        private static readonly string Dir = ProductIdentity.DataDirectory;
 
         private static readonly string EnabledMarker = Path.Combine(Dir, "debug.enabled");
 

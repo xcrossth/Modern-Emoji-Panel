@@ -67,16 +67,21 @@ try {
     }
 
     if ($SkipPublish) {
-        $smokeExecutable = Join-Path $repositoryRoot "apps\picker\EmojiPicker\bin\Release\net10.0-windows\win-x64\EmojiPicker.exe"
+        $smokeExecutable = Join-Path $repositoryRoot "apps\picker\EmojiPicker\bin\Release\net10.0-windows\win-x64\ModernEmojiPicker.exe"
     }
     else {
-        $smokeExecutable = Join-Path $repositoryRoot "artifacts\foundation\picker-win-x64\EmojiPicker.exe"
+        $smokeExecutable = Join-Path $repositoryRoot "artifacts\foundation\picker-win-x64\ModernEmojiPicker.exe"
     }
 
     Assert-Condition (Test-Path -LiteralPath $smokeExecutable) "Smoke-test executable is missing"
-    & $smokeExecutable --foundation-smoke
-    if ($LASTEXITCODE -ne 0) {
-        throw "WPF foundation smoke test failed with exit code $LASTEXITCODE"
+    $smokeProcess = Start-Process `
+        -FilePath $smokeExecutable `
+        -ArgumentList "--foundation-smoke" `
+        -Wait `
+        -PassThru `
+        -WindowStyle Hidden
+    if ($smokeProcess.ExitCode -ne 0) {
+        throw "WPF foundation smoke test failed with exit code $($smokeProcess.ExitCode)"
     }
 
     & dotnet format $solutionPath --verify-no-changes --no-restore --verbosity minimal

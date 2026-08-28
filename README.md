@@ -2,7 +2,7 @@
 
 Modern Emoji Picker คือโครงการสร้าง Emoji Picker สำหรับ Windows 10/11 ที่รองรับ Unicode Emoji รุ่นใหม่ แสดงภาพด้วย Noto Emoji และส่ง Unicode sequence ไปยังแอปเป้าหมายโดยไม่ผูกกับ Emoji font ของ Windows
 
-สถานะปัจจุบัน: **เริ่ม Foundation แล้ว** โดยนำ Classic Emoji Picker ที่ตรึง commit เข้ามาใต้ `apps/picker` และย้าย build target ไป .NET 10 ส่วน product identity ยังเป็น Classic จนกว่าจะทำ Ticket 02
+สถานะปัจจุบัน: **Foundation และ product isolation พร้อมแล้ว** โดยนำ Classic Emoji Picker ที่ตรึง commit เข้ามาใต้ `apps/picker`, ย้าย build target ไป .NET 10 และแยก runtime/installer/data identity ของ Modern ออกจาก Classic
 
 ## เป้าหมายหลัก
 
@@ -32,7 +32,7 @@ Modern Emoji Picker คือโครงการสร้าง Emoji Picker �
     tests/                    Automated tests
     scripts/                  Local build and release scripts
 
-Picker ถูกนำเข้าจาก platima/Classic-EmojiPicker ด้วย Git subtree และยังรับ upstream updates แบบ manual ได้ ดู [provenance และขั้นตอนอัปเดต upstream](./docs/upstream/classic-picker.md) การ rebrand เป็นผลิตภัณฑ์ใหม่ทั้งหมดอยู่ใน Ticket 02
+Picker ถูกนำเข้าจาก platima/Classic-EmojiPicker ด้วย Git subtree และยังรับ upstream updates แบบ manual ได้ ดู [provenance และขั้นตอนอัปเดต upstream](./docs/upstream/classic-picker.md) โค้ดที่นำเข้าถูกแยกเป็น Modern product identity แล้ว โดยยังเก็บที่มาและเครดิต upstream ครบถ้วน
 
 ## แพลตฟอร์มและข้อมูล
 

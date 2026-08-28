@@ -25,6 +25,7 @@ Modern Emoji Picker คือโครงการสร้าง Emoji Picker �
 - [การแสดง Emoji 17 ด้วย Noto grid](./docs/noto-grid-runtime.md)
 - [การส่ง Emoji ไปยังแอปเป้าหมายอย่างปลอดภัย](./docs/safe-insertion.md)
 - [การค้นหาสองภาษาและ Hover Preview](./docs/bilingual-search-hover-preview.md)
+- [สีผิวเริ่มต้นและ Variant Override](./docs/emoji-skin-tone-and-variants.md)
 
 ## โครง repository
 

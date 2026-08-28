@@ -11,6 +11,7 @@ $solutionPath = Join-Path $repositoryRoot "ModernEmojiPanel.sln"
 $projectPath = Join-Path $repositoryRoot "apps\picker\EmojiPicker\EmojiPicker.csproj"
 $lockPath = Join-Path $repositoryRoot "apps\picker\EmojiPicker\packages.lock.json"
 $generatorLockPath = Join-Path $repositoryRoot "tools\emoji-baseline\packages.lock.json"
+$variantTestLockPath = Join-Path $repositoryRoot "tests\EmojiPicker.DomainTests\packages.lock.json"
 $sourceManifestPath = Join-Path $repositoryRoot "docs\upstream\classic-picker.source.json"
 
 function Assert-Condition {
@@ -46,6 +47,7 @@ try {
     Assert-Condition (Test-Path -LiteralPath (Join-Path $repositoryRoot "Directory.Packages.props")) "Central package versions are missing"
     Assert-Condition (Test-Path -LiteralPath $lockPath) "Picker NuGet lock file is missing"
     Assert-Condition (Test-Path -LiteralPath $generatorLockPath) "Generator NuGet lock file is missing"
+    Assert-Condition (Test-Path -LiteralPath $variantTestLockPath) "Emoji variant test NuGet lock file is missing"
 
     $sourceManifest = Get-Content -Raw -LiteralPath $sourceManifestPath | ConvertFrom-Json
     $importedTree = (& git rev-parse "$($sourceManifest.importCommit):$($sourceManifest.prefix)").Trim()
@@ -66,6 +68,11 @@ try {
     & (Join-Path $PSScriptRoot "build.ps1") -Configuration Release -PublishSelfContained:(-not $SkipPublish)
     if ($LASTEXITCODE -ne 0) {
         throw "Foundation build failed"
+    }
+
+    & (Join-Path $PSScriptRoot "verify-emoji-variants.ps1") -SkipBuild
+    if ($LASTEXITCODE -ne 0) {
+        throw "Emoji variant verification failed"
     }
 
     if ($SkipPublish) {
@@ -91,7 +98,7 @@ try {
         throw "dotnet format verification failed"
     }
 
-    & git diff --exit-code -- $lockPath $generatorLockPath
+    & git diff --exit-code -- $lockPath $generatorLockPath $variantTestLockPath
     if ($LASTEXITCODE -ne 0) {
         throw "Locked restore changed packages.lock.json"
     }

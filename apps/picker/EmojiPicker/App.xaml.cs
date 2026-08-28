@@ -188,6 +188,7 @@ namespace EmojiPicker
                 {
                     if (!smokeWindow.IsLoaded ||
                         smokeWindow.CategoryTabs.Items.Count != 10 ||
+                        smokeWindow.SkinTonePicker.Items.Count != 6 ||
                         smokeWindow.BaselineEntryCount != 3944 ||
                         !smokeWindow.BundledAssetsAvailable ||
                         smokeWindow.EmojiGrid.Items.Count == 0)

@@ -8,5 +8,6 @@
 - `scripts/verify-noto-grid.ps1` สำหรับ category/asset coverage, Noto lazy decode, DPI, cache และ failure states
 - `scripts/verify-safe-insertion.ps1` สำหรับ Insertion Mode, target validation และ clipboard restore rules โดยไม่ส่ง input จริง
 - `scripts/verify-search-preview.ps1` สำหรับการค้นชื่อ/keyword ไทย–อังกฤษ, match tiers, deterministic order, accessibility และ Noto 512 Hover Preview
+- `scripts/verify-emoji-variants.ps1` สำหรับสีผิวเริ่มต้น, Variant Override แบบหนึ่งครั้ง และการเข้าถึง fully-qualified sequence ทุกตัว
 
 เมื่อเพิ่ม test project ให้เพิ่มเข้า `ModernEmojiPanel.sln` และเก็บ NuGet lock file ของ project นั้นใน Git

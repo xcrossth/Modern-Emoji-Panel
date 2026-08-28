@@ -95,3 +95,11 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 ```
 
 คำสั่งนี้ตรวจชื่อและ keyword ไทย–อังกฤษ, match tiers สี่ระดับ, CLDR tie-break, accessible name, การคง keyboard focus, delay 400 ms, รายละเอียด preview และ coverage ของ Noto PNG 512 ทั้ง 3,944 รายการ พร้อมวัด guardrail ของการค้นหา 100 ครั้งโดยไม่ใช้เครือข่าย รายละเอียดอยู่ที่ [การค้นหาสองภาษาและ Hover Preview](../docs/bilingual-search-hover-preview.md)
+
+## ตรวจสีผิวและ Variant Override
+
+```powershell
+.\scripts\verify-emoji-variants.ps1
+```
+
+คำสั่งนี้ตรวจค่าเริ่มต้นและการคงอยู่ของสีผิวระดับ global, การ resolve สีผิวเดียวทุกตำแหน่ง, mixed-tone Variant Override แบบหนึ่งครั้ง และยืนยันว่า fully-qualified sequence ทุกตัวเข้าถึงได้ผ่าน Emoji Entry ฐาน, global setting หรือ Variant Override

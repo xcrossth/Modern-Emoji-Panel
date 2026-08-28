@@ -282,6 +282,35 @@
                     </StackPanel>
                 </Border>
 
+                <Border x:Name="ActivityNoticePanel"
+                        Grid.Row="3"
+                        Margin="6,0,6,6"
+                        Padding="8,6"
+                        Background="{DynamicResource RepairBackgroundBrush}"
+                        BorderBrush="{DynamicResource PlaceholderBorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="4"
+                        Visibility="Collapsed"
+                        AutomationProperties.LiveSetting="Assertive">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="ActivityNoticeText"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource HeaderForegroundBrush}"
+                                   TextWrapping="Wrap"/>
+                        <Button x:Name="ActivityNoticeDismissButton"
+                                Grid.Column="1"
+                                Margin="8,0,0,0"
+                                Padding="9,3"
+                                Content="Dismiss"
+                                Click="ActivityNoticeDismissButton_Click"
+                                AutomationProperties.Name="Dismiss activity data recovery notice"/>
+                    </Grid>
+                </Border>
+
                 <Border x:Name="InsertionErrorPanel"
                         Grid.Row="3"
                         Margin="6,0,6,6"

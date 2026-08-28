@@ -10,5 +10,6 @@
 - `scripts/verify-search-preview.ps1` สำหรับการค้นชื่อ/keyword ไทย–อังกฤษ, match tiers, deterministic order, accessibility และ Noto 512 Hover Preview
 - `scripts/verify-emoji-variants.ps1` สำหรับสีผิวเริ่มต้น, Variant Override แบบหนึ่งครั้ง และการเข้าถึง fully-qualified sequence ทุกตัว
 - `scripts/verify-picker-session.ps1` สำหรับ Browse/Search Mode, Commit Gesture, dismissal/focus policy, placement, ขนาดหน้าต่าง และ accessibility state
+- `scripts/verify-activity-data.ps1` สำหรับ Recent MRU, Learned Ranking, schema/migration, atomic persistence, corruption recovery และคำสั่งล้าง Activity Data
 
 เมื่อเพิ่ม test project ให้เพิ่มเข้า `ModernEmojiPanel.sln` และเก็บ NuGet lock file ของ project นั้นใน Git

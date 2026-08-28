@@ -103,3 +103,11 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 ```
 
 คำสั่งนี้ตรวจค่าเริ่มต้นและการคงอยู่ของสีผิวระดับ global, การ resolve สีผิวเดียวทุกตำแหน่ง, mixed-tone Variant Override แบบหนึ่งครั้ง และยืนยันว่า fully-qualified sequence ทุกตัวเข้าถึงได้ผ่าน Emoji Entry ฐาน, global setting หรือ Variant Override
+
+## ตรวจ Picker Session และ focus
+
+```powershell
+.\scripts\verify-picker-session.ps1
+```
+
+คำสั่งนี้ตรวจ Browse/Search Mode, Esc, click/Enter/Shift+Enter, นโยบายคืน focus, placement บน working area หลาย monitor, การจำขนาด และ accessibility state โดยไม่ส่ง input จริง รายละเอียดอยู่ที่ [Picker Session, focus และการวางหน้าต่าง](../docs/picker-session-and-focus.md)

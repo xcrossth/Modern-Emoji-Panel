@@ -78,6 +78,7 @@ Assert(baseIds.Contains(Find("0031 FE0F 20E3").Id), "Keycap sequence must remain
 Assert(baseIds.Contains(Find("1F468 200D 1F469 200D 1F467").Id), "Complex ZWJ family must remain browsable.");
 
 ActivityDataSmoke.Run();
+SettingsPrivacySmoke.Run();
 
 var defaultSettings = new Settings();
 Assert(defaultSettings.PreferredSkinTone == SkinTonePreference.Neutral,

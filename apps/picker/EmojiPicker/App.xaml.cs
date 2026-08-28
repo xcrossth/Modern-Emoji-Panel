@@ -11,8 +11,6 @@ namespace EmojiPicker
 {
     public partial class App : Application
     {
-        private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
-
         /// <summary>
         /// The foreground window when the hotkey fired; selected emoji are inserted
         /// into it. Set by the hotkey hook before the picker is shown.
@@ -38,6 +36,7 @@ namespace EmojiPicker
         private static readonly TimeSpan StartupShowGrace = TimeSpan.FromSeconds(3);
 
         private readonly ClassicConflictDetector classicConflictDetector = new ClassicConflictDetector();
+        private readonly StartupManager startupManager = new();
         private SingleInstanceCoordinator? singleInstance;
         private MainWindow? picker;
         private HotkeyListener? hotkey;
@@ -149,28 +148,32 @@ namespace EmojiPicker
                 return;
             }
 
-            Logger.Initialize();
+            Settings.Load();
+            Localizer.Apply(Settings.Current.LanguagePreference);
+            Logger.Initialize(Settings.Current.DiagnosticLoggingEnabled);
             var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
             Logger.Log($"=== Startup v{version} ===");
-            Settings.Load();
 
             // The 3s show-grace only needs to suppress the one duplicate logon start
             // that happens when both the all-users (HKLM) and per-user (HKCU)
             // autostart entries exist. Without that duplicate, a run-again signal is
             // always a genuine user relaunch and should open the picker immediately.
-            graceActive = IsStartupEnabled() && IsMachineStartupEnabled();
+            graceActive = startupManager.IsUserEnabled && startupManager.IsInstallerManaged;
 
             // A resident utility should survive a bad frame: log the exception
             // and keep running rather than take Win+. down until relaunch
             DispatcherUnhandledException += (_, args) =>
             {
-                Logger.LogAlways($"UNHANDLED (UI, continuing): {args.Exception}");
+                Logger.LogAlways($"UNHANDLED (UI, continuing): {args.Exception.GetType().Name}");
                 args.Handled = true;
                 trayIcon?.ShowBalloonTip(4000, ProductIdentity.ProductName,
-                    $"Something went wrong; details in {Logger.LogPath}", ToolTipIcon.Warning);
+                    Logger.Enabled
+                        ? $"Something went wrong; technical details are in {Logger.LogPath}"
+                        : "Something went wrong. Diagnostic logging remains off.",
+                    ToolTipIcon.Warning);
             };
             AppDomain.CurrentDomain.UnhandledException += (_, args) =>
-                Logger.LogAlways($"FATAL: {args.ExceptionObject}");
+                Logger.LogAlways($"FATAL: {args.ExceptionObject?.GetType().Name ?? "unknown"}");
 
             // Stay alive with no visible window until the hotkey shows the picker
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
@@ -182,6 +185,7 @@ namespace EmojiPicker
 
             CreateTrayIcon();
             RefreshHotkeyOwnership(showConflictNotification: true);
+            ShowWelcomeIfNeeded();
 
             // Windows can silently drop a low-level hook (callback timeout, secure
             // desktop, session switch). Re-arm on session change and on a periodic
@@ -504,7 +508,7 @@ namespace EmojiPicker
             System.Drawing.Rectangle? caretRect =
                 TextInjector.TryGetCaretRect(targetWindow, out var rect) ? rect : null;
 
-            Logger.Log($"Hotkey pressed; target={targetWindow} focus={focusWindow} caret={(caretRect.HasValue ? caretRect.Value.ToString() : "none")}");
+            Logger.Log($"Hotkey pressed; targetCaptured={targetWindow != IntPtr.Zero}; caretAvailable={caretRect.HasValue}");
 
             PreviousForegroundWindow = targetWindow;
             PreviousFocusWindow = focusWindow;
@@ -567,56 +571,40 @@ namespace EmojiPicker
         private void CreateTrayIcon()
         {
             var menu = new ContextMenuStrip();
-            menu.Items.Add("Open Modern Emoji Picker", null, (_, _) => ShowPickerFromTray());
+            menu.Items.Add(Localizer.Text("Open Modern Emoji Picker", "เปิด Modern Emoji Picker"), null, (_, _) => ShowPickerFromTray());
             menu.Items.Add(new ToolStripSeparator());
 
-            classicConflictItem = new ToolStripMenuItem("Classic Conflict: Win + . is disabled")
+            classicConflictItem = new ToolStripMenuItem(Localizer.Text(
+                "Classic Conflict: Modern hotkey is disabled",
+                "Classic Conflict: ปิดปุ่มลัดของ Modern ชั่วคราว"))
             {
                 Enabled = false,
                 Visible = false,
             };
             menu.Items.Add(classicConflictItem);
-            menu.Items.Add("Check for Classic again", null, (_, _) =>
+            menu.Items.Add(Localizer.Text("Check for Classic again", "ตรวจ Classic อีกครั้ง"), null, (_, _) =>
                 RefreshHotkeyOwnership(showConflictNotification: true));
             menu.Items.Add(new ToolStripSeparator());
 
-            var startupItem = new ToolStripMenuItem("Start with Windows")
+            menu.Items.Add(Localizer.Text("Settings…", "การตั้งค่า…"), null, (_, _) => ShowSettings());
+
+            var startupItem = new ToolStripMenuItem(Localizer.Text("Start with Windows", "เปิดพร้อม Windows"))
             {
-                Checked = IsStartupEnabled(),
-                CheckOnClick = true,
+                Checked = startupManager.IsEffectiveEnabled,
+                Enabled = false,
+                ToolTipText = Localizer.Text("Open Settings to change this option", "เปิด Settings เพื่อเปลี่ยนค่านี้"),
             };
-            startupItem.CheckedChanged += (_, _) => SetStartupEnabled(startupItem.Checked);
-            if (IsMachineStartupEnabled())
+            if (startupManager.IsInstallerManaged)
             {
-                // An all-users install manages autostart via HKLM, which this
-                // per-user toggle can't change - show it as on and read-only
-                startupItem.Checked = true;
-                startupItem.CheckOnClick = false;
-                startupItem.Enabled = false;
-                startupItem.ToolTipText = "Enabled for all users by the installer";
+                startupItem.ToolTipText = Localizer.Text(
+                    "Enabled for all users by the installer",
+                    "Installer เปิดให้ผู้ใช้ทุกคนและจัดการค่านี้อยู่");
             }
 
             menu.Items.Add(startupItem);
 
-            var loggingItem = new ToolStripMenuItem("Debug logging")
-            {
-                Checked = Logger.Enabled,
-                ToolTipText = Logger.LogPath,
-            };
-            loggingItem.Click += (_, _) =>
-            {
-                var on = Logger.Toggle();
-                loggingItem.Checked = on;
-                trayIcon?.ShowBalloonTip(
-                    4000,
-                    ProductIdentity.ProductName,
-                    on ? $"Debug logging ON\n{Logger.LogPath}" : "Debug logging OFF",
-                    ToolTipIcon.Info);
-            };
-            menu.Items.Add(loggingItem);
-
             menu.Items.Add(new ToolStripSeparator());
-            menu.Items.Add("Exit Modern Emoji Picker", null, (_, _) => ExitApplication());
+            menu.Items.Add(Localizer.Text("Exit Modern Emoji Picker", "ออกจาก Modern Emoji Picker"), null, (_, _) => ExitApplication());
 
             trayIcon = new NotifyIcon
             {
@@ -640,6 +628,77 @@ namespace EmojiPicker
             PreviousFocusWindow = IntPtr.Zero;
             PreviousCaretRect = null;
             picker?.ShowPicker();
+        }
+
+        private void ShowWelcomeIfNeeded()
+        {
+            if (Settings.Current.WelcomeShown)
+            {
+                return;
+            }
+
+            // Mark on presentation rather than on acknowledgement: an Alt+F4 or
+            // process shutdown must not turn Welcome into a recurring prompt.
+            Settings.Current.WelcomeShown = true;
+            Settings.ReplaceCurrent(Settings.Current);
+            new WelcomeWindow().ShowDialog();
+        }
+
+        private void ShowSettings()
+        {
+            if (picker == null)
+            {
+                return;
+            }
+
+            var model = SettingsControlModel.From(
+                Settings.Current,
+                startupManager.IsEffectiveEnabled,
+                startupManager.IsInstallerManaged);
+            var window = new SettingsWindow(
+                model,
+                picker.ClearRecentActivity,
+                picker.ResetLearnedRanking,
+                picker.ClearAllActivity);
+            if (window.ShowDialog() != true)
+            {
+                return;
+            }
+
+            try
+            {
+                startupManager.SetUserEnabled(window.Result.StartWithWindows);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show(
+                    Localizer.Text("Could not update Start with Windows.", "ไม่สามารถเปลี่ยนการเปิดพร้อม Windows ได้"),
+                    ProductIdentity.ProductName,
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Warning);
+            }
+
+            Settings.ReplaceCurrent(window.Result.ToSettings(Settings.Current));
+            Localizer.Apply(Settings.Current.LanguagePreference);
+            Logger.SetEnabled(Settings.Current.DiagnosticLoggingEnabled);
+            ThemeManager.Refresh();
+            picker.ApplyRuntimeSettings();
+            RecreateTrayIcon();
+            hotkey?.Dispose();
+            hotkey = null;
+            RefreshHotkeyOwnership(showConflictNotification: true);
+        }
+
+        private void RecreateTrayIcon()
+        {
+            if (trayIcon != null)
+            {
+                trayIcon.Visible = false;
+                trayIcon.Dispose();
+                trayIcon = null;
+            }
+
+            CreateTrayIcon();
         }
 
         private void RefreshHotkeyOwnership(bool showConflictNotification)
@@ -666,17 +725,27 @@ namespace EmojiPicker
                 {
                     trayIcon.ShowBalloonTip(
                         10000,
-                        "Classic Emoji Picker is running",
-                        "Modern did not take Win + . and did not stop Classic. Choose Exit from Classic's tray menu, then choose 'Check for Classic again' here.",
+                        Localizer.Text("Classic Emoji Picker is running", "Classic Emoji Picker กำลังทำงาน"),
+                        Localizer.Text(
+                            "Modern did not take the hotkey and did not stop Classic. Exit Classic from its tray menu, then check again here.",
+                            "Modern ไม่แย่งปุ่มลัดและไม่ปิด Classic ให้ Exit Classic จาก tray แล้วตรวจอีกครั้งที่นี่"),
                         ToolTipIcon.Warning);
                 }
 
                 return;
             }
 
+            if (!Settings.Current.HotkeyEnabled)
+            {
+                hotkey?.Dispose();
+                hotkey = null;
+                Logger.Log("Global hotkey disabled by user");
+                return;
+            }
+
             if (hotkey == null)
             {
-                hotkey = new HotkeyListener();
+                hotkey = new HotkeyListener(Settings.Current.ParsedHotkey);
                 hotkey.HotkeyPressed += OnHotkeyPressed;
                 hotkey.Start();
                 Logger.Log("Modern keyboard hook installed (Classic not detected)");
@@ -691,7 +760,9 @@ namespace EmojiPicker
                 trayIcon.ShowBalloonTip(
                     4000,
                     ProductIdentity.ProductName,
-                    "Classic is no longer running. Modern now owns Win + .",
+                    Localizer.Text(
+                        $"Classic is no longer running. Modern now owns {Settings.Current.ParsedHotkey.GetDisplayName(false)}.",
+                        $"Classic หยุดทำงานแล้ว Modern ใช้ {Settings.Current.ParsedHotkey.GetDisplayName(true)} ได้แล้ว"),
                     ToolTipIcon.Info);
             }
         }
@@ -705,66 +776,6 @@ namespace EmojiPicker
             }
 
             picker.RequestProcessExit(() => Shutdown());
-        }
-
-        private static bool IsStartupEnabled()
-        {
-            try
-            {
-                using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RunKeyPath);
-                return key?.GetValue(ProductIdentity.RunValueName) != null;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
-        /// True when an all-users install registered autostart under HKLM
-        /// (read-only from this per-user process; the tray toggle can't change it).
-        /// </summary>
-        private static bool IsMachineStartupEnabled()
-        {
-            try
-            {
-                using var key = Microsoft.Win32.Registry.LocalMachine.OpenSubKey(RunKeyPath);
-                return key?.GetValue(ProductIdentity.RunValueName) != null;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        private static void SetStartupEnabled(bool enabled)
-        {
-            try
-            {
-                using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(RunKeyPath, writable: true);
-                if (key == null)
-                {
-                    return;
-                }
-
-                if (enabled)
-                {
-                    var exePath = Environment.ProcessPath;
-                    if (exePath != null)
-                    {
-                        key.SetValue(ProductIdentity.RunValueName, $"\"{exePath}\"");
-                    }
-                }
-                else
-                {
-                    key.DeleteValue(ProductIdentity.RunValueName, throwOnMissingValue: false);
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Could not update the startup setting: {ex.Message}",
-                    ProductIdentity.ProductName, MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
         }
 
         protected override void OnExit(ExitEventArgs e)

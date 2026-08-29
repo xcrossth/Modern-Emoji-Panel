@@ -258,3 +258,41 @@ internal static class TypingHandoffInput
         return true;
     }
 }
+
+internal static class InsertionQueuePresentation
+{
+    internal static string? VisibleStatus(
+        bool queueFull,
+        bool sending,
+        int pendingCount,
+        bool typingHandoff)
+    {
+        _ = sending;
+        _ = typingHandoff;
+        return queueFull ? $"Queue full • {pendingCount} pending" : null;
+    }
+
+    internal static string? AccessibleStatus(
+        bool queueFull,
+        bool sending,
+        int pendingCount,
+        bool typingHandoff)
+    {
+        if (queueFull)
+        {
+            return $"Queue full • {pendingCount} pending";
+        }
+
+        if (sending)
+        {
+            return pendingCount == 0 ? "Sending" : $"Sending • {pendingCount} pending";
+        }
+
+        if (pendingCount > 0)
+        {
+            return $"{pendingCount} pending";
+        }
+
+        return typingHandoff ? "Typing handoff" : null;
+    }
+}

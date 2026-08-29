@@ -128,6 +128,16 @@ internal static class InsertionQueueSmoke
             TypingHandoffInput.TryCaptureKeyStroke(0x20, ShortcutModifiers.None, out _);
         checks["enter-is-handed-back-from-browse"] =
             TypingHandoffInput.TryCaptureKeyStroke(0x0D, ShortcutModifiers.None, out _);
+        checks["transient-sending-status-is-not-visible"] =
+            InsertionQueuePresentation.VisibleStatus(false, true, 0, false) == null;
+        checks["transient-pending-status-is-not-visible"] =
+            InsertionQueuePresentation.VisibleStatus(false, false, 1, false) == null;
+        checks["queue-full-status-remains-visible"] =
+            InsertionQueuePresentation.VisibleStatus(true, true, 20, false)?.StartsWith("Queue full", StringComparison.Ordinal) == true;
+        checks["sending-status-remains-accessible"] =
+            InsertionQueuePresentation.AccessibleStatus(false, true, 0, false) == "Sending";
+        checks["pending-count-remains-accessible"] =
+            InsertionQueuePresentation.AccessibleStatus(false, true, 3, false)?.Contains("3 pending", StringComparison.Ordinal) == true;
 
         var passed = checks.Values.All(value => value);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportPath))!);

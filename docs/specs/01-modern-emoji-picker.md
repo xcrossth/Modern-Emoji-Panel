@@ -458,8 +458,8 @@ pasteRestoreDelayMs อยู่ใน Advanced Settings พร้อมคำ�
 
 - รับงานรอสูงสุด 20 รายการ
 - click order ต้องเท่ากับ insertion order
-- แสดง pending state
-- เมื่อเต็มให้หยุดรับชั่วคราวและแสดงว่ากำลังส่ง
+- ประกาศ pending/sending state ผ่าน accessibility โดยไม่แสดงข้อความชั่วคราวที่กระพริบใน UI
+- เมื่อเต็มให้หยุดรับชั่วคราวและแสดง `Queue full` ใน UI จนกลับมารับงานได้
 - ห้าม drop click แบบเงียบ
 - ห้ามส่งขนาน
 

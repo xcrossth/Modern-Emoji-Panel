@@ -7,7 +7,7 @@
 **Status:** resolved
 
 - [x] Insertion Queue รับงานรอสูงสุด 20 รายการและรักษา click order ให้ตรงกับ insertion order โดยไม่ส่งขนาน
-- [x] UI และ accessibility state แสดง pending/busy และเมื่อ queue เต็มจะหยุดรับชั่วคราวโดยไม่ drop click แบบเงียบ
+- [x] accessibility state ประกาศ pending/busy โดยไม่ทำให้ข้อความชั่วคราวกระพริบใน UI และเมื่อ queue เต็ม UI จะหยุดรับชั่วคราวพร้อมแสดงสถานะโดยไม่ drop click แบบเงียบ
 - [x] เมื่อ dismiss ระบบหยุดรับงานใหม่ ปล่อยเฉพาะ active operation ให้จบ และยกเลิกงานที่ยังไม่เริ่มก่อนปิด Picker
 - [x] ทุก physical key ที่ไม่ใช่ modifier ใน Browse Mode รวม Space/Enter/ลูกศร/shortcut เริ่ม Typing Handoff แทนการควบคุม Picker
 - [x] Typing Handoff เก็บ input แรกไว้อย่างปลอดภัยระหว่างรอ active operation และส่งต่อไปยังแอปเป้าหมายเดิมหลัง validation
@@ -18,14 +18,14 @@
 
 เพิ่ม `InsertionQueue<T>` เป็น deep module แบบ Dispatcher-confined ซึ่งแยก pending กับ active ชัดเจน รับงานรอสูงสุด 20 รายการ และมี seam เดียวสำหรับเลื่อนงานไปเป็น active จึงรักษา FIFO และห้ามการส่งขนานโดยไม่พึ่ง delay หรือ timing จริงของ desktop
 
-WPF shell รับ click/Commit Gesture เข้า queue ก่อนเริ่ม adapter, แสดงสถานะ pending/sending/full ทั้งแบบมองเห็นได้และ accessibility live region และปิด hit testing ชั่วคราวเมื่อเต็ม Enter ปิดรับงานใหม่แล้ว drain งานที่รับไว้ตามลำดับ ส่วน Esc, ปุ่มปิด, click ภายนอก, Tray → Exit และ Typing Handoff ยกเลิกเฉพาะ pending แล้วรอ active จบก่อนทำ terminal transition การเปลี่ยน foreground ระหว่างส่งจะไม่ทำให้ Picker แย่ง focus กลับ
+WPF shell รับ click/Commit Gesture เข้า queue ก่อนเริ่ม adapter, ประกาศสถานะ pending/sending ผ่าน accessibility state โดยไม่แสดงข้อความชั่วคราวที่กระพริบใน UI และแสดงข้อความเมื่อ queue เต็มพร้อมปิด hit testing ชั่วคราว Enter ปิดรับงานใหม่แล้ว drain งานที่รับไว้ตามลำดับ ส่วน Esc, ปุ่มปิด, click ภายนอก, Tray → Exit และ Typing Handoff ยกเลิกเฉพาะ pending แล้วรอ active จบก่อนทำ terminal transition การเปลี่ยน foreground ระหว่างส่งจะไม่ทำให้ Picker แย่ง focus กลับ
 
 Typing Handoff จับ physical virtual key กับ modifiers ก่อน WPF แปลตาม per-app keyboard layout ของ Picker แล้ว replay ให้ target ตีความด้วย layout ของตัวเอง เก็บ payload ไว้ในหน่วยความจำของ terminal intent เท่านั้นโดยไม่ log/persist/แตะ clipboard และยังใช้ committed-text fallback สำหรับ IME/dead key ที่ไม่มี physical key ให้ replay จากนั้นส่งต่อหนึ่งครั้งผ่าน Target Validation เดิมหลัง active insertion จบ หากส่งไม่ได้จะเปิด error ให้ผู้ใช้เลือก Explicit Copy เอง
 
 หลักฐานการตรวจสอบ:
 
 - commit implementation `4e1b7c5`
-- `scripts/verify-insertion-queue.ps1`: ผ่าน 26 deterministic checks ครอบคลุม FIFO, active + 20 pending, full/stopped, cancellation, Enter drain ใน Search, focus transition, physical key/Space/Enter/shortcut, Thai committed-text fallback, dead-key result, surrogate pair และ IME pre-edit
+- `scripts/verify-insertion-queue.ps1`: ผ่าน 31 deterministic checks ครอบคลุม FIFO, active + 20 pending, full/stopped, การแยกสถานะ UI/accessibility, cancellation, Enter drain ใน Search, focus transition, physical key/Space/Enter/shortcut, Thai committed-text fallback, dead-key result, surrogate pair และ IME pre-edit
 - `scripts/verify-picker-session.ps1 -SkipBuild`: ผ่าน 14 checks
 - `scripts/verify-safe-insertion.ps1 -SkipBuild`: ผ่าน 18 checks
 - `scripts/verify-foundation.ps1 -SkipPublish`: ผ่านด้วย .NET SDK 10.0.400, build 0 warnings/errors และ WPF smoke

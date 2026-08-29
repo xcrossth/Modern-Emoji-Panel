@@ -1,0 +1,19 @@
+{
+  "fontLoaded": true,
+  "initialTextPreserved": true,
+  "selectionPreserved": true,
+  "browserFindSucceeded": true,
+  "editablePreserved": true,
+  "codePreserved": true,
+  "dynamicTextPreserved": true,
+  "wrapperCount": 612,
+  "metrics": {
+    "nodesVisited": 660,
+    "wrappersCreated": 612,
+    "batches": 15,
+    "processingMilliseconds": 18.69999998807907,
+    "skippedEditableNodes": 1
+  },
+  "copyCommandAccepted": true,
+  "copyPreserved": true
+}

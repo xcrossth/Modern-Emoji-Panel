@@ -19,6 +19,7 @@
         "https://www.tiktok.com/*"
       ],
       "js": ["content/index.js"],
+      "css": ["assets/styles/renderer.css"],
       "run_at": "document_start"
     }
   ],

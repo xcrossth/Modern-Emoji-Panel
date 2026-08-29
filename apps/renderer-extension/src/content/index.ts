@@ -1,3 +1,9 @@
-// Ticket 01 deliberately installs a no-op content script. Rendering begins only
-// after the renderer choice and text-integrity boundary have automated coverage.
-void chrome.runtime.id;
+import { IncrementalRenderer } from "../core/incremental-renderer";
+
+function startRenderer(): void {
+  const renderer = new IncrementalRenderer(document);
+  renderer.start();
+}
+
+if (document.documentElement) startRenderer();
+else document.addEventListener("DOMContentLoaded", startRenderer, { once: true });

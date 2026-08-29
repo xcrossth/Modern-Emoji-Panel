@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modern Emoji Renderer — DOM Fixture</title>
+  <style>
+    :root { color-scheme: light dark; font-family: "Segoe UI", Tahoma, sans-serif; }
+    body { margin: 28px; background: Canvas; color: CanvasText; }
+    section, #composer { border: 1px solid GrayText; margin: 12px 0; padding: 10px; }
+    #transcript { max-height: 240px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>Incremental DOM fixture</h1>
+  <section id="initial">Hello 🫩 ไทย ❤️ 👌🏻 👩🏽‍💻 👨‍👩‍👧‍👦 1️⃣ 🇹🇭 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🫯 end</section>
+  <div id="composer" contenteditable="true">Editable Content 🫯 ต้องไม่ถูกแตะ</div>
+  <code id="code">code 🫯 ต้องไม่ถูกแตะ</code>
+  <section id="dynamic"></section>
+  <section id="transcript"></section>
+  <script type="module" src="./dom-renderer.js"></script>
+</body>
+</html>

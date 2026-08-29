@@ -30,6 +30,7 @@ describe("Renderer Extension foundation", () => {
     const referencedScripts = [
       manifest.background.service_worker,
       ...manifest.content_scripts.flatMap((entry: { js: string[] }) => entry.js),
+      ...manifest.content_scripts.flatMap((entry: { css?: string[] }) => entry.css ?? []),
     ];
 
     for (const path of referencedScripts) {

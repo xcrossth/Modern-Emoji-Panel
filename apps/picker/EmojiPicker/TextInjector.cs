@@ -96,9 +96,13 @@ namespace EmojiPicker
         /// distinguishes accepted input from a safe abort; the caller must not retry or retarget.
         /// Must be awaited on the UI thread; the focus-settle delay is non-blocking.
         /// </summary>
-        public static async Task<InsertionResult> TryInsertAsync(IntPtr targetWindow, IntPtr focusWindow, string text)
+        public static async Task<InsertionResult> TryInsertAsync(
+            IntPtr targetWindow,
+            IntPtr focusWindow,
+            string text,
+            AccessibilityFocusSnapshot? accessibilityFocus = null)
         {
-            var activationFailure = await TryActivateValidatedTargetAsync(targetWindow, focusWindow);
+            var activationFailure = await TryActivateValidatedTargetAsync(targetWindow, focusWindow, accessibilityFocus);
             if (activationFailure != null)
             {
                 return activationFailure;
@@ -122,14 +126,15 @@ namespace EmojiPicker
             IntPtr targetWindow,
             IntPtr focusWindow,
             ushort virtualKey,
-            ShortcutModifiers modifiers)
+            ShortcutModifiers modifiers,
+            AccessibilityFocusSnapshot? accessibilityFocus = null)
         {
             if (virtualKey == 0)
             {
                 return InsertionResult.Failure("The key handoff was invalid.");
             }
 
-            var activationFailure = await TryActivateValidatedTargetAsync(targetWindow, focusWindow);
+            var activationFailure = await TryActivateValidatedTargetAsync(targetWindow, focusWindow, accessibilityFocus);
             if (activationFailure != null)
             {
                 return activationFailure;
@@ -140,7 +145,8 @@ namespace EmojiPicker
 
         private static async Task<InsertionResult?> TryActivateValidatedTargetAsync(
             IntPtr targetWindow,
-            IntPtr focusWindow)
+            IntPtr focusWindow,
+            AccessibilityFocusSnapshot? accessibilityFocus)
         {
             if (targetWindow == IntPtr.Zero || !NativeMethods.IsWindow(targetWindow))
             {
@@ -154,10 +160,6 @@ namespace EmojiPicker
                 return InsertionResult.Failure("Windows did not activate the original target.");
             }
 
-            // Restore focus to the exact control that had it; activating our picker
-            // moves focus off edits like Explorer's Search box or address bar.
-            RestoreFocus(targetWindow, focusWindow);
-
             // Wait for the target to actually become foreground before injecting,
             // then give keyboard focus one additional dispatcher-independent tick.
             var waited = 0;
@@ -167,6 +169,9 @@ namespace EmojiPicker
                 waited += 15;
             }
 
+            // Restore the exact accessibility element after foreground settles.
+            // Native SetFocus remains the fallback for classic child-HWND edits.
+            RestoreFocus(targetWindow, focusWindow, accessibilityFocus);
             await Task.Delay(15);
             Logger.Log($"Insert: target foreground after ~{waited}ms");
 
@@ -196,7 +201,10 @@ namespace EmojiPicker
         /// Session. This is used only by explicit dismissal gestures; an outside click
         /// deliberately does not call it, so the window chosen by the user keeps focus.
         /// </summary>
-        internal static bool TryRestoreCapturedTarget(IntPtr targetWindow, IntPtr focusWindow)
+        internal static bool TryRestoreCapturedTarget(
+            IntPtr targetWindow,
+            IntPtr focusWindow,
+            AccessibilityFocusSnapshot? accessibilityFocus = null)
         {
             if (targetWindow == IntPtr.Zero || !NativeMethods.IsWindow(targetWindow) ||
                 !NativeMethods.SetForegroundWindow(targetWindow))
@@ -204,7 +212,7 @@ namespace EmojiPicker
                 return false;
             }
 
-            RestoreFocus(targetWindow, focusWindow);
+            RestoreFocus(targetWindow, focusWindow, accessibilityFocus);
             return true;
         }
 
@@ -525,8 +533,16 @@ namespace EmojiPicker
             };
         }
 
-        private static void RestoreFocus(IntPtr targetWindow, IntPtr focusWindow)
+        private static void RestoreFocus(
+            IntPtr targetWindow,
+            IntPtr focusWindow,
+            AccessibilityFocusSnapshot? accessibilityFocus)
         {
+            if (accessibilityFocus?.TryRestore() == true)
+            {
+                return;
+            }
+
             if (focusWindow == IntPtr.Zero || focusWindow == targetWindow || !NativeMethods.IsWindow(focusWindow))
             {
                 return;

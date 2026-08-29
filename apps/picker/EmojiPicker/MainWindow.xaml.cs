@@ -73,6 +73,7 @@ namespace EmojiPicker
         private DispatcherOperation? insertionPumpOperation;
         private bool insertionPumpRunning;
         private bool insertionInProgress;
+        private bool pointerActivationSuppressed;
         private PickerViewSnapshot? lastInsertionSnapshot;
         private Action? processExitAfterQueue;
 
@@ -143,6 +144,9 @@ namespace EmojiPicker
         internal string AccessibilityStatus => AutomationStatusText.Text;
         internal int PendingInsertionCount => insertionQueue.PendingCount;
         internal bool InsertionQueueFull => insertionQueue.IsFull;
+        internal bool EmojiGridInteractiveForSmoke => EmojiGrid.IsHitTestVisible;
+        internal bool PointerActivationSuppressedForSmoke => pointerActivationSuppressed;
+        internal void CommitEmojiForSmoke(Emoji emoji) => CommitEmoji(emoji, CommitGesture.Pointer);
         internal object? EmojiItemsSourceForSmoke => EmojiGrid.ItemsSource;
         internal void LoadDefaultCategoryForSmoke() => LoadCategory(DefaultCategoryKey);
         internal void DisplaySearchForSmoke(string query)
@@ -1328,6 +1332,7 @@ namespace EmojiPicker
             }
 
             insertionPumpRunning = true;
+            SetPointerActivationSuppressed(true);
             try
             {
                 while (insertionQueue.TryStartNext(out var work) && work != null)
@@ -1352,7 +1357,8 @@ namespace EmojiPicker
                         result = await TextInjector.TryInsertAsync(
                             App.PreviousForegroundWindow,
                             App.PreviousFocusWindow,
-                            work.Emoji.Character);
+                            work.Emoji.Character,
+                            App.PreviousAccessibilityFocus);
                     }
                     catch (Exception ex)
                     {
@@ -1373,6 +1379,7 @@ namespace EmojiPicker
                         Logger.Log($"Insertion failure cancelled {cancelled} not-started item(s)");
                         insertionQueue.Reset();
                         UpdateInsertionQueueStatus();
+                        SetPointerActivationSuppressed(false);
                         ShowInsertionError(
                             work.Emoji.Character,
                             result.Message ?? "The emoji could not be sent safely.",
@@ -1384,6 +1391,7 @@ namespace EmojiPicker
 
                 if (insertionQueue.IsTerminalReady)
                 {
+                    SetPointerActivationSuppressed(false);
                     await FinalizeQueueTerminationAsync();
                     return;
                 }
@@ -1395,6 +1403,7 @@ namespace EmojiPicker
                     insertionQueue.Reset();
                     lastInsertionSnapshot = null;
                     UpdateInsertionQueueStatus();
+                    SetPointerActivationSuppressed(false);
 
                     // The user may choose another window while the Picker is hidden
                     // for insertion. Never reactivate the Picker over that explicit
@@ -1412,9 +1421,31 @@ namespace EmojiPicker
             }
             finally
             {
+                SetPointerActivationSuppressed(false);
                 insertionInProgress = false;
                 insertionPumpRunning = false;
             }
+        }
+
+        private void SetPointerActivationSuppressed(bool suppressed)
+        {
+            if (pointerActivationSuppressed == suppressed)
+            {
+                return;
+            }
+
+            var handle = new WindowInteropHelper(this).Handle;
+            if (handle == IntPtr.Zero)
+            {
+                return;
+            }
+
+            var style = NativeMethods.GetWindowLongPtr(handle, NativeMethods.GwlExStyle).ToInt64();
+            var updated = suppressed
+                ? style | NativeMethods.WsExNoActivate
+                : style & ~NativeMethods.WsExNoActivate;
+            NativeMethods.SetWindowLongPtr(handle, NativeMethods.GwlExStyle, new IntPtr(updated));
+            pointerActivationSuppressed = suppressed;
         }
 
         private void BeginTypingHandoff(string committedText)
@@ -1455,12 +1486,14 @@ namespace EmojiPicker
                         ? await TextInjector.TryInsertAsync(
                             App.PreviousForegroundWindow,
                             App.PreviousFocusWindow,
-                            payload.CommittedText ?? throw new InvalidOperationException("Typing Handoff has no committed text."))
+                            payload.CommittedText ?? throw new InvalidOperationException("Typing Handoff has no committed text."),
+                            App.PreviousAccessibilityFocus)
                         : await TextInjector.TrySendKeyStrokeAsync(
                             App.PreviousForegroundWindow,
                             App.PreviousFocusWindow,
                             payload.VirtualKey,
-                            payload.Modifiers);
+                            payload.Modifiers,
+                            App.PreviousAccessibilityFocus);
                 }
                 catch (Exception ex)
                 {
@@ -1685,7 +1718,10 @@ namespace EmojiPicker
 
             if (returnFocusToTarget)
             {
-                TextInjector.TryRestoreCapturedTarget(App.PreviousForegroundWindow, App.PreviousFocusWindow);
+                TextInjector.TryRestoreCapturedTarget(
+                    App.PreviousForegroundWindow,
+                    App.PreviousFocusWindow,
+                    App.PreviousAccessibilityFocus);
             }
 
             // Give the memory back while we idle in the tray; ContextIdle runs

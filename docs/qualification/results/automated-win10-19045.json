@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "measuredAtUtc": "2026-08-28T15:03:00.5074543+07:00",
+  "measuredAtUtc": "2026-08-29T10:08:53.5893822+07:00",
   "runtime": {
     "framework": "10.0.11",
     "operatingSystem": "Microsoft Windows NT 10.0.19045.0",
@@ -9,34 +9,34 @@
   "modern": {
     "warmOpenToRenderProxy": {
       "samples": 20,
-      "medianMilliseconds": 7.8445,
-      "p95Milliseconds": 9.6573,
-      "maximumMilliseconds": 87.4384
+      "medianMilliseconds": 9.2916,
+      "p95Milliseconds": 12.2278,
+      "maximumMilliseconds": 56.2942
     },
     "search": {
       "samples": 1000,
-      "medianMilliseconds": 0.9704,
-      "p95Milliseconds": 1.318,
-      "maximumMilliseconds": 29.4841
+      "medianMilliseconds": 0.828,
+      "p95Milliseconds": 1.1881,
+      "maximumMilliseconds": 23.7581
     },
     "virtualizedScrollFrame": {
       "samples": 100,
-      "medianMilliseconds": 11.8616,
-      "p95Milliseconds": 41.3767,
-      "maximumMilliseconds": 48.4778
+      "medianMilliseconds": 12.2136,
+      "p95Milliseconds": 44.2224,
+      "maximumMilliseconds": 48.5765
     },
-    "idleWorkingSetMiB": 12.7578125,
+    "idleWorkingSetMiB": 14.4296875,
     "gridDecode": {
       "samples": 128,
-      "medianMilliseconds": 0.3906,
-      "p95Milliseconds": 0.679,
-      "maximumMilliseconds": 35.6707
+      "medianMilliseconds": 0.3839,
+      "p95Milliseconds": 0.548,
+      "maximumMilliseconds": 1.5655
     },
     "cacheHit": {
       "samples": 128,
       "medianMilliseconds": 0.0003,
       "p95Milliseconds": 0.0007,
-      "maximumMilliseconds": 0.0009
+      "maximumMilliseconds": 0.0056
     },
     "cachedImages": 256
   },
@@ -77,13 +77,13 @@
     "processor": "Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz",
     "totalPhysicalMemoryBytes": 85785321472,
     "dotnetSdk": "10.0.400",
-    "gitCommit": "bd0f261a9c171542de9ec534558aa84f315f29fd"
+    "gitCommit": "181cfe09a69e59285bece176c86a36333bab04bc"
   },
   "runtimeNetwork": {
     "staticRuntimeSourceScanPassed": true,
     "socketMonitor": "Get-NetTCPConnection + Get-NetUDPEndpoint",
     "sampleIntervalMilliseconds": 50,
-    "samples": 29,
+    "samples": 30,
     "observedSocketCount": 0,
     "observedSockets": [],
     "passed": true,
@@ -91,14 +91,14 @@
   },
   "packages": {
     "rawNotoAssetBytes": 127309639,
-    "selfContainedPublishBytes": 312784054,
+    "selfContainedPublishBytes": 313238522,
     "selfContainedPublishBudgetBytes": 367001600,
     "selfContainedPublishPassed": true,
-    "portableZipBytes": null,
-    "installerBytes": null
+    "portableZipBytes": 202376122,
+    "installerBytes": 174151850
   },
   "upstreamBaseline": {
-    "source": "apps/picker/CHANGELOG.md (imported Classic history)",
+    "source": "docs/upstream/classic-picker.md (สรุปจาก imported Git history)",
     "reportedWarmOpenApproxMilliseconds": 35,
     "reportedSteadyStateOpenApproxMilliseconds": 40,
     "reportedIdleWorkingSetApproxMiB": 20,
@@ -108,7 +108,7 @@
     "packageSizes": null
   },
   "automatedRegressionSuite": {
-    "runInThisInvocation": true,
+    "runInThisInvocation": false,
     "scopes": [
       "generator",
       "search tiers",
@@ -120,14 +120,15 @@
       "target validation",
       "insertion modes",
       "clipboard rules",
-      "settings/privacy"
+      "settings/privacy",
+      "product icon",
+      "local packaging policy"
     ],
-    "releasePreconditions": "รอ Ticket 14: release script, installer และ portable ZIP ยังไม่มีใน commit นี้"
+    "releasePreconditions": "ได้รับ verified Ticket 14A manifest สำหรับ self-contained installer/portable ZIP จาก local clean commit"
   },
   "unresolvedQualification": [
     "warm hotkey-to-visible จริงยังต้องวัดด้วย global hotkey และ foreground app จริง",
     "upstream ไม่มีตัวเลข search, scroll, decode/cache และ package ที่ทำซ้ำได้ใน repository",
-    "installer และ portable ZIP size รอ Ticket 14",
     "manual app/OS/accessibility/DPI/input/clipboard matrices ยังต้องทดสอบตาม docs/qualification/manual-matrices.md"
   ]
 }

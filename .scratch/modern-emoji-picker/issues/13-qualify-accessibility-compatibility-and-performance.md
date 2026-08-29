@@ -6,7 +6,7 @@
 
 **Status:** needs-info
 
-- [ ] automated suite ครอบคลุม generator, search tiers, ranking, variants, Recent, persistence recovery, queue, validation, insertion modes, clipboard rules และ release preconditions ตาม Test Strategy
+- [x] automated suite ครอบคลุม generator, search tiers, ranking, variants, Recent, persistence recovery, queue, validation, insertion modes, clipboard rules และ release preconditions ตาม Test Strategy
 - [ ] Manual Tier A ผ่านบน Notepad, Chrome, VS Code, Windows Terminal และ Explorer address bar บน Windows 10 22H2 x64
 - [ ] Windows 11 smoke test ผ่าน และ Tier B ถูกทดสอบเมื่อ environment พร้อมโดยบันทึกข้อจำกัด RDP/Citrix แบบ best-effort
 - [ ] DPI 100–250%, multi-monitor ต่าง DPI, keyboard navigation, focus indicator, High Contrast และ accessible name/state ผ่าน matrix ที่บันทึกผลได้
@@ -51,3 +51,9 @@
 ### 29 สิงหาคม 2026 — คลี่ dependency กับ release
 
 Maintainer อนุมัติให้แยก Ticket 14 เดิมเป็น 14A/14B แล้ว Ticket 14A จึงเป็น blocker ของ qualification เฉพาะ local artifact/package metrics และ Ticket 15 (14B) รอ Ticket 13 ก่อนเตรียม Draft/public release ทำให้ไม่มีวงจร dependency อีกต่อไป
+
+### 29 สิงหาคม 2026 — รับหลักฐาน local artifact จาก Ticket 14A
+
+Ticket 14A ผ่านครบสายจาก clean commit `181cfe09a69e59285bece176c86a36333bab04bc` แล้ว จึงปิดเกณฑ์ automated suite/release preconditions และเติม package metrics จริงได้: raw Noto 127,309,639 bytes, self-contained publish 313,238,522 bytes (ผ่าน budget 350 MiB), portable ZIP 202,376,122 bytes และ installer 174,151,850 bytes พร้อม checksum ที่ verifier ตรวจผ่าน
+
+หลักฐานล่าสุดอยู่ที่ `docs/qualification/results/automated-win10-19045.json` และ `docs/qualification/results/local-artifacts-v0.1.9-win10-19045.json` อย่างไรก็ตามเกณฑ์ performance โดยรวมยังไม่ปิด เพราะ warm hotkey-to-visible จริงและ upstream search/scroll/decode/package ที่ทำซ้ำได้ยังไม่มี ส่วน manual matrices ทุกชุดยังต้องให้มนุษย์ทดสอบ จึงคงสถานะ `needs-info` และไม่ปลด Ticket 15 (14B)

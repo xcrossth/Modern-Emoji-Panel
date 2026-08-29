@@ -185,10 +185,14 @@ public partial class App
                 var hookMatchedAt = hotkey.LastMatchTimestamp;
                 var targetCaptureStartedAt = Stopwatch.GetTimestamp();
                 var capturedFocus = TextInjector.GetFocusedControl(capturedTarget);
+                var capturedAccessibilityFocus = capturedFocus == capturedTarget
+                    ? AccessibilityFocusSnapshot.Capture(capturedTarget)
+                    : null;
                 var caretAvailable = TextInjector.TryGetCaretRect(capturedTarget, out var caretRect);
                 var targetCaptureEndedAt = Stopwatch.GetTimestamp();
                 PreviousForegroundWindow = capturedTarget;
                 PreviousFocusWindow = capturedFocus;
+                PreviousAccessibilityFocus = capturedAccessibilityFocus;
                 PreviousCaretRect = caretAvailable ? caretRect : null;
 
                 var showPickerStartedAt = Stopwatch.GetTimestamp();

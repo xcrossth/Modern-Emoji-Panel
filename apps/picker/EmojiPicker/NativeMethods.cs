@@ -32,6 +32,15 @@ namespace EmojiPicker
         [DllImport("user32.dll")]
         internal static extern IntPtr SetFocus(IntPtr hWnd);
 
+        internal const int GwlExStyle = -20;
+        internal const long WsExNoActivate = 0x08000000L;
+
+        [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW", SetLastError = true)]
+        internal static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int index);
+
+        [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW", SetLastError = true)]
+        internal static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int index, IntPtr newValue);
+
         [DllImport("user32.dll")]
         internal static extern bool GetGUIThreadInfo(uint idThread, ref GUITHREADINFO lpgui);
 

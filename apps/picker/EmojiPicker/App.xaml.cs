@@ -23,6 +23,8 @@ namespace EmojiPicker
         /// </summary>
         public static IntPtr PreviousFocusWindow { get; set; }
 
+        internal static AccessibilityFocusSnapshot? PreviousAccessibilityFocus { get; set; }
+
         /// <summary>
         /// Screen rectangle of the target app's text caret at hotkey time, when it
         /// exposed one; the picker anchors to it (like the Windows 10 panel) instead
@@ -185,6 +187,26 @@ namespace EmojiPicker
                 Shutdown(string.IsNullOrWhiteSpace(reportPath)
                     ? 2
                     : InsertionQueueSmoke.Run(reportPath));
+                return;
+            }
+
+            var desktopRegressionSmokeIndex = Array.FindIndex(
+                e.Args,
+                argument => string.Equals(argument, "--desktop-regression-smoke", StringComparison.Ordinal));
+            if (desktopRegressionSmokeIndex >= 0)
+            {
+                var reportPath = desktopRegressionSmokeIndex + 1 < e.Args.Length
+                    ? e.Args[desktopRegressionSmokeIndex + 1]
+                    : null;
+                if (string.IsNullOrWhiteSpace(reportPath))
+                {
+                    Shutdown(2);
+                }
+                else
+                {
+                    RunDesktopRegressionSmoke(reportPath);
+                }
+
                 return;
             }
 
@@ -628,6 +650,9 @@ namespace EmojiPicker
             // so this is the same state the hook would have captured - but a hung
             // target can no longer stall the low-level hook and get it removed.
             var focusWindow = TextInjector.GetFocusedControl(targetWindow);
+            var accessibilityFocus = focusWindow == targetWindow
+                ? AccessibilityFocusSnapshot.Capture(targetWindow)
+                : null;
             System.Drawing.Rectangle? caretRect =
                 TextInjector.TryGetCaretRect(targetWindow, out var rect) ? rect : null;
 
@@ -635,6 +660,7 @@ namespace EmojiPicker
 
             PreviousForegroundWindow = targetWindow;
             PreviousFocusWindow = focusWindow;
+            PreviousAccessibilityFocus = accessibilityFocus;
             PreviousCaretRect = caretRect;
             picker?.ShowPicker();
         }
@@ -655,6 +681,9 @@ namespace EmojiPicker
             // Snapshot the foreground state on the signal thread, at signal time.
             var target = NativeMethods.GetForegroundWindow();
             var focus = TextInjector.GetFocusedControl(target);
+            var accessibilityFocus = focus == target
+                ? AccessibilityFocusSnapshot.Capture(target)
+                : null;
             System.Drawing.Rectangle? caret =
                 TextInjector.TryGetCaretRect(target, out var caretRect) ? caretRect : null;
 
@@ -684,6 +713,7 @@ namespace EmojiPicker
                 {
                     PreviousForegroundWindow = target;
                     PreviousFocusWindow = focus;
+                    PreviousAccessibilityFocus = accessibilityFocus;
                     PreviousCaretRect = caret;
                 }
 
@@ -750,6 +780,7 @@ namespace EmojiPicker
             // target, a pick falls back to the clipboard - predictable.
             PreviousForegroundWindow = IntPtr.Zero;
             PreviousFocusWindow = IntPtr.Zero;
+            PreviousAccessibilityFocus = null;
             PreviousCaretRect = null;
             picker?.ShowPicker();
         }

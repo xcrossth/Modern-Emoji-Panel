@@ -10,6 +10,7 @@ $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $solutionPath = Join-Path $repositoryRoot "ModernEmojiPanel.sln"
 $executablePath = Join-Path $repositoryRoot "apps\picker\EmojiPicker\bin\Release\net10.0-windows\win-x64\ModernEmojiPicker.exe"
 $temporaryReport = Join-Path ([System.IO.Path]::GetTempPath()) ("modern-emoji-picker-queue-" + [Guid]::NewGuid().ToString("N") + ".json")
+$desktopReport = Join-Path ([System.IO.Path]::GetTempPath()) ("modern-emoji-picker-desktop-regression-" + [Guid]::NewGuid().ToString("N") + ".json")
 
 function Assert-Condition {
     param([bool]$Condition, [string]$Message)
@@ -42,6 +43,24 @@ try {
     Assert-Condition ($checks.Count -eq 31) "Expected 31 Insertion Queue and Typing Handoff checks"
     Assert-Condition (@($checks | Where-Object { $_.Value -ne $true }).Count -eq 0) "One or more queue checks failed"
 
+    $desktopProcess = Start-Process `
+        -FilePath $executablePath `
+        -ArgumentList @("--desktop-regression-smoke", $desktopReport) `
+        -Wait `
+        -PassThru `
+        -WindowStyle Hidden
+    Assert-Condition ($desktopProcess.ExitCode -eq 0) "Desktop focus/rapid-insertion smoke failed with exit code $($desktopProcess.ExitCode)"
+    Assert-Condition (Test-Path -LiteralPath $desktopReport) "Desktop focus/rapid-insertion report is missing"
+    $desktop = Get-Content -Raw -LiteralPath $desktopReport | ConvertFrom-Json
+    Assert-Condition ($desktop.accessibilityFocusCaptured -eq $true) "The exact accessibility focus element was not captured"
+    Assert-Condition ($desktop.editableStateRestored -eq $true) "Collapsed address/search edit state was not restored"
+    Assert-Condition ($desktop.exactSequence -eq $true) "Rapid pointer insertion changed or dropped Unicode sequences"
+    Assert-Condition ($desktop.replacementOrUnpairedSurrogate -eq $false) "Rapid pointer insertion emitted a replacement or unpaired surrogate"
+    Assert-Condition ($desktop.errorVisible -eq $false) "Rapid pointer insertion displayed an insertion error"
+    Assert-Condition ($desktop.gridInteractive -eq $true) "Rapid pointer insertion left the Emoji grid non-interactive"
+    Assert-Condition ($desktop.dismissWorked -eq $true) "Picker could not dismiss after rapid pointer insertion"
+    Assert-Condition ($desktop.passed -eq $true) "Desktop focus/rapid-insertion report failed"
+
     $windowXaml = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot "apps\picker\EmojiPicker\MainWindow.xaml")
     $windowCode = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot "apps\picker\EmojiPicker\MainWindow.xaml.cs")
     $appCode = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot "apps\picker\EmojiPicker\App.xaml.cs")
@@ -52,15 +71,20 @@ try {
     Assert-Condition ($windowCode -match 'TryCaptureCommittedText\(e\.Text') "Typing Handoff does not capture committed text"
     Assert-Condition ($windowCode -match 'TryCaptureKeyStroke') "Typing Handoff does not capture physical keys"
     Assert-Condition ($windowCode -match 'StopAndCancelPending') "Dismissal does not cancel pending work"
+    Assert-Condition ($windowCode -match 'SetPointerActivationSuppressed\(true\)') "Rapid insertion does not suppress pointer activation while the target owns foreground"
+    Assert-Condition ($windowCode -match 'PreviousAccessibilityFocus') "Insertion does not restore the captured accessibility focus element"
     Assert-Condition ($windowCode -match 'TryInsertAsync\([\s\S]*payload\.CommittedText') "Committed text is not sent through target validation"
     Assert-Condition ($windowCode -match 'TrySendKeyStrokeAsync') "Physical keys are not sent through target validation"
     Assert-Condition ($appCode -match 'RequestProcessExit') "Tray Exit does not wait for active insertion"
 
-    Write-Host "Insertion Queue verification passed: $($checks.Count) deterministic queue, text, physical-key and WPF wiring checks" -ForegroundColor Green
+    Write-Host "Insertion Queue verification passed: $($checks.Count) deterministic checks plus real WPF focus restore and 15-item rapid insertion" -ForegroundColor Green
 }
 finally {
     Pop-Location
     if (Test-Path -LiteralPath $temporaryReport) {
         Remove-Item -LiteralPath $temporaryReport -Force
+    }
+    if (Test-Path -LiteralPath $desktopReport) {
+        Remove-Item -LiteralPath $desktopReport -Force
     }
 }

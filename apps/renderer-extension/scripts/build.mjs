@@ -22,6 +22,7 @@ const entryPoints = {
   "popup/popup": join(extensionRoot, "src", "popup", "popup.ts"),
   "options/options": join(extensionRoot, "src", "options", "options.ts"),
   "fixtures/dom-renderer": join(extensionRoot, "src", "fixtures", "dom-renderer.ts"),
+  "fixtures/performance": join(extensionRoot, "src", "fixtures", "performance.ts"),
 };
 
 await build({
@@ -62,5 +63,9 @@ await cp(
 await cp(
   join(extensionRoot, "tests", "fixtures", "dom-renderer.html"),
   join(outputRoot, "fixtures", "dom-renderer.html"),
+);
+await cp(
+  join(extensionRoot, "tests", "fixtures", "performance.html"),
+  join(outputRoot, "fixtures", "performance.html"),
 );
 console.log(`Renderer Extension unpacked build: ${outputRoot}`);

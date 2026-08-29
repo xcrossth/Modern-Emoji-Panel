@@ -1,0 +1,195 @@
+{
+  "schemaVersion": 1,
+  "status": "automated-passed-manual-pending",
+  "generatedAtUtc": "2026-08-29T21:40:36.287Z",
+  "environment": {
+    "osVersion": "Windows 10 Enterprise N",
+    "osRelease": "10.0.19045",
+    "architecture": "x64",
+    "chromeForTesting": "152.0.7977.64"
+  },
+  "automated": {
+    "testsPassed": 62,
+    "testSuitesPassed": 26,
+    "testsFailed": 0,
+    "rendering": {
+      "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+      "devicePixelRatio": 1,
+      "fontLoaded": true,
+      "unicodePreserved": true,
+      "codePoints": [
+        "U+1FAE9",
+        "U+20",
+        "U+2764",
+        "U+FE0F",
+        "U+20",
+        "U+1F44C",
+        "U+1F3FB",
+        "U+20",
+        "U+1F469",
+        "U+200D",
+        "U+1F4BB",
+        "U+20",
+        "U+1F468",
+        "U+200D",
+        "U+1F469",
+        "U+200D",
+        "U+1F467",
+        "U+200D",
+        "U+1F466",
+        "U+20",
+        "U+31",
+        "U+FE0F",
+        "U+20E3",
+        "U+20",
+        "U+1F1F9",
+        "U+1F1ED",
+        "U+20",
+        "U+1F3F4",
+        "U+E0067",
+        "U+E0062",
+        "U+E0065",
+        "U+E006E",
+        "U+E0067",
+        "U+E007F",
+        "U+20",
+        "U+1FAEF",
+        "U+20"
+      ],
+      "lineHeight": 100,
+      "surroundingFont": "18px / 27px \"Segoe UI\", Tahoma, sans-serif"
+    },
+    "dom": {
+      "fontLoaded": true,
+      "initialTextPreserved": true,
+      "selectionPreserved": true,
+      "browserFindSucceeded": true,
+      "editablePreserved": true,
+      "codePreserved": true,
+      "dynamicTextPreserved": true,
+      "wrapperCount": 612,
+      "metrics": {
+        "nodesVisited": 616,
+        "wrappersCreated": 612,
+        "batches": 16,
+        "processingMilliseconds": 16.200000047683716,
+        "maxBatchMilliseconds": 2,
+        "skippedEditableNodes": 1
+      },
+      "copyCommandAccepted": true,
+      "copyPreserved": true
+    },
+    "ui": {
+      "chromeVersion": "152.0.7977.64",
+      "extensionBase": "chrome-extension://nladomhekcdgdnikjiilhmcekbfphdmp",
+      "optionsState": {
+        "enabled": true,
+        "mode": "allowlist",
+        "sites": [
+          "instagram.com",
+          "tiktok.com"
+        ],
+        "debug": false,
+        "rendererMode": "noto-colrv1",
+        "version": "0.0.1",
+        "labeledControls": true,
+        "language": "th"
+      },
+      "popupState": {
+        "language": "th",
+        "toggleLabel": "เปิดใช้บนเว็บไซต์นี้",
+        "optionsText": "การตั้งค่าทั้งหมด",
+        "liveRegion": "polite",
+        "restricted": "หน้านี้ไม่รองรับ"
+      },
+      "saveResetPassed": true
+    },
+    "performance": {
+      "chromeVersion": "152.0.7977.64",
+      "heapBefore": 596784,
+      "heapAfter": 893320,
+      "retainedHeapBytes": 296536,
+      "budgets": {
+        "schemaVersion": 1,
+        "initialMessages": 2000,
+        "initialMilliseconds": 1000,
+        "burstMessages": 1000,
+        "burstMilliseconds": 750,
+        "maxBatchMilliseconds": 50,
+        "navigationCycles": 50,
+        "messagesPerNavigation": 100,
+        "navigationProcessingMilliseconds": 1500,
+        "retainedHeapBytes": 33554432
+      },
+      "initial": {
+        "milliseconds": 62.30000001192093,
+        "wrappers": 4000,
+        "metrics": {
+          "nodesVisited": 2000,
+          "wrappersCreated": 4000,
+          "batches": 9,
+          "processingMilliseconds": 61.89999997615814,
+          "maxBatchMilliseconds": 9.100000023841858,
+          "skippedEditableNodes": 0
+        }
+      },
+      "burst": {
+        "milliseconds": 29.69999998807907,
+        "wrappers": 2000,
+        "metrics": {
+          "nodesVisited": 1000,
+          "wrappersCreated": 2000,
+          "batches": 6,
+          "processingMilliseconds": 27.69999998807907,
+          "maxBatchMilliseconds": 7.200000047683716,
+          "skippedEditableNodes": 0
+        }
+      },
+      "navigation": {
+        "milliseconds": 1438.6000000238419,
+        "currentWrappers": 200,
+        "wrappersBeforeScroll": 200,
+        "wrappersAfterScroll": 200,
+        "metrics": {
+          "nodesVisited": 5000,
+          "wrappersCreated": 10000,
+          "batches": 51,
+          "processingMilliseconds": 134.60000026226044,
+          "maxBatchMilliseconds": 4,
+          "skippedEditableNodes": 0
+        }
+      },
+      "editablePreserved": true,
+      "assertions": {
+        "initialTime": true,
+        "initialWrappers": true,
+        "burstTime": true,
+        "burstWrappers": true,
+        "maxBatch": true,
+        "navigationTime": true,
+        "navigationWrappers": true,
+        "noScrollGrowth": true,
+        "noObserverGrowth": true,
+        "retainedHeap": true,
+        "editablePreserved": true
+      }
+    },
+    "outboundRuntimeNetwork": "passed-static-no-network-api-or-remote-code-path",
+    "allSitesFixtures": [
+      "Instagram feed/comments",
+      "Google",
+      "GitHub",
+      "Reddit",
+      "Facebook",
+      "Discord Web"
+    ]
+  },
+  "manual": {
+    "status": "pending",
+    "matrix": "docs/qualification/renderer-primary-sites.md",
+    "requiredSites": [
+      "Instagram Web DM",
+      "TikTok Web Chat"
+    ]
+  }
+}

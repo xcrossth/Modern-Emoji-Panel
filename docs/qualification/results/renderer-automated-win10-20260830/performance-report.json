@@ -1,0 +1,70 @@
+{
+  "chromeVersion": "152.0.7977.64",
+  "heapBefore": 596784,
+  "heapAfter": 893320,
+  "retainedHeapBytes": 296536,
+  "budgets": {
+    "schemaVersion": 1,
+    "initialMessages": 2000,
+    "initialMilliseconds": 1000,
+    "burstMessages": 1000,
+    "burstMilliseconds": 750,
+    "maxBatchMilliseconds": 50,
+    "navigationCycles": 50,
+    "messagesPerNavigation": 100,
+    "navigationProcessingMilliseconds": 1500,
+    "retainedHeapBytes": 33554432
+  },
+  "initial": {
+    "milliseconds": 62.30000001192093,
+    "wrappers": 4000,
+    "metrics": {
+      "nodesVisited": 2000,
+      "wrappersCreated": 4000,
+      "batches": 9,
+      "processingMilliseconds": 61.89999997615814,
+      "maxBatchMilliseconds": 9.100000023841858,
+      "skippedEditableNodes": 0
+    }
+  },
+  "burst": {
+    "milliseconds": 29.69999998807907,
+    "wrappers": 2000,
+    "metrics": {
+      "nodesVisited": 1000,
+      "wrappersCreated": 2000,
+      "batches": 6,
+      "processingMilliseconds": 27.69999998807907,
+      "maxBatchMilliseconds": 7.200000047683716,
+      "skippedEditableNodes": 0
+    }
+  },
+  "navigation": {
+    "milliseconds": 1438.6000000238419,
+    "currentWrappers": 200,
+    "wrappersBeforeScroll": 200,
+    "wrappersAfterScroll": 200,
+    "metrics": {
+      "nodesVisited": 5000,
+      "wrappersCreated": 10000,
+      "batches": 51,
+      "processingMilliseconds": 134.60000026226044,
+      "maxBatchMilliseconds": 4,
+      "skippedEditableNodes": 0
+    }
+  },
+  "editablePreserved": true,
+  "assertions": {
+    "initialTime": true,
+    "initialWrappers": true,
+    "burstTime": true,
+    "burstWrappers": true,
+    "maxBatch": true,
+    "navigationTime": true,
+    "navigationWrappers": true,
+    "noScrollGrowth": true,
+    "noObserverGrowth": true,
+    "retainedHeap": true,
+    "editablePreserved": true
+  }
+}

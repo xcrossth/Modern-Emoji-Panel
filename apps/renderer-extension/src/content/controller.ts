@@ -61,11 +61,13 @@ export class ContentRendererController {
     } else {
       const started = performance.now();
       const result = renderSubtree(this.document.documentElement);
+      const elapsed = performance.now() - started;
       this.staticMetrics = {
         nodesVisited: 0,
         wrappersCreated: result.wrappersCreated,
         batches: 1,
-        processingMilliseconds: performance.now() - started,
+        processingMilliseconds: elapsed,
+        maxBatchMilliseconds: elapsed,
         skippedEditableNodes: result.skippedEditableNodes,
       };
       if (settings.debug) console.debug("[Modern Emoji Renderer]", { ...this.staticMetrics });

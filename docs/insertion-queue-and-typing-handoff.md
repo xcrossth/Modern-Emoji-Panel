@@ -6,7 +6,8 @@ Picker ใช้ Insertion Queue แบบ FIFO เพื่อรักษา�
 
 - รายการที่ผู้ใช้เลือกจะเข้า pending ตามลำดับ click หรือ Commit Gesture
 - เมื่อ adapter เริ่มส่ง รายการเดียวจะย้ายจาก pending เป็น active
-- Picker แสดงสถานะ `Sending`, จำนวน pending และ `Queue full` ที่หัว grid พร้อมประกาศผ่าน accessibility live region
+- Picker ไม่แสดงสถานะชั่วคราว `Sending` หรือจำนวน pending ที่หัว grid เพื่อไม่ให้ข้อความกระพริบระหว่างการเลือกเร็ว แต่ยังประกาศสถานะเหล่านี้ผ่าน accessibility state
+- เมื่อ queue เต็ม Picker จะแสดง `Queue full` ที่หัว grid ค้างไว้จนกลับมารับงานได้ เพื่อไม่ให้การคลิกที่ไม่ถูกรับหายไปแบบเงียบ
 - เมื่อมีงานรอครบ 20 รายการ Picker จะหยุดรับชั่วคราวและแจ้งสถานะอย่างชัดเจน งานจะไม่ถูกทิ้งแบบเงียบ
 - ระหว่าง pointer/Shift+Enter insertion Picker ยัง visible และหลัง active operation กับ pending ทั้งหมดจบจะกลับมา active โดยคง selection, query, category และ scroll จากการเลือกล่าสุด
 

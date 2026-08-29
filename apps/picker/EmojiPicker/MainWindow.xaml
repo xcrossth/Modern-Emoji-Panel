@@ -130,6 +130,158 @@
             <EventSetter Event="PreviewMouseRightButtonUp" Handler="EmojiItem_MouseRightButtonUp"/>
         </Style>
 
+        <!-- A fully themed ComboBox avoids the white Win32/WPF popup chrome on
+             Windows 10. Artwork is rendered by NotoEmojiImage so tone modifiers
+             never depend on the operating system's emoji glyph support. -->
+        <DataTemplate x:Key="SkinToneOptionTemplate">
+            <StackPanel Orientation="Horizontal">
+                <local:NotoEmojiImage AssetPath="{Binding IconAssetPath}"
+                                      DecodeSizeDip="20"
+                                      Width="20" Height="20"
+                                      Margin="0,0,8,0"
+                                      HorizontalAlignment="Center"
+                                      VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding DisplayName}"
+                           VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <Style x:Key="SkinToneComboBoxItemStyle" TargetType="ComboBoxItem">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{DynamicResource SearchForegroundBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemBorder"
+                                Margin="1"
+                                Padding="{TemplateBinding Padding}"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="Transparent"
+                                BorderThickness="1"
+                                CornerRadius="3">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource HoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource SelectionBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="ItemBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SkinToneComboBoxStyle" TargetType="ComboBox">
+            <Setter Property="Background" Value="{DynamicResource SearchBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource SearchForegroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource SearchBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource SkinToneComboBoxItemStyle}"/>
+            <Setter Property="ScrollViewer.CanContentScroll" Value="True"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="DropDownToggle"
+                                          ClickMode="Press"
+                                          Focusable="False"
+                                          Background="{TemplateBinding Background}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          BorderBrush="{TemplateBinding BorderBrush}"
+                                          BorderThickness="{TemplateBinding BorderThickness}"
+                                          IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border x:Name="ToggleBorder"
+                                                Background="{TemplateBinding Background}"
+                                                BorderBrush="{TemplateBinding BorderBrush}"
+                                                BorderThickness="{TemplateBinding BorderThickness}"
+                                                CornerRadius="4">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="27"/>
+                                                </Grid.ColumnDefinitions>
+                                                <ContentPresenter Margin="8,2,2,2"
+                                                                  VerticalAlignment="Center"
+                                                                  Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"
+                                                                  ContentTemplate="{Binding SelectionBoxItemTemplate, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"
+                                                                  ContentStringFormat="{Binding SelectionBoxItemStringFormat, RelativeSource={RelativeSource AncestorType={x:Type ComboBox}}}"
+                                                                  IsHitTestVisible="False"/>
+                                                <Path Grid.Column="1"
+                                                      Width="8" Height="5"
+                                                      HorizontalAlignment="Center"
+                                                      VerticalAlignment="Center"
+                                                      Data="M 0 0 L 4 4 L 8 0"
+                                                      Stroke="{DynamicResource SearchForegroundBrush}"
+                                                      StrokeThickness="1.5"
+                                                      StrokeStartLineCap="Round"
+                                                      StrokeEndLineCap="Round"/>
+                                            </Grid>
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsMouseOver" Value="True">
+                                                <Setter TargetName="ToggleBorder" Property="Background" Value="{DynamicResource HoverBrush}"/>
+                                            </Trigger>
+                                            <Trigger Property="IsChecked" Value="True">
+                                                <Setter TargetName="ToggleBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                            </Trigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <Popup x:Name="PART_Popup"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}">
+                                <Border x:Name="PopupBorder"
+                                        MinWidth="{Binding ActualWidth, ElementName=DropDownToggle}"
+                                        MaxHeight="280"
+                                        Margin="0,3,0,0"
+                                        Padding="2"
+                                        Background="{DynamicResource SearchBackgroundBrush}"
+                                        BorderBrush="{DynamicResource SearchBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="4">
+                                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled"
+                                                  CanContentScroll="True">
+                                        <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="DropDownToggle" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!-- Minimal theme-aware scrollbar so the dark grid doesn't show a light track -->
         <Style x:Key="ThemedScrollBar" TargetType="ScrollBar">
             <Setter Property="Width" Value="10"/>
@@ -217,10 +369,11 @@
                 <DockPanel Grid.Row="1" Margin="12,4,12,2" LastChildFill="True">
                     <ComboBox x:Name="SkinTonePicker"
                               DockPanel.Dock="Right"
-                              Width="148"
-                              Height="26"
+                              Width="188"
+                              Height="30"
                               Margin="8,0,0,0"
-                              DisplayMemberPath="DisplayName"
+                              Style="{StaticResource SkinToneComboBoxStyle}"
+                              ItemTemplate="{StaticResource SkinToneOptionTemplate}"
                               SelectionChanged="SkinTonePicker_SelectionChanged"
                               ToolTip="Default skin tone (Alt+T). Right-click or press Alt+Down on a supported tile for a one-shot mixed-tone Variant Override."
                               AutomationProperties.Name="Default skin tone"/>

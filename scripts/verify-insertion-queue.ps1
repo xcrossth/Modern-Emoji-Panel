@@ -39,7 +39,7 @@ try {
     $report = Get-Content -Raw -LiteralPath $temporaryReport | ConvertFrom-Json
     $checks = @($report.checks.psobject.Properties)
     Assert-Condition ($report.passed -eq $true) "Insertion Queue report contains a failed check"
-    Assert-Condition ($checks.Count -eq 26) "Expected 26 Insertion Queue and Typing Handoff checks"
+    Assert-Condition ($checks.Count -eq 31) "Expected 31 Insertion Queue and Typing Handoff checks"
     Assert-Condition (@($checks | Where-Object { $_.Value -ne $true }).Count -eq 0) "One or more queue checks failed"
 
     $windowXaml = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot "apps\picker\EmojiPicker\MainWindow.xaml")

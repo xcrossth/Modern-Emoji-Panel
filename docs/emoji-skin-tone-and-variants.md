@@ -4,7 +4,9 @@ Picker แยกการเลือกสีผิวออกเป็นส�
 
 ## สีผิวเริ่มต้นระดับ global
 
-ตัวเลือกสีผิวอยู่ข้างชื่อหมวดและมีหกค่า ได้แก่ neutral สีเหลืองกับสีผิว Unicode อีกห้าระดับ ค่าเริ่มต้นของโปรไฟล์ใหม่คือ neutral เมื่อเปลี่ยนค่า Picker จะบันทึกลง `%APPDATA%\ModernEmojiPicker\settings.json` และนำไปใช้กับ Emoji Entry ที่รองรับ modifier ใน Picker Session ถัดไปด้วย
+ตัวเลือกสีผิวอยู่ข้างชื่อหมวดและมีหกค่า ได้แก่ neutral สีเหลืองกับสีผิว Unicode อีกห้าระดับ แต่ละตัวเลือกแสดงภาพตัวอย่างจาก Noto Emoji ที่ตรงกับค่านั้นโดยตรง จึงไม่พึ่งการแสดงผล emoji modifier ของ Windows 10 และไม่เกิดอักขระเสียแบบ `�` ตัว dropdown ใช้สีตาม System/Light/Dark/High Contrast theme เดียวกับหน้าต่างหลัก
+
+ค่าเริ่มต้นของโปรไฟล์ใหม่คือ neutral เมื่อเปลี่ยนค่า Picker จะบันทึกลง `%APPDATA%\ModernEmojiPicker\settings.json` และนำไปใช้กับ Emoji Entry ที่รองรับ modifier ใน Picker Session ถัดไปด้วย
 
 หาก Emoji Entry มีคนหลายคนและมี sequence สีเดียวครบทุกตำแหน่ง เช่น people holding hands ค่า global จะใช้สีเดียวกันกับทุกตำแหน่ง หากรายการไม่รองรับ skin tone ค่า global ไม่มีผล
 

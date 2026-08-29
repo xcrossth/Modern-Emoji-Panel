@@ -580,14 +580,20 @@ namespace EmojiPicker
         private void InitializeSkinTonePicker()
         {
             var thai = Localizer.IsThai;
+            var iconBase = baselineEmojis.FirstOrDefault(entry =>
+                string.Equals(entry.CanonicalSequence, "1F9D2", StringComparison.OrdinalIgnoreCase));
+            string Icon(SkinTonePreference preference) =>
+                iconBase == null || variantCatalog == null
+                    ? string.Empty
+                    : variantCatalog.Resolve(iconBase, preference).ToPresentation().AssetPath;
             var options = new List<SkinToneOption>
             {
-                new(SkinTonePreference.Neutral, thai ? "กลาง (สีเหลือง)" : "Neutral (yellow)"),
-                new(SkinTonePreference.Light, thai ? "สีผิวอ่อน" : "Light skin tone"),
-                new(SkinTonePreference.MediumLight, thai ? "สีผิวขาวเหลือง" : "Medium-light skin tone"),
-                new(SkinTonePreference.Medium, thai ? "สีผิวปานกลาง" : "Medium skin tone"),
-                new(SkinTonePreference.MediumDark, thai ? "สีผิวเข้มปานกลาง" : "Medium-dark skin tone"),
-                new(SkinTonePreference.Dark, thai ? "สีผิวเข้ม" : "Dark skin tone"),
+                new(SkinTonePreference.Neutral, thai ? "กลาง (สีเหลือง)" : "Neutral (yellow)", Icon(SkinTonePreference.Neutral)),
+                new(SkinTonePreference.Light, thai ? "สีผิวอ่อน" : "Light skin tone", Icon(SkinTonePreference.Light)),
+                new(SkinTonePreference.MediumLight, thai ? "สีผิวขาวเหลือง" : "Medium-light skin tone", Icon(SkinTonePreference.MediumLight)),
+                new(SkinTonePreference.Medium, thai ? "สีผิวปานกลาง" : "Medium skin tone", Icon(SkinTonePreference.Medium)),
+                new(SkinTonePreference.MediumDark, thai ? "สีผิวเข้มปานกลาง" : "Medium-dark skin tone", Icon(SkinTonePreference.MediumDark)),
+                new(SkinTonePreference.Dark, thai ? "สีผิวเข้ม" : "Dark skin tone", Icon(SkinTonePreference.Dark)),
             };
 
             SkinTonePicker.ItemsSource = options;
@@ -1518,32 +1524,26 @@ namespace EmojiPicker
 
         private void UpdateInsertionQueueStatus(bool queueFullAttempted = false)
         {
-            string? status = null;
-            if (queueFullAttempted || insertionQueue.IsFull)
-            {
-                status = $"Queue full • {insertionQueue.PendingCount} pending";
-            }
-            else if (insertionQueue.Active is InsertionWorkItem)
-            {
-                status = insertionQueue.PendingCount == 0
-                    ? "Sending"
-                    : $"Sending • {insertionQueue.PendingCount} pending";
-            }
-            else if (insertionQueue.PendingCount > 0)
-            {
-                status = $"{insertionQueue.PendingCount} pending";
-            }
-            else if (insertionQueue.TerminalIntent?.Kind == QueueTerminalKind.TypingHandoff)
-            {
-                status = "Typing handoff";
-            }
+            var queueFull = queueFullAttempted || insertionQueue.IsFull;
+            var sending = insertionQueue.Active is InsertionWorkItem;
+            var typingHandoff = insertionQueue.TerminalIntent?.Kind == QueueTerminalKind.TypingHandoff;
+            var status = InsertionQueuePresentation.VisibleStatus(
+                queueFull,
+                sending,
+                insertionQueue.PendingCount,
+                typingHandoff);
+            var accessibleStatus = InsertionQueuePresentation.AccessibleStatus(
+                queueFull,
+                sending,
+                insertionQueue.PendingCount,
+                typingHandoff);
 
             InsertionQueueStatusText.Text = status ?? string.Empty;
             InsertionQueueStatusText.Visibility = status == null ? Visibility.Collapsed : Visibility.Visible;
             EmojiGrid.IsHitTestVisible = insertionQueue.IsAccepting && !insertionQueue.IsFull;
-            if (status != null)
+            if (accessibleStatus != null)
             {
-                System.Windows.Automation.AutomationProperties.SetItemStatus(EmojiGrid, $"Busy. {status}");
+                System.Windows.Automation.AutomationProperties.SetItemStatus(EmojiGrid, $"Busy. {accessibleStatus}");
             }
             else
             {
@@ -1982,5 +1982,8 @@ namespace EmojiPicker
         }
     }
 
-    internal sealed record SkinToneOption(SkinTonePreference Preference, string DisplayName);
+    internal sealed record SkinToneOption(
+        SkinTonePreference Preference,
+        string DisplayName,
+        string IconAssetPath = "");
 }

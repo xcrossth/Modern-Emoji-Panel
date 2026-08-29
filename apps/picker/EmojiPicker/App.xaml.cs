@@ -292,9 +292,14 @@ namespace EmojiPicker
             Dispatcher.BeginInvoke(
                 new Action(async () =>
                 {
+                    var skinToneOptions = smokeWindow.SkinTonePicker.Items.Cast<SkinToneOption>().ToArray();
                     if (!smokeWindow.IsLoaded ||
                         smokeWindow.CategoryTabs.Items.Count != 10 ||
                         smokeWindow.SkinTonePicker.Items.Count != 6 ||
+                        skinToneOptions.Any(option => string.IsNullOrWhiteSpace(option.IconAssetPath)) ||
+                        skinToneOptions.Select(option => option.IconAssetPath).Distinct(StringComparer.Ordinal).Count() != 6 ||
+                        smokeWindow.SkinTonePicker.ItemTemplate == null ||
+                        smokeWindow.TryFindResource("SkinToneComboBoxStyle") is not Style ||
                         smokeWindow.BaselineEntryCount != 3944 ||
                         !smokeWindow.BundledAssetsAvailable ||
                         smokeWindow.EmojiGrid.Items.Count == 0)
@@ -307,6 +312,8 @@ namespace EmojiPicker
                     var decoded = firstEmoji == null
                         ? null
                         : await NotoEmojiAssetProvider.Shared.LoadAsync(firstEmoji.AssetPath, 32);
+                    var skinToneArtwork = await Task.WhenAll(skinToneOptions.Select(option =>
+                        NotoEmojiAssetProvider.Shared.LoadAsync(option.IconAssetPath, 20)));
                     var missing = await NotoEmojiAssetProvider.Shared.LoadAsync(
                         "vendor/noto-emoji/v2.051/png/128/definitely-missing.png", 32);
                     var dpiWidths = new[] { 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5 }
@@ -315,7 +322,9 @@ namespace EmojiPicker
                     await Task.WhenAll(smokeWindow.SmokeEntries.Take(300)
                         .Select(emoji => NotoEmojiAssetProvider.Shared.LoadAsync(emoji.AssetPath, 32)));
                     var realizedContainers = smokeWindow.RealizedEmojiContainerCount;
-                    if (decoded == null || !decoded.IsFrozen || missing != null || !dpiWidths ||
+                    if (decoded == null || !decoded.IsFrozen ||
+                        skinToneArtwork.Any(source => source == null || !source.IsFrozen) ||
+                        missing != null || !dpiWidths ||
                         NotoEmojiAssetProvider.Shared.CachedImageCount > 256 ||
                         realizedContainers <= 0 ||
                         realizedContainers >= smokeWindow.EmojiGrid.Items.Count)

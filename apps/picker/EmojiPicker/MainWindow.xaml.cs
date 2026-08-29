@@ -14,6 +14,15 @@ using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 
 namespace EmojiPicker
 {
+    internal sealed record ShowPickerTiming(
+        double ResetMilliseconds,
+        double CategoryMilliseconds,
+        double PositionMilliseconds,
+        double ShowMilliseconds,
+        double ActivateMilliseconds,
+        double FocusMilliseconds,
+        double TotalMilliseconds);
+
     public partial class MainWindow : Window
     {
         private const int MaxPendingInsertions = 20;
@@ -41,6 +50,9 @@ namespace EmojiPicker
         private List<Emoji> recentEmojis = new List<Emoji>();
         private List<EmojiCategory> categories = new List<EmojiCategory>();
         private string currentCategory = DefaultCategoryKey;
+        private string? displayedCategoryKey;
+        private int categoryDataVersion;
+        private int displayedCategoryDataVersion = -1;
         private bool bundledAssetsAvailable;
         private bool isShowing;
         private bool allowProcessExit;
@@ -59,6 +71,8 @@ namespace EmojiPicker
         private bool insertionInProgress;
         private PickerViewSnapshot? lastInsertionSnapshot;
         private Action? processExitAfterQueue;
+
+        internal ShowPickerTiming? LastShowPickerTiming { get; private set; }
 
         public MainWindow()
             : this(loadUserActivity: true)
@@ -125,6 +139,13 @@ namespace EmojiPicker
         internal string AccessibilityStatus => AutomationStatusText.Text;
         internal int PendingInsertionCount => insertionQueue.PendingCount;
         internal bool InsertionQueueFull => insertionQueue.IsFull;
+        internal object? EmojiItemsSourceForSmoke => EmojiGrid.ItemsSource;
+        internal void LoadDefaultCategoryForSmoke() => LoadCategory(DefaultCategoryKey);
+        internal void DisplaySearchForSmoke(string query)
+        {
+            SearchBox.Text = query;
+            RunSearch();
+        }
 
         internal async Task<IReadOnlyList<double>> MeasureWarmOpenToRenderProxyForSmokeAsync(int samples)
         {
@@ -305,12 +326,13 @@ namespace EmojiPicker
             }
 
             // Ignore focus-loss triggered while we are bringing the window up
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var startedAt = System.Diagnostics.Stopwatch.GetTimestamp();
             isShowing = true;
             sessionState.Begin();
 
             HidePreview();
             SearchBox.Clear();
+            var resetEndedAt = System.Diagnostics.Stopwatch.GetTimestamp();
 
             // Open on Recent when there is history (like the Windows 10 picker),
             // otherwise the first content tab
@@ -324,27 +346,44 @@ namespace EmojiPicker
             {
                 CategoryTabs.SelectedIndex = openIndex; // fires SelectionChanged -> LoadCategory
             }
+            var categoryEndedAt = System.Diagnostics.Stopwatch.GetTimestamp();
 
             PositionNearCursor();
+            var positionEndedAt = System.Diagnostics.Stopwatch.GetTimestamp();
 
             Show();
             EnsureOnScreen();
+            var showEndedAt = System.Diagnostics.Stopwatch.GetTimestamp();
             Activate();
             var handle = new WindowInteropHelper(this).Handle;
             if (handle != IntPtr.Zero)
             {
                 ForceForeground(handle);
             }
+            var activateEndedAt = System.Diagnostics.Stopwatch.GetTimestamp();
 
             FocusBrowseGrid();
             AnnounceStatus("Browse mode. Use arrow keys to choose an emoji.", busy: false);
+            var focusEndedAt = System.Diagnostics.Stopwatch.GetTimestamp();
 
-            Logger.Log($"ShowPicker done in {stopwatch.ElapsedMilliseconds}ms: Left={Left:F0} Top={Top:F0} " +
+            LastShowPickerTiming = new ShowPickerTiming(
+                ElapsedMilliseconds(startedAt, resetEndedAt),
+                ElapsedMilliseconds(resetEndedAt, categoryEndedAt),
+                ElapsedMilliseconds(categoryEndedAt, positionEndedAt),
+                ElapsedMilliseconds(positionEndedAt, showEndedAt),
+                ElapsedMilliseconds(showEndedAt, activateEndedAt),
+                ElapsedMilliseconds(activateEndedAt, focusEndedAt),
+                ElapsedMilliseconds(startedAt, focusEndedAt));
+
+            Logger.Log($"ShowPicker done in {LastShowPickerTiming.TotalMilliseconds:F1}ms: Left={Left:F0} Top={Top:F0} " +
                 $"W={Width} H={Height} foreground={NativeMethods.GetForegroundWindow()} thisHwnd={handle}");
 
             // Clear the guard once the show/activation storm has settled
             Dispatcher.BeginInvoke(new Action(() => isShowing = false), System.Windows.Threading.DispatcherPriority.Background);
         }
+
+        private static double ElapsedMilliseconds(long startedAt, long endedAt) =>
+            System.Diagnostics.Stopwatch.GetElapsedTime(startedAt, endedAt).TotalMilliseconds;
 
         /// <summary>
         /// Brings our window to the foreground even though the hotkey fired from
@@ -519,6 +558,7 @@ namespace EmojiPicker
                 : variantCatalog.BaseEntries
                     .Select(entry => variantCatalog.Resolve(entry, currentSkinTone).ToPresentation())
                     .ToList();
+            categoryDataVersion++;
         }
 
         private void InitializeSkinTonePicker()
@@ -679,19 +719,35 @@ namespace EmojiPicker
                 return; // UI not ready yet
             }
 
+            CategoryHeader.Text = categories.FirstOrDefault(category => category.Key == categoryKey)?.DisplayName ?? categoryKey;
+            if (string.Equals(displayedCategoryKey, categoryKey, StringComparison.Ordinal) &&
+                displayedCategoryDataVersion == categoryDataVersion &&
+                EmojiGrid.ItemsSource != null)
+            {
+                EmojiGrid.SelectedIndex = EmojiGrid.Items.Count > 0 ? 0 : -1;
+                if (EmojiGrid.SelectedItem != null)
+                {
+                    EmojiGrid.ScrollIntoView(EmojiGrid.SelectedItem);
+                }
+
+                Logger.Log($"LoadCategory '{categoryKey}' reused {EmojiGrid.Items.Count} items");
+                return;
+            }
+
             List<Emoji> categoryEmojis = categoryKey == RecentCategoryKey
                 ? recentEmojis.ToList()
                 : allEmojis.Where(emoji => emoji.Category == categoryKey).ToList();
 
             Logger.Log($"LoadCategory '{categoryKey}' -> {categoryEmojis.Count} items");
-            CategoryHeader.Text = categories.FirstOrDefault(category => category.Key == categoryKey)?.DisplayName ?? categoryKey;
-            ShowEmojis(categoryEmojis);
+            ShowEmojis(categoryEmojis, categoryKey);
         }
 
-        private void ShowEmojis(List<Emoji> emojis)
+        private void ShowEmojis(List<Emoji> emojis, string? categoryKey = null)
         {
             HidePreview();
             EmojiGrid.ItemsSource = emojis;
+            displayedCategoryKey = categoryKey;
+            displayedCategoryDataVersion = categoryDataVersion;
             EmojiGrid.SelectedIndex = emojis.Count > 0 ? 0 : -1;
             if (EmojiGrid.SelectedItem != null)
             {
@@ -1725,6 +1781,7 @@ namespace EmojiPicker
                 .OfType<Emoji>()
                 .Select(entry => variantCatalog!.RestoreResolved(entry).ToPresentation())
                 .ToList();
+            categoryDataVersion++;
         }
 
         private void ShowActivityRecoveryNotice()

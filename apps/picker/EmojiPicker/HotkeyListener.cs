@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 
@@ -33,6 +34,10 @@ namespace EmojiPicker
         private readonly NativeMethods.LowLevelKeyboardProc hookProc;
         private readonly HotkeyBinding binding;
         private IntPtr hookHandle;
+
+        internal bool IsActive => hookHandle != IntPtr.Zero;
+
+        internal long LastMatchTimestamp { get; private set; }
 
         // Tracks that our Win+. '.' is physically held so auto-repeat key-downs
         // don't re-fire the hotkey (which would thrash the picker open/closed)
@@ -118,6 +123,7 @@ namespace EmojiPicker
                         }
 
                         periodHeld = true;
+                        LastMatchTimestamp = Stopwatch.GetTimestamp();
 
                         // Only the (instant) foreground capture runs on the hook
                         // thread; the focused control and caret are resolved by the

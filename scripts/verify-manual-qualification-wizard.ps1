@@ -37,6 +37,8 @@ $wizardText = Get-Content -Raw -LiteralPath $wizardPath -Encoding utf8
 Assert-Condition (([regex]::Matches($wizardText, '(?m)^stage "')).Count -eq 7) "Wizard does not contain exactly seven authored stages"
 Assert-Condition ($wizardText -match 'DurationSeconds 900') "Privacy observation is not fixed at 15 minutes"
 Assert-Condition ($wizardText -match 'artifacts/ticket-13/manual') "Wizard does not keep reports under the ignored Ticket 13 artifact path"
+Assert-Condition ($wizardText -match 'assert_non_elevated_shell') "Wizard does not reject an elevated qualification shell"
+Assert-Condition ($wizardText -match 'WindowsBuiltInRole.*Administrator') "Wizard elevation check does not query the Administrator role"
 foreach ($result in @("ผ่าน", "ไม่ผ่าน", "ทำไม่ได้ใน environment", "ยังไม่ทดสอบ")) {
     Assert-Condition ($wizardText.Contains($result, [StringComparison]::Ordinal)) "Wizard result vocabulary is missing '$result'"
 }

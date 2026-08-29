@@ -277,6 +277,18 @@ ensure_picker_running() {
   fi
 }
 
+assert_non_elevated_shell() {
+  local elevated
+  elevated=$(powershell.exe -NoProfile -NonInteractive -Command \
+    '$principal = [Security.Principal.WindowsPrincipal]::new([Security.Principal.WindowsIdentity]::GetCurrent()); if ($principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) { "true" } else { "false" }' \
+    | tr -d '\r')
+  if [[ "$elevated" == "true" ]]; then
+    warn "terminal นี้เปิดแบบ Administrator ทำให้แอปทดสอบมีสิทธิ์สูงกว่า Modern Emoji Picker และให้ผลลวงว่า Win + . ใช้งานไม่ได้"
+    say "ปิด wizard แล้วเปิด PowerShell หรือ Windows Terminal แบบปกติ โดยชื่อหน้าต่างต้องไม่มีคำว่า Administrator จากนั้นรันคำสั่งเดิมอีกครั้ง"
+    exit 1
+  fi
+}
+
 show_tier_a_workflow() {
   local target="$1"
   say "ทดสอบ $target ใน text control จริงตามลำดับนี้"
@@ -311,6 +323,7 @@ HTML
 printf 'Modern Emoji Picker manual qualification target\n' > "$TEST_TEXT"
 
 banner "Modern Emoji Picker · Manual qualification"
+assert_non_elevated_shell
 
 stage "ตรวจสภาพแวดล้อมและเริ่ม Picker"
 say "รายงานของ session นี้จะอยู่ใต้ artifacts/ticket-13/manual และไม่แก้ manual matrix อัตโนมัติ"

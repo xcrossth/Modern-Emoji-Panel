@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modern Emoji Renderer — Rendering Spike</title>
+  <style>
+    @font-face { font-family: SpikeCBDT; src: url("./NotoColorEmoji.ttf") format("truetype"); }
+    @font-face { font-family: SpikeWindows; src: url("./NotoColorEmoji_WindowsCompatible.ttf") format("truetype"); }
+    @font-face { font-family: SpikeCOLRv1; src: url("./Noto-COLRv1.ttf") format("truetype"); }
+    :root { color-scheme: light dark; font-family: "Segoe UI", Tahoma, sans-serif; }
+    body { margin: 24px; background: Canvas; color: CanvasText; }
+    h1 { font-size: 24px; margin: 0 0 8px; }
+    .notice { margin-bottom: 18px; color: GrayText; }
+    table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+    th, td { border: 1px solid GrayText; padding: 10px; vertical-align: middle; }
+    th:first-child { width: 150px; text-align: left; }
+    .sample { font-size: 32px; line-height: 1.25; white-space: nowrap; }
+    .system { font-family: "Segoe UI Emoji", sans-serif; }
+    .cbdt { font-family: SpikeCBDT, "Segoe UI Emoji", sans-serif; }
+    .windows { font-family: SpikeWindows, "Segoe UI Emoji", sans-serif; }
+    .colrv1 { font-family: SpikeCOLRv1, "Segoe UI Emoji", sans-serif; }
+    .image { display: inline-block; width: 1.25em; height: 1.25em; color: transparent; background: var(--asset) center/contain no-repeat; vertical-align: -0.22em; overflow: hidden; }
+    .surrounding { margin-top: 20px; font: 18px/1.5 "Segoe UI", Tahoma, sans-serif; }
+    .surrounding .emoji { font-family: SpikeCOLRv1, "Segoe UI Emoji", sans-serif; }
+    code { font-family: Consolas, monospace; }
+  </style>
+</head>
+<body>
+  <h1>Rendering spike: Chrome / Windows 10</h1>
+  <div class="notice">Fixture ชั่วคราวสำหรับเลือก renderer — Unicode ในทุกช่องต้องเหมือนกัน</div>
+  <table>
+    <thead><tr><th>Renderer</th><th>single / VS16 / tone / ZWJ / family / keycap / flag / tag / Emoji 17</th></tr></thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <p class="surrounding" id="surrounding-before">ภาษาไทยรอบข้าง The quick brown fox <span class="emoji">🫩</span> ต้องคงรูปแบบเดิม 123</p>
+  <p class="surrounding" id="surrounding-after">ภาษาไทยรอบข้าง The quick brown fox <span class="emoji">🫯</span> ต้องคงรูปแบบเดิม 123</p>
+  <script>
+    const cases = [
+      { label: "single", text: "🫩", asset: "emoji_u1fae9.png" },
+      { label: "VS16", text: "❤️", asset: "emoji_u2764.png" },
+      { label: "skin tone", text: "👌🏻", asset: "emoji_u1f44c_1f3fb.png" },
+      { label: "ZWJ", text: "👩‍💻", asset: "emoji_u1f469_200d_1f4bb.png" },
+      { label: "family", text: "👨‍👩‍👧‍👦", asset: "emoji_u1f468_200d_1f469_200d_1f467_200d_1f466.png" },
+      { label: "keycap", text: "1️⃣", asset: "emoji_u0031_20e3.png" },
+      { label: "regional flag", text: "🇹🇭", asset: "TH.png" },
+      { label: "tag flag", text: "🏴󠁧󠁢󠁥󠁮󠁧󠁿", asset: "GB-ENG.png" },
+      { label: "Emoji 17", text: "🫯", asset: "emoji_u1faef.png" }
+    ];
+    const modes = [
+      ["Windows system", "system"],
+      ["Noto CBDT", "cbdt"],
+      ["Noto Windows", "windows"],
+      ["Noto COLRv1", "colrv1"],
+      ["PNG 128", "png128"],
+      ["PNG 512", "png512"]
+    ];
+    const rows = document.querySelector("#rows");
+    for (const [name, mode] of modes) {
+      const row = document.createElement("tr");
+      row.dataset.mode = mode;
+      const heading = document.createElement("th");
+      heading.textContent = name;
+      const samples = document.createElement("td");
+      samples.className = `sample ${mode}`;
+      samples.setAttribute("aria-label", cases.map(item => item.label).join(", "));
+      for (const item of cases) {
+        const span = document.createElement("span");
+        span.dataset.case = item.label;
+        span.textContent = item.text;
+        if (mode.startsWith("png")) {
+          span.className = "image";
+          const size = mode === "png128" ? "128" : "512";
+          span.style.setProperty("--asset", `url("./images/${size}/${item.asset}")`);
+        }
+        samples.append(span, " ");
+      }
+      row.append(heading, samples);
+      rows.append(row);
+    }
+
+    async function collectMetrics() {
+      await document.fonts.ready;
+      const unicode = cases.map(item => item.text).join(" ") + " ";
+      const modeMetrics = {};
+      for (const [, mode] of modes) {
+        const cell = document.querySelector(`[data-mode="${mode}"] .sample`);
+        const rect = cell.getBoundingClientRect();
+        modeMetrics[mode] = {
+          textPreserved: cell.textContent === unicode,
+          height: rect.height,
+          width: rect.width,
+          fontFamily: getComputedStyle(cell).fontFamily
+        };
+      }
+      const start = performance.now();
+      const stress = document.createElement("div");
+      stress.className = "sample colrv1";
+      stress.style.position = "absolute";
+      stress.style.visibility = "hidden";
+      stress.textContent = cases.map(item => item.text).join(" ").repeat(500);
+      document.body.append(stress);
+      void stress.offsetHeight;
+      const renderMilliseconds = performance.now() - start;
+      stress.remove();
+      return {
+        userAgent: navigator.userAgent,
+        devicePixelRatio,
+        fonts: {
+          cbdt: document.fonts.check("32px SpikeCBDT"),
+          windows: document.fonts.check("32px SpikeWindows"),
+          colrv1: document.fonts.check("32px SpikeCOLRv1")
+        },
+        expectedUnicode: unicode,
+        modes: modeMetrics,
+        surroundingTypographyPreserved:
+          getComputedStyle(document.querySelector("#surrounding-before")).font ===
+          getComputedStyle(document.querySelector("#surrounding-after")).font,
+        stressRenderMilliseconds: renderMilliseconds
+      };
+    }
+    window.collectSpikeMetrics = collectMetrics;
+  </script>
+</body>
+</html>

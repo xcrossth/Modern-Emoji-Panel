@@ -128,6 +128,25 @@ try {
         "Unicode Flags group coverage must be 270 entries"
     Assert-Condition ((@($entries | Where-Object { $_.asset.sourceKind -eq 'noto-region-flag' })).Count -eq 262) `
         "Noto region-flag coverage must be 262 entries"
+    $resolvedFlagAliases = @{
+        '1F1E7 1F1FB' = 'NO.png'
+        '1F1E8 1F1F5' = 'FR.png'
+        '1F1E9 1F1EC' = 'IO.png'
+        '1F1EA 1F1E6' = 'ES.png'
+        '1F1ED 1F1F2' = 'AU.png'
+        '1F1F2 1F1EB' = 'FR.png'
+        '1F1F8 1F1EF' = 'NO.png'
+        '1F1FA 1F1F2' = 'US.png'
+    }
+    foreach ($sequence in $resolvedFlagAliases.Keys) {
+        $entry = @($entries | Where-Object { $_.canonicalSequence -eq $sequence })
+        Assert-Condition ($entry.Count -eq 1) "Expected one region-flag alias entry for $sequence"
+        $expectedSuffix = "/third_party/region-flags/png/$($resolvedFlagAliases[$sequence])"
+        Assert-Condition ([string]$entry[0].asset.png128 -like "*$expectedSuffix") `
+            "Region-flag alias did not resolve to PNG artwork for $sequence"
+        Assert-Condition ($entry[0].asset.png512 -eq $entry[0].asset.png128) `
+            "Region-flag alias must share its grid and preview artwork for $sequence"
+    }
     Assert-Condition ((@($entries | Where-Object { $_.subgroup -eq 'keycap' })).Count -eq 13) `
         "Unicode keycap subgroup coverage must be 13 entries"
     Assert-Condition ((@($entries | Where-Object { $_.codePoints -contains '20E3' })).Count -eq 12) `
@@ -146,7 +165,7 @@ try {
         "Noto legacy alias review count differs"
     Assert-Condition (@($report.assetAnomalies.asymmetricAssets).Count -eq 0) `
         "Noto 128/512 coverage has asymmetric keys"
-    Assert-Condition (@($report.assetAnomalies.unreferencedAssets).Count -eq 232) `
+    Assert-Condition (@($report.assetAnomalies.unreferencedAssets).Count -eq 240) `
         "Unreferenced Noto source-asset review count differs"
     Assert-Condition ($sourceManifest.baseline.emoji -eq '17.0') "Generated source manifest version differs"
 

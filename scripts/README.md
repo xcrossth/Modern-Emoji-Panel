@@ -78,7 +78,13 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 .\scripts\verify-noto-grid.ps1
 ```
 
-คำสั่งนี้ build Picker แล้วตรวจว่า Emoji 17 ครบ 3,944 รายการในหมวดมาตรฐาน, PNG 128 ทุกภาพถูก bundle ตาม manifest, runtime ไม่อ้าง `Emoji.Wpf` และ WPF smoke ผ่านทั้ง lazy decode, frozen image, cache bound, DPI 100–250%, missing-image fallback และคำแนะนำ Repair/Reinstall เมื่อชุด asset หาย รายละเอียดอยู่ที่ [การแสดง Emoji 17 ด้วย Noto grid](../docs/noto-grid-runtime.md)
+คำสั่งนี้ build Picker แล้วตรวจว่า Emoji 17 ครบ 3,944 รายการในหมวดมาตรฐาน, PNG 128 ทุกภาพถูก bundle ตาม manifest, ธงทั้ง 270 รายการถอดรหัสด้วย WPF ได้จริง, runtime ไม่อ้าง `Emoji.Wpf` และ WPF smoke ผ่านทั้ง lazy decode, frozen image, cache bound, DPI 100–250%, missing-image fallback และคำแนะนำ Repair/Reinstall เมื่อชุด asset หาย รายละเอียดอยู่ที่ [การแสดง Emoji 17 ด้วย Noto grid](../docs/noto-grid-runtime.md)
+
+หากต้องการตรวจเฉพาะภาพธงโดยไม่รัน smoke อื่น ใช้:
+
+```powershell
+.\scripts\verify-flag-assets.ps1 -SkipBuild
+```
 
 ## ตรวจนโยบายการส่งอย่างปลอดภัย
 

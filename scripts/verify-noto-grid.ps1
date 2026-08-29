@@ -79,6 +79,8 @@ try {
         -WindowStyle Hidden
     Assert-Condition ($smoke.ExitCode -eq 0) "Noto grid smoke failed with exit code $($smoke.ExitCode)"
 
+    & (Join-Path $PSScriptRoot "verify-flag-assets.ps1") -SkipBuild -AssetRoot $assetRoot
+
     Write-Host "Noto grid verification passed: $($entries.Count) entries, $($actualGroups.Count) categories, DPI 100-250%, bounded lazy decode" -ForegroundColor Green
 }
 finally {

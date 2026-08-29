@@ -19,6 +19,12 @@ internal sealed class NotoAssetCatalog
         "^third_party/region-flags/png/([^/]+)\\.png$",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
+    private static readonly Regex RegionFlagAliasPattern = new(
+        "^([A-Z]{2}(?:-[A-Z0-9]+)?)\\.png$",
+        RegexOptions.CultureInvariant | RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+    private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
+
     public AssetCatalogResult Build(
         string repositoryRoot,
         VerifiedSourceLock sourceLock,
@@ -90,6 +96,11 @@ internal sealed class NotoAssetCatalog
             }
         }
 
+        var resolvedRegionFlags = regionFlags.ToDictionary(
+            pair => pair.Key,
+            pair => ResolveRegionFlagPath(repositoryRoot, pair.Key, regionFlags),
+            StringComparer.OrdinalIgnoreCase);
+
         var mappings = new Dictionary<string, AssetMapping>(StringComparer.Ordinal);
         var aliases = new Dictionary<string, string>(StringComparer.Ordinal);
         foreach (var entry in emoji)
@@ -97,7 +108,7 @@ internal sealed class NotoAssetCatalog
             AssetMapping mapping;
             if (TryGetRegionFlagCode(entry.CodePoints, out var regionCode))
             {
-                mapping = BuildRegionFlagMapping(entry, regionCode, regionFlags, selectedAssetPaths);
+                mapping = BuildRegionFlagMapping(entry, regionCode, resolvedRegionFlags, selectedAssetPaths);
             }
             else
             {
@@ -120,8 +131,8 @@ internal sealed class NotoAssetCatalog
                 aliases[alias] = entry.StableId;
             }
 
-            VerifyMappedFile(repositoryRoot, mapping.Png128, entry.StableId, "128/grid");
-            VerifyMappedFile(repositoryRoot, mapping.Png512, entry.StableId, "512/preview");
+            VerifyMappedPngFile(repositoryRoot, mapping.Png128, entry.StableId, "128/grid");
+            VerifyMappedPngFile(repositoryRoot, mapping.Png512, entry.StableId, "512/preview");
         }
 
         if (mappings.Count != emoji.Count)
@@ -275,11 +286,68 @@ internal sealed class NotoAssetCatalog
         candidates.Add(candidate);
     }
 
-    private static void VerifyMappedFile(string repositoryRoot, string path, string stableId, string role)
+    private static string ResolveRegionFlagPath(
+        string repositoryRoot,
+        string regionCode,
+        IReadOnlyDictionary<string, string> regionFlags)
     {
-        if (!File.Exists(BaselineUtilities.RepositoryPath(repositoryRoot, path)))
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var currentCode = regionCode;
+        while (true)
+        {
+            if (!visited.Add(currentCode))
+            {
+                throw new InvalidDataException(
+                    $"Noto region-flag alias cycle for {regionCode}: {string.Join(" -> ", visited)}");
+            }
+
+            if (!regionFlags.TryGetValue(currentCode, out var path))
+            {
+                throw new InvalidDataException(
+                    $"Noto region-flag alias target is missing for {regionCode}: {currentCode}.png");
+            }
+
+            var absolutePath = BaselineUtilities.RepositoryPath(repositoryRoot, path);
+            if (HasPngSignature(absolutePath))
+            {
+                return path;
+            }
+
+            var aliasText = File.ReadAllText(absolutePath).Trim();
+            var match = RegionFlagAliasPattern.Match(aliasText);
+            if (!match.Success)
+            {
+                throw new InvalidDataException(
+                    $"Noto region flag is neither PNG artwork nor a safe alias for {regionCode}: {path}");
+            }
+
+            currentCode = match.Groups[1].Value;
+        }
+    }
+
+    private static void VerifyMappedPngFile(string repositoryRoot, string path, string stableId, string role)
+    {
+        var absolutePath = BaselineUtilities.RepositoryPath(repositoryRoot, path);
+        if (!File.Exists(absolutePath))
         {
             throw new InvalidDataException($"Mapped {role} asset is missing for {stableId}: {path}");
         }
+
+        if (!HasPngSignature(absolutePath))
+        {
+            throw new InvalidDataException($"Mapped {role} asset is not PNG artwork for {stableId}: {path}");
+        }
+    }
+
+    private static bool HasPngSignature(string path)
+    {
+        if (!File.Exists(path))
+        {
+            return false;
+        }
+
+        Span<byte> header = stackalloc byte[PngSignature.Length];
+        using var stream = File.OpenRead(path);
+        return stream.Read(header) == header.Length && header.SequenceEqual(PngSignature);
     }
 }

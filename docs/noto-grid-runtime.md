@@ -4,7 +4,7 @@ Picker โหลดรายการ 3,944 รายการจาก Emoji Ba
 
 ## การ bundle และค้นหา asset
 
-ตอน build ไฟล์ `emoji.json`, Noto PNG 128 และ region flags จะถูกคัดลอกไปใต้ `EmojiBaseline/` โดยรักษา path เดียวกับ manifest ตัว runtime อ่าน path ที่ generator ตรวจสอบไว้เท่านั้นและไม่อนุมานชื่อไฟล์จาก Unicode sequence จึงรองรับ canonical alias และ region flags ได้เหมือนผลของ generator
+ตอน build ไฟล์ `emoji.json`, Noto PNG 128 และ region flags จะถูกคัดลอกไปใต้ `EmojiBaseline/` โดยรักษา path เดียวกับ manifest ตัว runtime อ่าน path ที่ generator ตรวจสอบไว้เท่านั้นและไม่อนุมานชื่อไฟล์จาก Unicode sequence จึงรองรับ canonical alias และ region flags ได้เหมือนผลของ generator สำหรับธงที่ upstream เก็บเป็น alias เช่น Bouvet Island ใช้ภาพ Norway ตัว baseline จะชี้ไปยัง PNG ปลายทางจริงแทนไฟล์ข้อความ alias
 
 แอปไม่ดาวน์โหลดข้อมูลหรือ artwork ระหว่าง build ปกติและ runtime อีกทั้งไม่ใช้ `Emoji.Wpf` หรือ Segoe UI Emoji เป็น primary renderer ของ grid
 
@@ -29,4 +29,4 @@ Picker โหลดรายการ 3,944 รายการจาก Emoji Ba
 .\scripts\verify-noto-grid.ps1
 ```
 
-สคริปต์ตรวจจำนวนรายการและหมวด, uniqueness, coverage ของ asset ใน output, การถอด `Emoji.Wpf`, การ decode ภาพจริง, frozen bitmap, missing-image fallback, cache bound, DPI 100–250% และหน้าคำแนะนำเมื่อชุด asset หาย
+สคริปต์ตรวจจำนวนรายการและหมวด, uniqueness, coverage ของ asset ใน output, การถอดรหัสธง Emoji 17 ทั้ง 270 รายการด้วย WPF, การถอด `Emoji.Wpf`, frozen bitmap, missing-image fallback, cache bound, DPI 100–250% และหน้าคำแนะนำเมื่อชุด asset หาย

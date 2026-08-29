@@ -18,6 +18,7 @@ Generator อ่านรายการไฟล์จาก inventory ที�
 
 - Emoji ทั่วไปใช้ canonical PNG 128 สำหรับ grid และ 512 สำหรับ Hover Preview
 - Noto เก็บธงประเทศและธงเขตย่อยไว้ใน `third_party/region-flags` แยกจาก canonical folders ธงทั้ง 262 รายการจึง map ไปยัง source PNG ที่มีความละเอียดสูงไฟล์เดียวสำหรับสองบทบาท โดยระบุ `sourceKind: noto-region-flag` และ `sharedSourceForSizes: true` อย่างชัดเจน
+- บางเขตใช้ภาพธงของประเทศอื่นร่วมกันและ upstream เก็บไฟล์เป็น alias เช่น `BV.png` ชี้ไป `NO.png` generator ต้อง resolve alias แบบมี cycle/missing-target guard และรับเฉพาะปลายทางที่มี PNG signature เท่านั้น เพื่อไม่ส่งไฟล์ข้อความให้ WPF
 - ไฟล์ legacy 128 ที่ซ้ำกับ canonical name, component assets ที่ไม่ใช่ fully-qualified entry และ region flags นอก Emoji 17 จะไม่ถูกเลือกใช้ แต่ยังปรากฏใน `assetAnomalies` เพื่อให้ review ได้
 
 ## การสร้างและตรวจสอบ

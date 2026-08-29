@@ -8,7 +8,7 @@
 - รวมชื่อย่อและ keyword จาก CLDR `annotations` กับ `annotationsDerived` ทั้งภาษาอังกฤษและไทย
 - สร้าง stable ID และเก็บ code point sequence เดิมสำหรับ insert/copy
 - สร้าง asset mapping จาก inventory ของ Noto โดยมี key และ aliases ชัดเจน
-- map ธงประเทศ/เขตย่อยไปยัง region-flags source ที่ตรึงไว้
+- map ธงประเทศ/เขตย่อยไปยัง region-flags source ที่ตรึงไว้ โดย resolve alias ของ upstream ไปยัง PNG ปลายทางจริงและตรวจ PNG signature ก่อนสร้าง baseline
 - fail เมื่อพบ source checksum ผิด, sequence/ID ซ้ำ, metadata ขาด หรือ asset role สำหรับ grid/preview ขาด
 - สร้าง manifest และรายงาน delta/asset anomaly แบบ deterministic
 

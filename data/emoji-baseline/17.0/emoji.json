@@ -191422,8 +191422,8 @@
           "region:BV",
           "sequence:1f1e7_1f1fb"
         ],
-        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/BV.png",
-        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/BV.png",
+        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/NO.png",
+        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/NO.png",
         "sourceKind": "noto-region-flag",
         "sharedSourceForSizes": true
       }
@@ -192030,8 +192030,8 @@
           "region:CP",
           "sequence:1f1e8_1f1f5"
         ],
-        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/CP.png",
-        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/CP.png",
+        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/FR.png",
+        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/FR.png",
         "sourceKind": "noto-region-flag",
         "sharedSourceForSizes": true
       }
@@ -192410,8 +192410,8 @@
           "region:DG",
           "sequence:1f1e9_1f1ec"
         ],
-        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/DG.png",
-        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/DG.png",
+        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/IO.png",
+        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/IO.png",
         "sourceKind": "noto-region-flag",
         "sharedSourceForSizes": true
       }
@@ -192638,8 +192638,8 @@
           "region:EA",
           "sequence:1f1ea_1f1e6"
         ],
-        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/EA.png",
-        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/EA.png",
+        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/ES.png",
+        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/ES.png",
         "sourceKind": "noto-region-flag",
         "sharedSourceForSizes": true
       }
@@ -193968,8 +193968,8 @@
           "region:HM",
           "sequence:1f1ed_1f1f2"
         ],
-        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/HM.png",
-        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/HM.png",
+        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/AU.png",
+        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/AU.png",
         "sourceKind": "noto-region-flag",
         "sharedSourceForSizes": true
       }
@@ -195716,8 +195716,8 @@
           "region:MF",
           "sequence:1f1f2_1f1eb"
         ],
-        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/MF.png",
-        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/MF.png",
+        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/FR.png",
+        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/FR.png",
         "sourceKind": "noto-region-flag",
         "sharedSourceForSizes": true
       }
@@ -197996,8 +197996,8 @@
           "region:SJ",
           "sequence:1f1f8_1f1ef"
         ],
-        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/SJ.png",
-        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/SJ.png",
+        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/NO.png",
+        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/NO.png",
         "sourceKind": "noto-region-flag",
         "sharedSourceForSizes": true
       }
@@ -199212,8 +199212,8 @@
           "region:UM",
           "sequence:1f1fa_1f1f2"
         ],
-        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/UM.png",
-        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/UM.png",
+        "png128": "vendor/noto-emoji/v2.051/third_party/region-flags/png/US.png",
+        "png512": "vendor/noto-emoji/v2.051/third_party/region-flags/png/US.png",
         "sourceKind": "noto-region-flag",
         "sharedSourceForSizes": true
       }

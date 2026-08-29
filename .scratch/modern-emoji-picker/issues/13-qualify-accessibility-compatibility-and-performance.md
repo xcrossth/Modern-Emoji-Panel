@@ -2,7 +2,7 @@
 
 **What to build:** พิสูจน์ด้วย automated tests, manual matrices และตัวเลข benchmark ว่า Picker workflow หลักทำงานบนแพลตฟอร์มเป้าหมาย เข้าถึงได้ และไม่ถดถอยด้าน performance โดยไม่มี runtime network
 
-**Blocked by:** 06: ค้นหา Emoji ไทย–อังกฤษและดู Hover Preview; 10: รักษาลำดับการส่งและทำ Typing Handoff โดยไม่ทำ input หาย; 12: รวม Settings, Welcome, ภาษา และการควบคุมความเป็นส่วนตัว
+**Blocked by:** 06: ค้นหา Emoji ไทย–อังกฤษและดู Hover Preview; 10: รักษาลำดับการส่งและทำ Typing Handoff โดยไม่ทำ input หาย; 12: รวม Settings, Welcome, ภาษา และการควบคุมความเป็นส่วนตัว; 14: สร้าง local qualification artifacts
 
 **Status:** needs-info
 
@@ -44,6 +44,10 @@
 4. Thai IME/dead key, sequence matrix, rapid clicks/queue บน desktop จริง
 5. Clipboard ว่าง/text/image/files/custom formats และ target ปิด/focus เปลี่ยน/elevated target
 6. warm hotkey-to-visible จริง, upstream search/scroll/decode/package raw measurements และ extended runtime packet capture
-7. installer/portable ZIP size กับ release preconditions ซึ่งยังไม่มีจนกว่า Ticket 14 จะสร้าง artifact แต่ Ticket 14 ระบุว่าถูก block โดย Ticket 13 จึงต้องให้ maintainer ตัดสินวิธีคลี่ dependency นี้ก่อนปิดทั้งสอง ticket
+7. installer/portable ZIP size กับ release preconditions ซึ่ง Ticket 14A กำลังสร้างหลัง maintainer อนุมัติการแยก dependency แล้ว
 
 แบบบันทึกผลทุกแถวอยู่ที่ `docs/qualification/manual-matrices.md`; ทุกกรณียังคงระบุ “ยังไม่ทดสอบ” โดยเจตนา
+
+### 29 สิงหาคม 2026 — คลี่ dependency กับ release
+
+Maintainer อนุมัติให้แยก Ticket 14 เดิมเป็น 14A/14B แล้ว Ticket 14A จึงเป็น blocker ของ qualification เฉพาะ local artifact/package metrics และ Ticket 15 (14B) รอ Ticket 13 ก่อนเตรียม Draft/public release ทำให้ไม่มีวงจร dependency อีกต่อไป

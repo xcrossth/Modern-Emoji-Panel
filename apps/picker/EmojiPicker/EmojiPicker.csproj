@@ -9,6 +9,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>ModernEmojiPicker</AssemblyName>
+    <ApplicationIcon>Resources\modern-emoji-picker.ico</ApplicationIcon>
 
     <!-- Code Analysis -->
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
@@ -38,8 +39,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Ticket 14 will add new branded artwork. The imported Classic icon is
-         intentionally not embedded or assigned to the Modern executable. -->
+    <Resource Include="Resources\modern-emoji-picker-512.png" />
     <!-- Usage-popularity tier (0 = most used) keyed by emoji; parsed from
          Unicode's published emoji-frequency data
          (https://home.unicode.org/emoji/emoji-frequency/), supplemented with

@@ -41,6 +41,7 @@ namespace EmojiPicker
         private MainWindow? picker;
         private HotkeyListener? hotkey;
         private NotifyIcon? trayIcon;
+        private System.Drawing.Icon? trayIconImage;
         private ToolStripMenuItem? classicConflictItem;
         private System.Windows.Threading.DispatcherTimer? hookRearmTimer;
         private DateTime showGraceAnchorUtc;
@@ -654,11 +655,12 @@ namespace EmojiPicker
             menu.Items.Add(new ToolStripSeparator());
             menu.Items.Add(Localizer.Text("Exit Modern Emoji Picker", "ออกจาก Modern Emoji Picker"), null, (_, _) => ExitApplication());
 
+            trayIconImage = Environment.ProcessPath == null
+                ? null
+                : System.Drawing.Icon.ExtractAssociatedIcon(Environment.ProcessPath);
             trayIcon = new NotifyIcon
             {
-                // Ticket 14 supplies branded artwork. Until then use a neutral
-                // system icon rather than reusing Classic's shipped icon.
-                Icon = System.Drawing.SystemIcons.Application,
+                Icon = trayIconImage ?? System.Drawing.SystemIcons.Application,
                 Text = ProductIdentity.ProductName,
                 Visible = true,
                 ContextMenuStrip = menu,
@@ -744,6 +746,8 @@ namespace EmojiPicker
                 trayIcon.Visible = false;
                 trayIcon.Dispose();
                 trayIcon = null;
+                trayIconImage?.Dispose();
+                trayIconImage = null;
             }
 
             CreateTrayIcon();
@@ -847,6 +851,9 @@ namespace EmojiPicker
                 trayIcon.Visible = false;
                 trayIcon.Dispose();
             }
+
+            trayIconImage?.Dispose();
+            trayIconImage = null;
 
             base.OnExit(e);
         }

@@ -29,7 +29,7 @@ Smoke mode ไม่ติดตั้ง global hook, ไม่สร้าง 
 - คุณภาพการอ่านด้วย Narrator/NVDA, focus indicator ด้วยสายตา และ High Contrast palette จริง
 - DPI 100–250% กับจอหลายตัวต่าง DPI
 - Windows 11, RDP, Citrix และ Tier B apps
-- installer/portable ZIP size และ release preconditions ซึ่งเป็นงาน Ticket 14
+- installer/portable ZIP size และ release preconditions ซึ่งเป็นงาน Ticket 14A; การเตรียม Draft/public release แยกเป็น Ticket 15 (14B) และรอ qualification
 
 ให้ใช้ [manual matrices](./manual-matrices.md) บันทึกแต่ละกรณี ห้ามเปลี่ยนแถวเป็น “ผ่าน” โดยไม่มีวันที่ ผู้ทดสอบ environment และหลักฐานที่ตรวจย้อนกลับได้
 

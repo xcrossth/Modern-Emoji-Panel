@@ -42,30 +42,46 @@ internal sealed record EmojiSelection(
     Emoji ResolvedEntry,
     bool IsVariantOverride)
 {
-    public Emoji ToPresentation() => new(
-        id: BaseEntry.Id,
-        character: ResolvedEntry.Character,
-        name: BaseEntry.Name,
-        englishName: BaseEntry.EnglishName,
-        thaiName: BaseEntry.ThaiName,
-        category: BaseEntry.Category,
-        canonicalSequence: ResolvedEntry.CanonicalSequence,
-        englishKeywords: BaseEntry.EnglishKeywords,
-        thaiKeywords: BaseEntry.ThaiKeywords,
-        emojiVersion: ResolvedEntry.EmojiVersion,
-        assetPath: ResolvedEntry.AssetPath,
-        previewAssetPath: ResolvedEntry.PreviewAssetPath,
-        order: BaseEntry.Order,
-        popularity: BaseEntry.Popularity,
-        baseCanonicalSequence: BaseEntry.CanonicalSequence,
-        resolvedEntryId: ResolvedEntry.Id,
-        isVariantOverride: IsVariantOverride);
+    public Emoji ToPresentation()
+    {
+        var assetPath = ResolvedEntry.AssetPath;
+        var previewAssetPath = ResolvedEntry.PreviewAssetPath;
+        if (string.Equals(BaseEntry.Id, ResolvedEntry.Id, StringComparison.Ordinal) &&
+            FamilyToneVariants.TryGetNeutralAssetPaths(
+                BaseEntry,
+                out var neutralAssetPath,
+                out var neutralPreviewAssetPath))
+        {
+            assetPath = neutralAssetPath;
+            previewAssetPath = neutralPreviewAssetPath;
+        }
+
+        return new(
+            id: BaseEntry.Id,
+            character: ResolvedEntry.Character,
+            name: BaseEntry.Name,
+            englishName: BaseEntry.EnglishName,
+            thaiName: BaseEntry.ThaiName,
+            category: BaseEntry.Category,
+            canonicalSequence: ResolvedEntry.CanonicalSequence,
+            englishKeywords: BaseEntry.EnglishKeywords,
+            thaiKeywords: BaseEntry.ThaiKeywords,
+            emojiVersion: ResolvedEntry.EmojiVersion,
+            assetPath: assetPath,
+            previewAssetPath: previewAssetPath,
+            order: BaseEntry.Order,
+            popularity: BaseEntry.Popularity,
+            baseCanonicalSequence: BaseEntry.CanonicalSequence,
+            resolvedEntryId: ResolvedEntry.Id,
+            isVariantOverride: IsVariantOverride);
+    }
 }
 
 /// <summary>
 /// Resolves the complete skin-tone surface of an Emoji Baseline through one
 /// small interface. Callers never construct Unicode sequences or infer Noto
-/// filenames: every result is an existing fully-qualified baseline entry.
+/// filenames. Standard results are fully-qualified baseline entries; uniform
+/// family tones are derived locally from their baseline family and Noto members.
 /// </summary>
 internal sealed partial class EmojiVariantCatalog
 {
@@ -80,6 +96,8 @@ internal sealed partial class EmojiVariantCatalog
 
     private readonly Dictionary<string, VariantFamily> familyByEntryId;
     private readonly Dictionary<string, Emoji> entryById;
+    private readonly IReadOnlySet<string> resolvedEntryIds;
+    private readonly IReadOnlyDictionary<string, string> resolvedIdBySequence;
 
     public EmojiVariantCatalog(IReadOnlyList<Emoji> entries)
     {
@@ -130,6 +148,15 @@ internal sealed partial class EmojiVariantCatalog
             builders[baseEntry.Id].Add(entry, modifiers);
         }
 
+        foreach (var baseEntry in neutralEntries)
+        {
+            foreach (var derived in FamilyToneVariants.CreateUniformVariants(baseEntry))
+            {
+                entryById.Add(derived.Id, derived);
+                builders[baseEntry.Id].Add(derived, GetModifiers(derived));
+            }
+        }
+
         foreach (var builder in builders.Values)
         {
             var family = builder.Build();
@@ -142,14 +169,24 @@ internal sealed partial class EmojiVariantCatalog
             }
         }
 
-        if (familyByEntryId.Count != entries.Count)
+        if (familyByEntryId.Count != entryById.Count)
         {
             throw new InvalidDataException(
-                $"Variant catalog mapped {familyByEntryId.Count} of {entries.Count} Emoji Baseline entries.");
+                $"Variant catalog mapped {familyByEntryId.Count} of {entryById.Count} resolved entries.");
         }
+
+        resolvedEntryIds = entryById.Keys.ToHashSet(StringComparer.Ordinal);
+        var idsBySequence = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var entry in entryById.Values)
+        {
+            idsBySequence.TryAdd(entry.Character, entry.Id);
+        }
+
+        resolvedIdBySequence = idsBySequence;
     }
 
     public IReadOnlyList<Emoji> BaseEntries { get; }
+    public IReadOnlySet<string> ResolvedEntryIds => resolvedEntryIds;
 
     public EmojiSelection Resolve(
         Emoji entry,
@@ -182,6 +219,20 @@ internal sealed partial class EmojiVariantCatalog
         var isMixed = family.MixedToneOverrides.Any(candidate => candidate.Id == resolvedEntry.Id);
         return new EmojiSelection(family.BaseEntry, resolvedEntry, isMixed);
     }
+
+    public EmojiSelection? TryRestore(string resolvedEntryId, string unicodeSequence)
+    {
+        if (!entryById.TryGetValue(resolvedEntryId, out var resolvedEntry) ||
+            !string.Equals(resolvedEntry.Character, unicodeSequence, StringComparison.Ordinal))
+        {
+            return null;
+        }
+
+        return RestoreResolved(resolvedEntry);
+    }
+
+    public string? ResolvedIdForSequence(string unicodeSequence) =>
+        resolvedIdBySequence.GetValueOrDefault(unicodeSequence);
 
     public IReadOnlyList<Emoji> GetVariantOverrides(Emoji entry) => GetFamily(entry).MixedToneOverrides;
 

@@ -219,6 +219,8 @@ Visual spike ที่ใช้ตัดสินใจอยู่ที่:
 - เป็น global setting
 - ค่าเริ่มต้นคือ neutral สีเหลือง
 - ใช้กับ entry ที่รองรับ skin-tone modifier
+- Family สองถึงสี่คนแสดงภาพ composite จาก Noto member assets ตามทั้งหกค่า; Neutral รักษา family sequence เดิม ส่วนห้าสีผิวสร้าง derived Unicode sequence ที่ใส่ modifier ให้สมาชิกทุกคน
+- Family derived sequence อาจแสดงเป็น glyph รวม หรือแยกเป็นสมาชิกตาม renderer ของแอปปลายทาง เพราะอยู่นอกชุด RGI baseline
 
 Mixed-tone sequences:
 
@@ -227,7 +229,7 @@ Mixed-tone sequences:
 - ไม่เปลี่ยน global setting
 - sequence ที่ resolve แล้วถูกบันทึกใน Recent
 
-ทุก fully-qualified sequence ต้องเข้าถึงได้ ห้ามตัด mixed-tone, flags หรือ sequence ซับซ้อนออกจาก v1
+ทุก fully-qualified sequence ต้องเข้าถึงได้ ห้ามตัด mixed-tone, flags หรือ sequence ซับซ้อนออกจาก v1 ส่วน derived uniform-tone Family เป็นส่วนขยาย presentation/runtime และไม่เพิ่มเข้า Emoji Baseline
 
 ## 9. Search และ Learned Ranking
 

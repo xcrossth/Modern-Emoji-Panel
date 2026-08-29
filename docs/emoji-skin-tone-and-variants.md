@@ -8,7 +8,11 @@ Picker แยกการเลือกสีผิวออกเป็นส�
 
 ค่าเริ่มต้นของโปรไฟล์ใหม่คือ neutral เมื่อเปลี่ยนค่า Picker จะบันทึกลง `%APPDATA%\ModernEmojiPicker\settings.json` และนำไปใช้กับ Emoji Entry ที่รองรับ modifier ใน Picker Session ถัดไปด้วย
 
-หาก Emoji Entry มีคนหลายคนและมี sequence สีเดียวครบทุกตำแหน่ง เช่น people holding hands ค่า global จะใช้สีเดียวกันกับทุกตำแหน่ง หากรายการไม่รองรับ skin tone ค่า global ไม่มีผล
+หาก Emoji Entry มีคนหลายคนและมี sequence สีเดียวครบทุกตำแหน่ง เช่น people holding hands ค่า global จะใช้สีเดียวกันกับทุกตำแหน่ง รายการ Family สองถึงสี่คนก็ใช้ค่าเดียวกันกับสมาชิกทุกคน เช่น `👨‍👩‍👦` เมื่อเลือก Light จะ resolve เป็น `👨🏻‍👩🏻‍👦🏻`
+
+Noto v2.051 ไม่มี artwork Family แบบใส่สีผิวสำเร็จรูป Picker จึงสร้างภาพ composite ในเครื่องจากภาพสมาชิก Noto ที่ตรงกับเพศ/วัยและสีผิว แล้วจัดวางเป็นครอบครัว 2, 3 หรือ 4 คน ภาพ grid ใช้ source 128 และ Hover Preview ใช้ source 512 เหมือน artwork อื่น โดยไม่ดาวน์โหลดหรือสร้างไฟล์ถาวรเพิ่ม ค่า Neutral ใช้ภาพสมาชิกสีเหลือง จึงไม่แสดง Family silhouette ขาวดำใน grid เช่นกัน
+
+Family ที่มีสีผิวเป็น derived sequence นอกชุด RGI Emoji Baseline เนื่องจาก Unicode ยังไม่กำหนด combination เหล่านี้เป็น fully-qualified entry ทั้งหมด Picker ส่ง code points ของสมาชิกและสีผิวจริงครบถ้วน แต่แอปปลายทางอาจแสดงเป็นภาพครอบครัวรวม หรือแยกเป็น Emoji หลายคนตาม renderer ของปลายทาง ส่วน Neutral เปลี่ยนเฉพาะภาพใน Picker และยังส่ง family sequence มาตรฐานเดิม
 
 ## Variant Override สำหรับ mixed tone
 
@@ -20,10 +24,11 @@ Variant Override มีผลกับการเลือกครั้งน
 
 ## ความครบถ้วนของข้อมูล
 
-runtime ไม่ประกอบ Unicode sequence หรือเดาชื่อไฟล์ภาพเอง โมดูล variant จัดกลุ่มจากระเบียนที่ generator ตรวจแล้วและคืนเฉพาะ fully-qualified sequence ที่มีอยู่ใน Emoji Baseline เท่านั้น
+runtime ไม่เดาชื่อไฟล์ของ Emoji Baseline โมดูล variant จัดกลุ่มจากระเบียนที่ generator ตรวจแล้วและคืน fully-qualified sequence ที่มีอยู่ใน Emoji Baseline เป็นหลัก ข้อยกเว้นคือ uniform-tone Family ซึ่งประกอบจากรายชื่อสมาชิกใน family entry และใช้ Noto member assets ที่ pin ไว้เท่านั้น
 
 - entry ที่ไม่มี skin-tone modifier รวม flags, keycaps และ ZWJ sequence ยังคงอยู่ใน grid
 - uniform-tone sequence เข้าถึงผ่านสีผิว global ทั้งห้าค่า
+- Family 30 รายการมีภาพ composite ครบหกค่า; ห้าสีผิวรวม 150 derived variants และคืนค่าใน Recent ได้ด้วย stable derived ID ส่วน Neutral รักษา baseline ID/sequence เดิม
 - mixed-tone sequence เข้าถึงผ่าน Variant Override
 - handshake แบบเก่ากับ sequence มือสองข้างแบบใหม่ถูกผูกเป็น Emoji Entry เดียวกันโดยใช้ metadata ของ baseline
 

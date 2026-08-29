@@ -99,12 +99,11 @@ namespace EmojiPicker
             activityData = loadUserActivity
                 ? new ActivityDataStore(
                     ProductIdentity.DataDirectory,
-                    resolvedIdForSequence: sequence => baselineEmojis
-                        .FirstOrDefault(entry => string.Equals(entry.Character, sequence, StringComparison.Ordinal))?.Id)
+                    resolvedIdForSequence: sequence => variantCatalog?.ResolvedIdForSequence(sequence))
                 : ActivityDataStore.CreateTransient();
             var activityPrune = activityData.PruneToBaseline(
                 allEmojis.Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal),
-                baselineEmojis.Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal));
+                variantCatalog?.ResolvedEntryIds ?? new HashSet<string>(StringComparer.Ordinal));
             if (activityPrune.Changed)
             {
                 Logger.Log($"Pruned Activity Data after baseline load: recent={activityPrune.RecentRemoved}; ranking={activityPrune.RankingRemoved}");
@@ -1837,11 +1836,9 @@ namespace EmojiPicker
         private void RefreshRecentEmojis()
         {
             recentEmojis = activityData.RecentEntries
-                .Select(saved => baselineEmojis.FirstOrDefault(entry =>
-                    string.Equals(entry.Id, saved.ResolvedEntryId, StringComparison.Ordinal) &&
-                    string.Equals(entry.Character, saved.UnicodeSequence, StringComparison.Ordinal)))
-                .OfType<Emoji>()
-                .Select(entry => variantCatalog!.RestoreResolved(entry).ToPresentation())
+                .Select(saved => variantCatalog?.TryRestore(saved.ResolvedEntryId, saved.UnicodeSequence))
+                .OfType<EmojiSelection>()
+                .Select(selection => selection.ToPresentation())
                 .ToList();
             categoryDataVersion++;
         }

@@ -10,7 +10,8 @@
 - [x] Emoji Entry ที่รองรับ modifier resolve เป็น sequence ของสีผิวเริ่มต้นอย่างถูกต้อง
 - [x] mixed-tone sequence ที่แทนด้วย global setting ค่าเดียวไม่ได้สามารถเลือกผ่าน Variant Override ได้ครบ
 - [x] Variant Override มีผลเฉพาะการเลือกครั้งนั้นและไม่เปลี่ยนสีผิวเริ่มต้น
-- [x] sequence ที่ resolve แล้วตรงกับ fully-qualified sequence ใน Emoji Baseline
+- [x] sequence ที่ resolve แล้วตรงกับ fully-qualified sequence ใน Emoji Baseline ยกเว้น derived uniform-tone Family ที่ผู้ใช้ร้องขอภายหลัง
+- [x] Family สองถึงสี่คน resolve สีผิว global ให้สมาชิกทุกคนด้วย derived sequence และภาพ composite จาก Noto โดยไม่แก้ Emoji Baseline
 - [x] flags, keycaps, ZWJ และ sequence ซับซ้อนทุกกลุ่มยังเข้าถึงได้ ไม่ถูกตัดออกเพราะ variant UI
 - [x] automated tests ครอบคลุม neutral, single-tone, mixed-tone และ entry ที่ไม่รองรับ skin tone
 
@@ -20,6 +21,7 @@
 - merge เข้าสายงาน MVP: `210d90e` โดยรักษาพฤติกรรม search/preview ของ Ticket 06 และ safe insertion ของ Ticket 08
 - `scripts/verify-emoji-variants.ps1` ผ่าน: baseline 3,944 sequence, browse entry 1,914 รายการ, global tone และ one-shot mixed-tone override
 - domain tests ตรวจ neutral, single-tone, multi-person uniform tone, mixed tone, entry ที่ไม่มี modifier, legacy handshake, flags, keycaps และ complex ZWJ
+- การขยายหลังตรวจรับเพิ่ม Family 30 base entries × 6 composite artworks โดย 5 uniform tones = 150 derived variants พร้อม stable ID สำหรับ Recent; Neutral ใช้ Noto member สีเหลืองแต่รักษา baseline sequence เดิม และปลายทางอาจแสดง derived sequence แบบแยกสมาชิกหาก renderer ไม่รองรับ family ligature
 - Release build และ self-contained publish ผ่านด้วย .NET SDK 10.0.400 โดยไม่มี warning/error
 - clean-checkout ของ merge commit ผ่าน foundation/WPF smoke, generator determinism, Noto grid, safe insertion, bilingual search/preview และ emoji variant verification
 - ไม่ใช้ screenshot helper ตามข้อจำกัด Windows 10 ของ repository; UI wiring และ keyboard path ตรวจผ่าน build/smoke test แทน

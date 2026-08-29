@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "product": "Modern Emoji Picker",
+  "version": "0.1.9",
+  "commit": "181cfe09a69e59285bece176c86a36333bab04bc",
+  "createdAtUtc": "2026-08-29T03:08:36.5284061+00:00",
+  "targetFramework": "net10.0-windows",
+  "runtimeIdentifier": "win-x64",
+  "selfContained": true,
+  "signed": false,
+  "uploaded": false,
+  "sizes": {
+    "rawNotoAssetsBytes": 127309639,
+    "publishDirectoryBytes": 313246732,
+    "installerBytes": 174151850,
+    "portableZipBytes": 202376122
+  },
+  "artifacts": [
+    {
+      "type": "portable-zip",
+      "file": "Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip",
+      "sha256": "1fe2a0226bea343b3817c40c3c28d48fea1c401af47e73a153a3986ecbaba110"
+    },
+    {
+      "type": "inno-per-user-installer",
+      "file": "Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe",
+      "sha256": "f62e881d9a143bbe74486f4b82c75a902ee53b7083eb998893fdf76b43146582"
+    }
+  ],
+  "notices": [
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "README-th.md"
+  ]
+}

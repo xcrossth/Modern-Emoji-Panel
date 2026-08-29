@@ -23,8 +23,8 @@ MVP ต้องทำให้ workflow นี้สำเร็จบน Windo
     ค้นหาหรือเลือก Emoji 17 ได้ทุก fully-qualified sequence
     เห็นภาพ Noto ชัดเจนโดยไม่พึ่ง Segoe UI Emoji
     ส่ง Unicode sequence ไปยังแอปเป้าหมายอย่างปลอดภัย
-    คลิกหรือใช้ Shift+Enter เพื่อเลือกหลายตัวต่อเนื่อง
-    ใช้ Enter เพื่อส่งแล้วกลับไปยังแอปเป้าหมาย
+    คลิกเพื่อเลือกหลายตัวต่อเนื่องโดย Picker ไม่กระพริบ
+    ใช้ Enter/Shift+Enter เลือกจาก Search Mode หรือกดปุ่มใดต่อใน Browse Mode เพื่อกลับไปยังแอปเป้าหมาย
     ปิด Picker ด้วย Esc, การเริ่มพิมพ์ต่อ หรือการคลิกภายนอก
 
 สิ่งต่อไปนี้ไม่อยู่ใน Picker MVP:
@@ -180,7 +180,9 @@ Grid:
 
 Hover Preview:
 
-- แสดงเมื่อ pointer ค้างประมาณ 400 ms
+- แสดงทันทีเมื่อ pointer เข้า tile
+- เมื่อ pointer ย้ายไป tile อื่น ให้คงการ์ดเดิมแล้วเปลี่ยนตำแหน่งและเนื้อหาแทนการปิด–เปิดใหม่
+- เมื่อ pointer ออกจาก tile ให้หน่วง 150 ms ก่อนปิด และยกเลิกการปิดหากเข้า tile อื่นในช่วงดังกล่าว
 - ไม่แย่ง focus
 - ภาพประมาณ 160 DIP จาก 512 source
 - แสดงชื่อตาม UI locale
@@ -217,6 +219,8 @@ Visual spike ที่ใช้ตัดสินใจอยู่ที่:
 - เป็น global setting
 - ค่าเริ่มต้นคือ neutral สีเหลือง
 - ใช้กับ entry ที่รองรับ skin-tone modifier
+- Family สองถึงสี่คนแสดงภาพ composite จาก Noto member assets ตามทั้งหกค่า; Neutral รักษา family sequence เดิม ส่วนห้าสีผิวสร้าง derived Unicode sequence ที่ใส่ modifier ให้สมาชิกทุกคน
+- Family derived sequence อาจแสดงเป็น glyph รวม หรือแยกเป็นสมาชิกตาม renderer ของแอปปลายทาง เพราะอยู่นอกชุด RGI baseline
 
 Mixed-tone sequences:
 
@@ -225,7 +229,7 @@ Mixed-tone sequences:
 - ไม่เปลี่ยน global setting
 - sequence ที่ resolve แล้วถูกบันทึกใน Recent
 
-ทุก fully-qualified sequence ต้องเข้าถึงได้ ห้ามตัด mixed-tone, flags หรือ sequence ซับซ้อนออกจาก v1
+ทุก fully-qualified sequence ต้องเข้าถึงได้ ห้ามตัด mixed-tone, flags หรือ sequence ซับซ้อนออกจาก v1 ส่วน derived uniform-tone Family เป็นส่วนขยาย presentation/runtime และไม่เพิ่มเข้า Emoji Baseline
 
 ## 9. Search และ Learned Ranking
 
@@ -349,30 +353,32 @@ Initial View:
 
 Browse Mode:
 
-- arrow keys ใช้ navigation
-- click ใช้เลือก
-- Enter ใช้ส่งแล้ว dismiss
-- Shift+Enter ใช้ส่งและคง Picker
-- Ctrl+F หรือคลิกช่องค้นหาเข้าสู่ Search Mode
-- printable input เริ่ม Typing Handoff
+- pointer ใช้เลื่อนและ click เลือก Emoji
+- ทุก physical key ที่ไม่ใช่ modifier รวม Space, Enter, Tab, ลูกศร และ shortcut chord เริ่ม Typing Handoff
+- Esc dismiss Picker
+- คลิกช่องค้นหาเข้าสู่ Search Mode
+- ห้ามใช้ keyboard selection/commit ใน Browse Mode
 
 Search Mode:
 
 - keyboard input ใช้ค้นหา
+- arrow keys ใช้ navigation
+- Enter ใช้ส่งแล้ว dismiss
+- Shift+Enter ใช้ส่งและคง Picker
 - Esc ครั้งแรกกลับ Browse Mode
 - Esc ครั้งที่สอง dismiss Picker
 
 Commit Gesture:
 
-- click: insert และคง Picker
-- Enter: insert แล้ว dismiss กลับแอปเป้าหมาย
-- Shift+Enter: insert และคง Picker
+- click ใน Browse/Search: insert และคง Picker แบบ visible
+- Enter ใน Search: insert แล้ว dismiss กลับแอปเป้าหมาย
+- Shift+Enter ใน Search: insert และคง Picker แบบ visible
 
 หลัง click หรือ Shift+Enter:
 
 - คง selection ที่ Emoji เดิม
 - คง query, category และ scroll
-- Picker กลับมา active
+- Picker visible ตลอดและกลับมา active โดยไม่มีภาพดับ–ติด
 
 Dismissal:
 
@@ -384,7 +390,7 @@ Dismissal:
 
 เมื่อ click หน้าต่างอื่น ให้เคารพ focus ของหน้าต่างที่คลิกและห้ามแย่งกลับ เมื่อ Typing Handoff หรือ Esc ให้คืน focus ไปยังแอปเป้าหมายเดิม
 
-Typing Handoff ต้องรักษา input แรก รวม Thai IME, dead keys และ shortcuts ห้ามใช้ key replay ที่ไม่ผ่านการพิสูจน์
+Typing Handoff ต้องจับ physical key ก่อน Picker แปล per-app keyboard layout แล้วให้แอปเป้าหมายตีความด้วย layout ของตัวเอง รวม Space, Enter, Thai layout และ shortcuts พร้อม committed-text fallback สำหรับ IME/dead keys ที่ไม่มี physical key ให้ replay
 
 ## 14. แอปเป้าหมายและผลการส่ง
 
@@ -456,8 +462,8 @@ pasteRestoreDelayMs อยู่ใน Advanced Settings พร้อมคำ�
 
 - รับงานรอสูงสุด 20 รายการ
 - click order ต้องเท่ากับ insertion order
-- แสดง pending state
-- เมื่อเต็มให้หยุดรับชั่วคราวและแสดงว่ากำลังส่ง
+- ประกาศ pending/sending state ผ่าน accessibility โดยไม่แสดงข้อความชั่วคราวที่กระพริบใน UI
+- เมื่อเต็มให้หยุดรับชั่วคราวและแสดง `Queue full` ใน UI จนกลับมารับงานได้
 - ห้าม drop click แบบเงียบ
 - ห้ามส่งขนาน
 
@@ -762,8 +768,8 @@ Picker MVP เสร็จเมื่อ:
 - ไทยและอังกฤษค้นหาได้
 - grid และ Hover Preview ใช้ Noto ตาม baseline
 - ไม่มี asset coverage gap
-- click และ Shift+Enter ทำ multi-insert ได้
-- Enter ส่งแล้ว dismiss
+- click ทำ multi-insert ได้โดย Picker ไม่กระพริบ
+- Enter/Shift+Enter ทำ commit เฉพาะใน Search Mode; Enter ใน Browse Mode handoff กลับ target
 - queue รักษาลำดับและ cancel ถูก
 - Typing Handoff ไม่ทำ input แรกหรือ Thai IME เสีย
 - target validation ไม่ส่งไปผิดหน้าต่าง

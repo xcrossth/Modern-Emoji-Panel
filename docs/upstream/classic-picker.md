@@ -1,0 +1,63 @@
+# Provenance และการอัปเดต Classic Emoji Picker
+
+Modern Emoji Picker ใช้ Classic Emoji Picker เป็นรากฐานชั่วคราวของแอป WPF โดยนำเข้าแบบ Git subtree เพื่อให้ตรวจสอบที่มาและรับ upstream fix ภายหลังได้ โดยไม่ต้องใช้ submodule หรือดาวน์โหลดระหว่าง build
+
+## Import แรก
+
+- Source: https://github.com/platima/Classic-EmojiPicker
+- Git remote ที่ใช้ใน repository สำหรับพัฒนา: `classic-upstream`
+- Commit ที่ตรึง: `56c54201e0673a57710c2498db25a149b45e63ec`
+- Tag ที่ชี้ commit ขณะ import: `v0.1.9`
+- Tree hash ต้นฉบับ: `9944b2a441ff1dd207ceb733ab30b7b0f42b8623`
+- Prefix: `apps/picker`
+- วิธี import: Git subtree แบบไม่ squash เพื่อเก็บ ancestry ของ upstream ไว้ในประวัติ Git
+- Commit ที่ import เข้าสู่ monorepo: `9b9df626de6d355dc63a4f9c5124b91bb0668c06`
+
+ไฟล์ `apps/picker/LICENSE` และ `apps/picker/THIRD-PARTY-NOTICES.md` เป็น notice ที่มากับ upstream และต้องคงอยู่ การแก้ภายใต้ subtree หลัง import แรกเป็น migration ของโครงการนี้ ไม่ได้แก้ source repository ของ Platima
+
+## เพิ่ม remote ใน clone ใหม่
+
+Git ไม่เก็บ remote configuration ไว้ใน commit ผู้พัฒนาจึงเรียกสคริปต์ idempotent ครั้งเดียวต่อ clone:
+
+    .\scripts\setup-classic-upstream.ps1 -FetchApprovedCommit
+
+สคริปต์อ่านค่าจาก `classic-picker.source.json` หากมี remote อยู่แล้วจะยืนยัน URL แทนการเขียนทับ และจะ fail เมื่อ URL ไม่ตรงกับ source ที่อนุมัติ
+
+## ขั้นตอนอัปเดตแบบ manual
+
+การอัปเดตต้องทำบน branch แยกเท่านั้น ห้าม pull subtree บน `main` โดยตรง:
+
+1. ตรวจ release/commit ใหม่ใน upstream และเลือก SHA แบบ immutable
+2. สร้าง branch เช่น `upstream/classic-picker-<วันที่>` จาก `main`
+3. ดึง object แล้วตรวจ source และ diff ก่อนรวม
+4. รวมด้วยคำสั่งต่อไปนี้ โดยแทน `<sha>` ด้วย commit ที่ตรวจแล้ว
+
+       git fetch classic-upstream <sha>
+       git subtree pull --prefix=apps/picker classic-upstream <sha> -m "chore(upstream): merge Classic Emoji Picker <sha>"
+
+5. แก้ conflict โดยรักษาการย้าย path, .NET target และ product behavior ตามสเปกปัจจุบัน
+6. รัน `.\scripts\verify-foundation.ps1` และ regression tests ที่เกี่ยวข้อง
+7. บันทึก SHA เดิม/ใหม่, สรุป diff และหลักฐานการทดสอบใน pull request ก่อน merge
+
+ไม่มี scheduled task, build step หรือ active GitHub workflow ที่ fetch/pull upstream ให้เอง และ ordinary build ทำงานจากไฟล์ใน checkout เท่านั้น
+
+## Workflows ที่มากับ upstream
+
+ไฟล์ workflow ที่เคยอยู่ใต้ `apps/picker/.github/workflows/` ถูกถอดออกใน Ticket 14A เพราะเป็นเส้นทาง build/release ของ Classic ที่มี framework-dependent และ MSI artifacts ประวัติเดิมยังอยู่ใน Git import history ส่วน Modern ใช้ local-only `scripts/release.ps1` และไม่มี active workflow ที่ repository root
+
+## การแก้ migration หลัง import
+
+Ticket 01 เปลี่ยนเฉพาะรากฐานที่จำเป็น:
+
+- project target จาก `net8.0-windows` เป็น `net10.0-windows` และ `win-x64`
+- ย้าย package versions ไปไว้ที่ `Directory.Packages.props`
+- ใช้ NuGet lock file
+- ให้ build/quality wrappers เดิมเรียกสคริปต์จาก monorepo root
+- ปรับ path ของ installer เดิมเป็น .NET 10 ระหว่าง migration; Ticket 14A ถอด lite/MSI routes และแทนด้วย self-contained per-user installer เท่านั้น
+- เพิ่ม `--foundation-smoke` เพื่อตรวจการโหลด WPF shell, Emoji data, browse category และ English search โดยไม่แย่ง Classic mutex, global hook, tray หรือข้อมูลผู้ใช้
+
+ชื่อ executable, mutex, registry, installer identity และข้อมูลผู้ใช้ยังเป็น Classic ตาม upstream ใน Ticket 01 การแยก identity ทั้งหมดเป็นขอบเขตของ Ticket 02
+
+## ตัวเลข performance ที่ upstream เคยรายงาน
+
+Classic changelog ที่ import เคยรายงานเวลาเปิดโดยประมาณ 35–40 ms และ idle working set ประมาณ 20 MiB แต่ไม่มี raw samples, machine metadata หรือวิธีวัดที่ทำซ้ำได้ ตัวเลขนี้จึงเป็น approximate historical context เท่านั้น ไม่ใช่ performance gate ของ Modern และประวัติฉบับเต็มยังตรวจได้จาก Git import history

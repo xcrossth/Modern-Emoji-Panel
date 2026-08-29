@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "tool": "Codex built-in image_gen",
+  "mode": "generate",
+  "useCase": "logo-brand",
+  "sourceFile": "modern-emoji-picker-master.png",
+  "sourceSha256": "2141e81c2e1180595ac9555a3d995aab75be7fb1bf1ad52f3fa7caa29a97edf6",
+  "prompt": "Use case: logo-brand\nAsset type: Windows desktop application icon master, square 1024x1024 with genuine transparent background\nPrimary request: Create a highly simplified original product mark for ‘Modern Emoji Picker’: one deep-indigo rounded square picker tile with exactly four small colourful rounded cells arranged 2x2, where the lower-right cell is a clean coral smiling face; add one small golden four-point sparkle at the upper-right edge. The whole mark must remain unmistakable and crisp at 16px, 20px, 24px and 32px.\nStyle/medium: minimal polished vector-like icon, flat geometry with very subtle depth, professional utility branding\nComposition/framing: centred compact silhouette, generous transparent padding, no speech bubble tail, no large emoji overlapping the tile, no extra symbols\nColor palette: deep indigo shell, coral smile cell, cyan and gold secondary cells, white facial details only where needed; high contrast in light and dark environments\nConstraints: exactly one outer tile, exactly four inner cells, one smile, one sparkle; no text, no letters, no watermark, no platform emoji artwork, no Windows logo, no gradients that muddy small sizes, no thin lines, no extra confetti or decorative elements, transparent corners"
+}

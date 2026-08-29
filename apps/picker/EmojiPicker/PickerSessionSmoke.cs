@@ -68,6 +68,23 @@ internal static class PickerSessionSmoke
             targetFallback.Top >= secondaryArea.Top &&
             targetFallback.Top + 440 <= secondaryArea.Bottom;
 
+        var accessibilityCaret = new Rectangle(24, 48, 2, 22);
+        checks["accessibility-caret-follows-missing-native-caret"] =
+            CaretRectResolver.TryResolve(
+                new IntPtr(42),
+                static (IntPtr _, out Rectangle rect) =>
+                {
+                    rect = default;
+                    return false;
+                },
+                (IntPtr _, out Rectangle rect) =>
+                {
+                    rect = accessibilityCaret;
+                    return true;
+                },
+                out var resolvedCaret) &&
+            resolvedCaret == accessibilityCaret;
+
         var settingsRoot = Path.Combine(Path.GetTempPath(), $"modern-emoji-picker-session-{Guid.NewGuid():N}");
         var settingsPath = Path.Combine(settingsRoot, "settings.json");
         try

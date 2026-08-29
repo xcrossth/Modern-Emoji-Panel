@@ -69,3 +69,19 @@ Ticket 14A ผ่านครบสายจาก clean commit `181cfe09a69e592
 qualification เต็มรอบเดียวกันผ่าน automated regression suite, Release self-contained publish, package budget และ runtime network observation 37 sample โดยไม่พบ socket รายงานรวมอยู่ที่ `docs/qualification/results/automated-win10-19045.json` และอ้าง commit เดียวกัน
 
 เกณฑ์ performance โดยรวมยังไม่ทำเครื่องหมายผ่าน เพราะ imported upstream มีเพียงตัวเลข warm open/working set โดยประมาณ ไม่มี raw search/scroll/decode/package ที่ทำซ้ำได้ การพิสูจน์ฝั่ง Modern และ global hotkey จริงเสร็จแล้ว แต่ manual app/OS/accessibility/DPI/input/clipboard matrices ยังไม่ผ่าน จึงคงสถานะ `needs-info` และยังไม่ปลด Ticket 15 (14B)
+
+### 29 สิงหาคม 2026 — ขอบเขต wizard สำหรับ manual qualification ที่รอผู้ทดสอบยืนยัน
+
+สำรวจเครื่องปัจจุบันแล้วพบ Windows 10 Enterprise N build 19045, จอเดียว 3440×1440, Notepad 10.0.19041.1, Chrome 151.0.7922.174, VS Code 1.133.0, Explorer และ Narrator พร้อมใช้ ส่วน Windows Terminal, NVDA, จอที่สอง และ Windows 11 ไม่มีใน environment นี้ Git Bash พร้อมสำหรับรัน wizard ตามมาตรฐาน repository skill
+
+เสนอ wizard แบบทำซ้ำได้ที่ `scripts/manual-qualification-wizard.sh` จำนวน 7 stage โดยไม่เก็บ secret และไม่เปลี่ยน manual matrix เป็น “ผ่าน” เอง:
+
+1. preflight: ตรวจ clean commit/binary, บันทึก OS/build/app versions, input language, DPI/monitor และ insertion mode
+2. Tier A ที่มีในเครื่อง: Notepad, Chrome, VS Code และ Explorer address bar; บันทึก Windows Terminal เป็น “ทำไม่ได้ใน environment” พร้อมเหตุผล
+3. keyboard/accessibility ที่ DPI ปัจจุบัน: keyboard-only, focus indicator, Light/Dark/System, High Contrast และ Narrator
+4. input/sequence/queue: English/Thai Typing Handoff, single/VS/skin/mixed tone/flag/keycap/ZWJ, rapid clicks, queue full และ dismiss ระหว่างส่งใน Notepad กับ Chrome
+5. Clipboard/target safety: empty/text/image/FileDrop/custom format, Clipboard เปลี่ยนระหว่าง delay, target ปิด/focus เปลี่ยน/elevated target, Explicit Copy และ Clipboard History
+6. privacy 15 นาที: ให้มนุษย์ทำ resident workflow ขณะที่ตัวช่วยเก็บช่วงเวลาและ socket observation; packet/firewall audit ยังต้องระบุเครื่องมือและหลักฐานโดยผู้ทดสอบ
+7. สรุป: เขียน JSON กับ Markdown ลง `artifacts/ticket-13/manual/` พร้อมผล `ผ่าน`/`ไม่ผ่าน`/`ทำไม่ได้ใน environment`, หมายเหตุ และ path หลักฐาน เพื่อให้ agent review ก่อนนำเข้าตารางหลัก
+
+คำถามที่ต้องการคำตอบจาก maintainer: ยืนยัน 7 stage ตามลำดับนี้หรือระบุ stage ที่ต้องเพิ่ม/ตัด/สลับ และยืนยันว่าจะเป็นผู้สังเกตผลด้วยตนเองระหว่างรัน wizard หนึ่ง session เมื่อพร้อม หลังยืนยัน agent จึงจะเขียน/ตรวจ static wizard ตามกติกา skill โดยไม่รันแทนมนุษย์

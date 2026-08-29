@@ -107,7 +107,11 @@ try {
         Assert-Condition ($report.$property -eq $true) "Smoke assertion failed: $property"
     }
 
-    Assert-Condition ($report.hoverDelayMilliseconds -eq 400) "Hover preview delay is not 400 ms"
+    Assert-Condition ($report.hoverOpenDelayMilliseconds -eq 0) "Hover preview does not open immediately"
+    Assert-Condition ($report.hoverCloseDelayMilliseconds -eq 150) "Hover preview close grace is not 150 ms"
+    Assert-Condition ($report.pointerMoveReusedPopup -eq $true) "Moving between tiles reopened the Hover Preview popup"
+    Assert-Condition ($report.previewStayedOpenDuringCloseGrace -eq $true) "Hover Preview closed before its grace period"
+    Assert-Condition ($report.previewClosedAfterGrace -eq $true) "Hover Preview did not close after its grace period"
     Assert-Condition ($report.previewDecodedPixelWidth -eq 160) "Preview did not decode the 512 role to 160 physical pixels at 100% DPI"
     Assert-Condition ($report.searchIterations -eq 100) "Search responsiveness sample is incomplete"
     Assert-Condition ($report.searchElapsedMilliseconds -lt 5000) "100 bilingual searches exceeded the 5000 ms non-blocking guardrail"

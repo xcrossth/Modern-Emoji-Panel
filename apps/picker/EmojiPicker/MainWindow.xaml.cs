@@ -41,12 +41,13 @@ namespace EmojiPicker
         // How long to wait after the last keystroke before filtering, so typing
         // stays smooth instead of re-rendering the grid on every character
         private static readonly TimeSpan SearchDebounce = TimeSpan.FromMilliseconds(120);
-        internal static readonly TimeSpan HoverPreviewDelay = TimeSpan.FromMilliseconds(400);
+        internal static readonly TimeSpan HoverPreviewOpenDelay = TimeSpan.Zero;
+        internal static readonly TimeSpan HoverPreviewCloseDelay = TimeSpan.FromMilliseconds(150);
 
         private const string DefaultCategoryKey = "Smileys & Emotion";
 
         private readonly DispatcherTimer searchTimer;
-        private readonly DispatcherTimer previewTimer;
+        private readonly DispatcherTimer previewCloseTimer;
         private readonly bool persistUserActivity;
         private readonly ActivityDataStore activityData;
         private EmojiSearchIndex searchIndex;
@@ -62,8 +63,6 @@ namespace EmojiPicker
         private bool isShowing;
         private bool allowProcessExit;
         private string? failedInsertionText;
-        private Emoji? pendingPreviewEmoji;
-        private ListBoxItem? pendingPreviewTarget;
         private PreviewOrigin previewOrigin;
         private EmojiVariantCatalog? variantCatalog;
         private SkinTonePreference currentSkinTone = SkinTonePreference.Neutral;
@@ -118,8 +117,8 @@ namespace EmojiPicker
 
             searchTimer = new DispatcherTimer { Interval = SearchDebounce };
             searchTimer.Tick += (_, _) => RunSearch();
-            previewTimer = new DispatcherTimer { Interval = HoverPreviewDelay };
-            previewTimer.Tick += (_, _) => OpenPendingHoverPreview();
+            previewCloseTimer = new DispatcherTimer { Interval = HoverPreviewCloseDelay };
+            previewCloseTimer.Tick += (_, _) => HidePreview();
 
             CategoryTabs.ItemsSource = categories;
             CategoryTabs.SelectedIndex = categories.FindIndex(category => category.Key == currentCategory);
@@ -886,7 +885,7 @@ namespace EmojiPicker
                 return;
             }
 
-            if (e.Key == Key.Escape && (EmojiPreviewPopup.IsOpen || previewTimer.IsEnabled))
+            if (e.Key == Key.Escape && (EmojiPreviewPopup.IsOpen || previewCloseTimer.IsEnabled))
             {
                 HidePreview();
                 e.Handled = true;
@@ -1150,32 +1149,22 @@ namespace EmojiPicker
                 return;
             }
 
-            HidePreview();
-            pendingPreviewEmoji = emoji;
-            pendingPreviewTarget = target;
-            previewTimer.Start();
+            previewCloseTimer.Stop();
+            OpenPreview(emoji, target, PreviewOrigin.Pointer);
         }
 
         private void EmojiItem_MouseLeave(object sender, MouseEventArgs e)
         {
-            if (sender == pendingPreviewTarget ||
-                (previewOrigin == PreviewOrigin.Pointer && sender == EmojiPreviewPopup.PlacementTarget))
+            if (previewOrigin == PreviewOrigin.Pointer && sender == EmojiPreviewPopup.PlacementTarget)
             {
-                HidePreview();
+                SchedulePreviewClose();
             }
         }
 
-        private void OpenPendingHoverPreview()
+        private void SchedulePreviewClose()
         {
-            previewTimer.Stop();
-            if (pendingPreviewEmoji == null || pendingPreviewTarget == null || !pendingPreviewTarget.IsMouseOver)
-            {
-                pendingPreviewEmoji = null;
-                pendingPreviewTarget = null;
-                return;
-            }
-
-            OpenPreview(pendingPreviewEmoji, pendingPreviewTarget, PreviewOrigin.Pointer);
+            previewCloseTimer.Stop();
+            previewCloseTimer.Start();
         }
 
         private void OpenKeyboardPreview()
@@ -1199,12 +1188,10 @@ namespace EmojiPicker
 
         private void OpenPreview(Emoji emoji, ListBoxItem target, PreviewOrigin origin)
         {
-            previewTimer.Stop();
-            pendingPreviewEmoji = null;
-            pendingPreviewTarget = null;
+            previewCloseTimer.Stop();
             previewOrigin = origin;
 
-            EmojiPreviewPopup.IsOpen = false;
+            var wasOpen = EmojiPreviewPopup.IsOpen;
             EmojiPreviewPopup.PlacementTarget = target;
             PreviewArtwork.AssetPath = emoji.PreviewAssetPath;
             PreviewLocalizedName.Text = emoji.Name;
@@ -1219,14 +1206,15 @@ namespace EmojiPicker
             System.Windows.Automation.AutomationProperties.SetName(
                 EmojiPreviewPopup.Child,
                 $"{emoji.Name}, Emoji {emoji.EmojiVersion}");
-            EmojiPreviewPopup.IsOpen = true;
+            if (!wasOpen)
+            {
+                EmojiPreviewPopup.IsOpen = true;
+            }
         }
 
         private void HidePreview()
         {
-            previewTimer?.Stop();
-            pendingPreviewEmoji = null;
-            pendingPreviewTarget = null;
+            previewCloseTimer?.Stop();
             previewOrigin = PreviewOrigin.None;
             if (EmojiPreviewPopup != null)
             {
@@ -1241,6 +1229,14 @@ namespace EmojiPicker
         }
 
         internal void ClosePreviewForSmoke() => HidePreview();
+
+        internal bool OpenPointerPreviewForSmoke(Emoji emoji, ListBoxItem target)
+        {
+            OpenPreview(emoji, target, PreviewOrigin.Pointer);
+            return EmojiPreviewPopup.IsOpen;
+        }
+
+        internal void SchedulePointerPreviewCloseForSmoke() => SchedulePreviewClose();
 
         private void TabItem_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
         {

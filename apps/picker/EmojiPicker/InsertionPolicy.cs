@@ -6,6 +6,7 @@ internal enum InsertionMethod
 {
     UnicodeKeystrokes,
     TemporaryPaste,
+    ShortcutKeystrokes,
 }
 
 internal enum TargetValidationFailure

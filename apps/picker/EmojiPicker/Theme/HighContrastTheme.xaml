@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <!-- Follow the active Windows High Contrast palette instead of overriding
-         the colors selected by the user with the normal Light/Dark palettes. -->
+         the colours selected by the user with the normal Light/Dark palettes. -->
     <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.WindowColorKey}}"/>
     <SolidColorBrush x:Key="WindowBorderBrush" Color="{DynamicResource {x:Static SystemColors.WindowTextColorKey}}"/>
     <SolidColorBrush x:Key="TabStripBackgroundBrush" Color="{DynamicResource {x:Static SystemColors.ControlColorKey}}"/>

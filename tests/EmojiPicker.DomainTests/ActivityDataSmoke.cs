@@ -9,7 +9,32 @@ internal static class ActivityDataSmoke
         VerifyIndependentClearControls();
         VerifyLegacyRecentMigration();
         VerifyIndependentCorruptionRecovery();
+        VerifyBaselinePruning();
         VerifySearchTierBoundary();
+    }
+
+    private static void VerifyBaselinePruning()
+    {
+        WithTemporaryDirectory(directory =>
+        {
+            var store = new ActivityDataStore(directory);
+            store.RecordSelection("base-keep", "resolved-keep", "KEEP");
+            store.RecordSelection("base-stale", "resolved-stale", "STALE");
+
+            var result = store.PruneToBaseline(
+                new HashSet<string>(["base-keep"], StringComparer.Ordinal),
+                new HashSet<string>(["resolved-keep"], StringComparer.Ordinal));
+            Assert(result == new ActivityPruneResult(RecentRemoved: 1, RankingRemoved: 1),
+                "A baseline update must report exactly the removed Recent and Learned Ranking entries.");
+
+            var reloaded = new ActivityDataStore(directory);
+            Assert(reloaded.RecentEntries.SequenceEqual([new RecentActivityEntry("resolved-keep", "KEEP")]),
+                "A baseline update must persist removal of only absent resolved Recent entries.");
+            Assert(reloaded.GetLearnedScore("base-keep") > 0 && reloaded.GetLearnedScore("base-stale") == 0,
+                "A baseline update must persist removal of only absent base ranking entries.");
+            Assert(!Directory.EnumerateFiles(directory, "*.tmp").Any(),
+                "Baseline pruning must retain atomic-write cleanup guarantees.");
+        });
     }
 
     private static void VerifyRecentAndRanking()

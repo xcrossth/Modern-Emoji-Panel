@@ -20,6 +20,11 @@ internal sealed record RecentActivityEntry(
     string ResolvedEntryId,
     string UnicodeSequence);
 
+internal readonly record struct ActivityPruneResult(int RecentRemoved, int RankingRemoved)
+{
+    internal bool Changed => RecentRemoved > 0 || RankingRemoved > 0;
+}
+
 /// <summary>
 /// Owns the two independent, local-only Activity Data stores. Persistence,
 /// migration and corruption recovery stay behind this boundary so picker UI
@@ -114,6 +119,40 @@ internal sealed class ActivityDataStore
             pair => pair.Key,
             pair => Decay(pair.Value.DecayedFrequency, pair.Value.UpdatedAtUtc, now),
             StringComparer.Ordinal);
+    }
+
+    /// <summary>
+    /// Drops only Activity Data whose stable identifiers no longer exist in the
+    /// newly loaded baseline. Each independent store is persisted atomically only
+    /// when that store changed.
+    /// </summary>
+    internal ActivityPruneResult PruneToBaseline(
+        IReadOnlySet<string> validBaseEntryIds,
+        IReadOnlySet<string> validResolvedEntryIds)
+    {
+        ArgumentNullException.ThrowIfNull(validBaseEntryIds);
+        ArgumentNullException.ThrowIfNull(validResolvedEntryIds);
+
+        var recentRemoved = recents.RemoveAll(entry => !validResolvedEntryIds.Contains(entry.ResolvedEntryId));
+        var staleRankingIds = rankings.Keys
+            .Where(entryId => !validBaseEntryIds.Contains(entryId))
+            .ToList();
+        foreach (var entryId in staleRankingIds)
+        {
+            rankings.Remove(entryId);
+        }
+
+        if (recentRemoved > 0)
+        {
+            PersistRecent();
+        }
+
+        if (staleRankingIds.Count > 0)
+        {
+            PersistRanking();
+        }
+
+        return new ActivityPruneResult(recentRemoved, staleRankingIds.Count);
     }
 
     internal void ClearRecent()

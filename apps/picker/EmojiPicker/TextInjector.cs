@@ -472,6 +472,9 @@ namespace EmojiPicker
         private const ushort VkLeftWindows = 0x5B;
         private const ushort VkV = 0x56;
 
+        internal static bool SendKeyStrokeForSmoke(ushort virtualKey, ShortcutModifiers modifiers) =>
+            SendKeyStroke(virtualKey, modifiers).Accepted;
+
         private static InsertionResult SendKeyStroke(ushort virtualKey, ShortcutModifiers modifiers)
         {
             var modifierKeys = new List<ushort>(capacity: 4);

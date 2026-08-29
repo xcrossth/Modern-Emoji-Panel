@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using System.Windows.Threading;
 using Microsoft.Win32;
 
 namespace EmojiPicker
@@ -19,6 +20,7 @@ namespace EmojiPicker
 
         private static ResourceDictionary? currentTheme;
         private static Uri? currentThemeUri;
+        private static DispatcherTimer? systemRefreshTimer;
 
         /// <summary>
         /// Merges the theme matching the current Windows setting and starts
@@ -27,14 +29,38 @@ namespace EmojiPicker
         public static void Initialize()
         {
             Apply(ResolveThemeUri(Settings.Current.ThemePreference));
+            var dispatcher = Application.Current?.Dispatcher;
+            if (dispatcher != null)
+            {
+                systemRefreshTimer = new DispatcherTimer(
+                    TimeSpan.FromMilliseconds(100),
+                    DispatcherPriority.ApplicationIdle,
+                    (_, _) =>
+                    {
+                        systemRefreshTimer?.Stop();
+                        Refresh();
+                    },
+                    dispatcher);
+                systemRefreshTimer.Stop();
+            }
+
             SystemEvents.UserPreferenceChanged += OnUserPreferenceChanged;
         }
 
-        internal static void Refresh() => Apply(ResolveThemeUri(Settings.Current.ThemePreference));
+        internal static void Refresh()
+        {
+            var themeUri = ResolveThemeUri(Settings.Current.ThemePreference);
+            if (themeUri != currentThemeUri)
+            {
+                Apply(themeUri);
+            }
+        }
 
         public static void Shutdown()
         {
             SystemEvents.UserPreferenceChanged -= OnUserPreferenceChanged;
+            systemRefreshTimer?.Stop();
+            systemRefreshTimer = null;
         }
 
         private static void OnUserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
@@ -44,16 +70,9 @@ namespace EmojiPicker
                 return;
             }
 
-            var themeUri = ResolveThemeUri(Settings.Current.ThemePreference);
-            if (themeUri == currentThemeUri)
-            {
-                return;
-            }
-
-            // SystemEvents fires on a background thread; touch resources on the UI
-            // thread. Guard the cross-thread call against a racing app shutdown -
-            // Invoke throws on this thread once the dispatcher has begun shutting
-            // down, and that exception wouldn't be caught by the UI handler.
+            // SystemEvents fires on a background thread and Windows can raise the
+            // notification before HighContrast/Personalize values have settled.
+            // Coalesce the burst on the UI dispatcher, then resolve the state there.
             var dispatcher = Application.Current?.Dispatcher;
             if (dispatcher == null || dispatcher.HasShutdownStarted)
             {
@@ -62,11 +81,21 @@ namespace EmojiPicker
 
             try
             {
-                dispatcher.Invoke(() => Apply(themeUri));
+                dispatcher.BeginInvoke(new Action(() =>
+                {
+                    if (systemRefreshTimer == null)
+                    {
+                        Refresh();
+                        return;
+                    }
+
+                    systemRefreshTimer.Stop();
+                    systemRefreshTimer.Start();
+                }), DispatcherPriority.ApplicationIdle);
             }
             catch (Exception)
             {
-                // The dispatcher shut down between the check and the Invoke; harmless
+                // The dispatcher shut down between the check and BeginInvoke; harmless
             }
         }
 
@@ -129,5 +158,15 @@ namespace EmojiPicker
             UserPreferenceCategory.Color or
             UserPreferenceCategory.General or
             UserPreferenceCategory.VisualStyle;
+
+        internal static Uri ApplyForSmoke(
+            AppThemePreference preference,
+            bool systemDark,
+            bool highContrast)
+        {
+            var themeUri = ResolveThemeUri(preference, systemDark, highContrast);
+            Apply(themeUri);
+            return themeUri;
+        }
     }
 }

@@ -59,6 +59,9 @@ try {
     Assert-Condition ($desktop.errorVisible -eq $false) "Rapid pointer insertion displayed an insertion error"
     Assert-Condition ($desktop.gridInteractive -eq $true) "Rapid pointer insertion left the Emoji grid non-interactive"
     Assert-Condition ($desktop.dismissWorked -eq $true) "Picker could not dismiss after rapid pointer insertion"
+    Assert-Condition ($desktop.highContrastThemeApplied -eq $true) "Desktop smoke did not apply the High Contrast resource theme"
+    Assert-Condition ($desktop.highContrastEnterWorked -eq $true) "Search Enter failed under the High Contrast resource theme"
+    Assert-Condition ($desktop.highContrastShiftEnterWorked -eq $true) "Search Shift+Enter failed under the High Contrast resource theme"
     Assert-Condition ($desktop.passed -eq $true) "Desktop focus/rapid-insertion report failed"
 
     $windowXaml = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot "apps\picker\EmojiPicker\MainWindow.xaml")

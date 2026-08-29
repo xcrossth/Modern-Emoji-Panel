@@ -114,6 +114,9 @@ internal static class QualificationSmoke
                 ["highContrastThemeResolution"] = ThemeManager
                     .ResolveThemeUri(AppThemePreference.Dark, systemDark: true, highContrast: true)
                     .OriginalString.EndsWith("HighContrastTheme.xaml", StringComparison.Ordinal),
+                ["systemDarkThemeResolution"] = ThemeManager
+                    .ResolveThemeUri(AppThemePreference.System, systemDark: true, highContrast: false)
+                    .OriginalString.EndsWith("DarkTheme.xaml", StringComparison.Ordinal),
             };
 
             var report = new

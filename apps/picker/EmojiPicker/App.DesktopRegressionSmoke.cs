@@ -103,7 +103,52 @@ public partial class App
             pickerWindow.DismissPicker();
             await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.ApplicationIdle);
             var dismissWorked = !pickerWindow.IsVisible;
-            var passed = editableStateRestored && exactSequence && !replacementOrUnpairedSurrogate && !errorVisible && gridInteractive && dismissWorked;
+
+            var highContrastTheme = ThemeManager.ApplyForSmoke(
+                AppThemePreference.System,
+                systemDark: true,
+                highContrast: true);
+            targetText.Clear();
+            target.Activate();
+            targetText.Focus();
+            System.Windows.Input.Keyboard.Focus(targetText);
+            pickerWindow.ShowPicker();
+            await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Render);
+            pickerWindow.DisplaySearchForSmoke("pig");
+            pickerWindow.FocusSearchForSmoke();
+            var highContrastEnterInputAccepted = TextInjector.SendKeyStrokeForSmoke(
+                virtualKey: 0x0D,
+                ShortcutModifiers.None);
+            var highContrastEnterSettled = await WaitForInsertionIdleAsync(pickerWindow);
+            var highContrastEnterWorked = highContrastEnterInputAccepted && highContrastEnterSettled &&
+                targetText.Text == pig.Character &&
+                !pickerWindow.IsVisible;
+
+            targetText.Clear();
+            target.Activate();
+            targetText.Focus();
+            System.Windows.Input.Keyboard.Focus(targetText);
+            pickerWindow.ShowPicker();
+            await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Render);
+            pickerWindow.DisplaySearchForSmoke("pig");
+            pickerWindow.FocusSearchForSmoke();
+            var highContrastShiftEnterInputAccepted = TextInjector.SendKeyStrokeForSmoke(
+                virtualKey: 0x0D,
+                ShortcutModifiers.Shift);
+            var highContrastShiftEnterSettled = await WaitForInsertionIdleAsync(pickerWindow);
+            var highContrastShiftEnterWorked = highContrastShiftEnterInputAccepted && highContrastShiftEnterSettled &&
+                targetText.Text == pig.Character &&
+                pickerWindow.IsVisible &&
+                pickerWindow.InputMode == PickerInputMode.Search &&
+                pickerWindow.EmojiGridInteractiveForSmoke;
+            pickerWindow.DismissPicker();
+
+            var highContrastThemeApplied = highContrastTheme.OriginalString.EndsWith(
+                "HighContrastTheme.xaml",
+                StringComparison.Ordinal);
+            var passed = editableStateRestored && exactSequence && !replacementOrUnpairedSurrogate &&
+                !errorVisible && gridInteractive && dismissWorked && highContrastThemeApplied &&
+                highContrastEnterWorked && highContrastShiftEnterWorked;
             var report = new
             {
                 schemaVersion = 1,
@@ -118,6 +163,9 @@ public partial class App
                 errorVisible,
                 gridInteractive,
                 dismissWorked,
+                highContrastThemeApplied,
+                highContrastEnterWorked,
+                highContrastShiftEnterWorked,
                 passed,
             };
 
@@ -144,5 +192,21 @@ public partial class App
             target.Close();
             ThemeManager.Shutdown();
         }
+    }
+
+    private static async Task<bool> WaitForInsertionIdleAsync(MainWindow window)
+    {
+        const int maximumWaitMilliseconds = 3000;
+        for (var waited = 0; waited < maximumWaitMilliseconds; waited += 25)
+        {
+            await Task.Delay(25);
+            await window.Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.ApplicationIdle);
+            if (window.InsertionIdleForSmoke)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

@@ -7,7 +7,7 @@
 | warm global hotkey-to-visible P95 | ≤ 100 ms | 20 | ส่ง Win + . ผ่าน `SendInput` ไปยัง low-level hook จริง, จับ foreground/focused control/caret, เปิดและ activate Picker แล้วรอ Dispatcher priority Render |
 | warm open-to-render proxy P95 | ≤ 100 ms | 20 | reset view, show WPF shell และรอ Dispatcher priority Render; ไม่รวม global hook/foreground activation |
 | bilingual search P95 | ≤ 10 ms | 1,000 | query ไทย/อังกฤษสลับกันบน index ที่ prewarm แล้ว |
-| virtualized scroll P95 | ≤ 60 ms | 100 | เลื่อนหมวดที่ใหญ่ที่สุดไปยังตำแหน่งกระจายแล้วรอ Render priority; เทียบเท่า guardrail ประมาณ 16 FPS สำหรับการกระโดดข้าม viewport |
+| virtualized scroll P95 | ≤ 60 ms | 100 | เลื่อนหมวดที่ใหญ่ที่สุดไปยังตำแหน่งกระจายที่ cadence 60 Hz แล้ววัดเฉพาะเวลาจาก scroll command ถึง Render priority; เทียบเท่า guardrail ประมาณ 16 FPS สำหรับการกระโดดข้าม viewport |
 | virtualized scroll maximum | ≤ 150 ms | 100 | guardrail สำหรับ stall เดี่ยวในชุดเดียวกัน |
 | idle working set หลัง trim | ≤ 128 MiB | 1 | process sample หลังซ่อน window, trim และ ContextIdle |
 | grid PNG decode P95 | ≤ 15 ms | 128 | Noto 128 role ที่ decode width 47 px เพื่อหลีก cache จาก grid ปกติ |

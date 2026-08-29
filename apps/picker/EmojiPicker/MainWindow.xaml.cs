@@ -216,6 +216,13 @@ namespace EmojiPicker
                     await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Render);
                     stopwatch.Stop();
                     results.Add(stopwatch.Elapsed.TotalMilliseconds);
+
+                    // Model a 60 Hz input cadence instead of enqueueing 100 synthetic
+                    // jumps back-to-back. The delay is outside the measured frame;
+                    // ContextIdle lets async image callbacks from this viewport settle
+                    // before the next independent sample starts.
+                    await Task.Delay(16);
+                    await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.ContextIdle);
                 }
 
                 return results;

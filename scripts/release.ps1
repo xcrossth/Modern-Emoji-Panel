@@ -102,6 +102,7 @@ try {
     Compress-Archive -Path (Join-Path $publishPath "*") -DestinationPath $portablePath -CompressionLevel Optimal
 
     & $innoCompiler `
+        "/Qp" `
         "/DAppVersion=$Version" `
         "/DPublishDir=$publishPath" `
         "/DOutputDir=$releaseRoot" `

@@ -52,6 +52,31 @@ namespace EmojiPicker
         {
             base.OnStartup(e);
 
+            var globalHotkeySmokeIndex = Array.FindIndex(
+                e.Args,
+                argument => string.Equals(argument, "--global-hotkey-smoke", StringComparison.Ordinal));
+            if (globalHotkeySmokeIndex >= 0)
+            {
+                var reportPath = globalHotkeySmokeIndex + 1 < e.Args.Length
+                    ? e.Args[globalHotkeySmokeIndex + 1]
+                    : null;
+                var targetText = globalHotkeySmokeIndex + 2 < e.Args.Length
+                    ? e.Args[globalHotkeySmokeIndex + 2]
+                    : null;
+                if (string.IsNullOrWhiteSpace(reportPath) ||
+                    !long.TryParse(targetText, out var targetValue) ||
+                    targetValue == 0)
+                {
+                    Shutdown(2);
+                }
+                else
+                {
+                    RunGlobalHotkeySmoke(reportPath, new IntPtr(targetValue));
+                }
+
+                return;
+            }
+
             var qualificationSmokeIndex = Array.FindIndex(
                 e.Args,
                 argument => string.Equals(argument, "--qualification-smoke", StringComparison.Ordinal));

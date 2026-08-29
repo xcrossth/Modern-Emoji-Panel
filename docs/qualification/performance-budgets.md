@@ -4,6 +4,7 @@
 
 | Metric | Budget | จำนวน sample | ความหมาย |
 |---|---:|---:|---|
+| warm global hotkey-to-visible P95 | ≤ 100 ms | 20 | ส่ง Win + . ผ่าน `SendInput` ไปยัง low-level hook จริง, จับ foreground/focused control/caret, เปิดและ activate Picker แล้วรอ Dispatcher priority Render |
 | warm open-to-render proxy P95 | ≤ 100 ms | 20 | reset view, show WPF shell และรอ Dispatcher priority Render; ไม่รวม global hook/foreground activation |
 | bilingual search P95 | ≤ 10 ms | 1,000 | query ไทย/อังกฤษสลับกันบน index ที่ prewarm แล้ว |
 | virtualized scroll P95 | ≤ 60 ms | 100 | เลื่อนหมวดที่ใหญ่ที่สุดไปยังตำแหน่งกระจายแล้วรอ Render priority; เทียบเท่า guardrail ประมาณ 16 FPS สำหรับการกระโดดข้าม viewport |
@@ -14,7 +15,7 @@
 | bounded image cache | ≤ 256 ภาพ | หลัง benchmark | จำนวน entry ใน LRU cache |
 | self-contained publish | ≤ 350 MiB | 1 directory | ไฟล์ทั้งหมดใน `artifacts/foundation/picker-win-x64` |
 
-budgets นี้ตั้งใจจับ regression ที่มีผลต่อการใช้งาน ไม่ใช่คำรับรองว่า GPU/จอทุกแบบจะให้ frame time เดียวกัน ถ้าเปลี่ยนเครื่องมือวัด จำนวน sample หรือเส้นทาง code ต้องเพิ่ม schema version และอธิบายใน report ห้ามเลื่อน budget เพื่อให้ผลที่ล้มผ่านโดยไม่มีเหตุผลและ review
+global-hotkey metric ใช้ Notepad ที่สคริปต์เปิดเองเป็น foreground target และไม่เลือก/ส่ง Emoji จึงพิสูจน์เส้นทาง hook-to-visible แต่ไม่แทน manual app matrix ส่วน budgets ทั้งหมดตั้งใจจับ regression ที่มีผลต่อการใช้งาน ไม่ใช่คำรับรองว่า GPU/จอทุกแบบจะให้ frame time เดียวกัน ถ้าเปลี่ยนเครื่องมือวัด จำนวน sample หรือเส้นทาง code ต้องเพิ่ม schema version และอธิบายใน report ห้ามเลื่อน budget เพื่อให้ผลที่ล้มผ่านโดยไม่มีเหตุผลและ review
 
 ## Upstream comparison ที่มีอยู่
 

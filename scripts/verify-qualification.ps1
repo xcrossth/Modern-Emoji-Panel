@@ -6,7 +6,9 @@ param(
 
     [string]$OutputPath,
 
-    [string]$ReleaseManifestPath
+    [string]$ReleaseManifestPath,
+
+    [string]$GlobalHotkeyReportPath
 )
 
 $ErrorActionPreference = "Stop"
@@ -164,6 +166,21 @@ try {
         Assert-Condition ($releaseManifest.uploaded -eq $false) "Qualification accepts only local, not-uploaded artifacts"
     }
 
+    $globalHotkeyReport = $null
+    if (-not [string]::IsNullOrWhiteSpace($GlobalHotkeyReportPath)) {
+        $resolvedGlobalHotkeyReportPath = [IO.Path]::GetFullPath($GlobalHotkeyReportPath)
+        Assert-Condition (Test-Path -LiteralPath $resolvedGlobalHotkeyReportPath -PathType Leaf) "Global hotkey report is missing"
+        $globalHotkeyReport = Get-Content -Raw -LiteralPath $resolvedGlobalHotkeyReportPath | ConvertFrom-Json
+        Assert-Condition ($globalHotkeyReport.passed -eq $true) "Global hotkey report did not pass"
+        Assert-Condition ($globalHotkeyReport.hook.installed -eq $true) "Global hotkey report did not install the real hook"
+        Assert-Condition ($globalHotkeyReport.target.expectedWindow -eq $globalHotkeyReport.target.capturedWindow) "Global hotkey report captured the wrong foreground target"
+        Assert-Condition ($globalHotkeyReport.target.capturedFocusWindow -ne 0) "Global hotkey report did not capture the focused control"
+        Assert-Condition ($globalHotkeyReport.picker.visible -eq $true -and $globalHotkeyReport.picker.foreground -eq $true) "Global hotkey report did not show and activate the Picker"
+        Assert-Condition ($globalHotkeyReport.measurement.samples -ge 20) "Global hotkey report has too few samples"
+        Assert-Condition ($globalHotkeyReport.measurement.p95Milliseconds -le $globalHotkeyReport.measurement.budgetMilliseconds) "Global hotkey-to-visible P95 exceeded its budget"
+        Assert-Condition ($globalHotkeyReport.categoryCache.passed -eq $true) "Global hotkey report failed category cache invalidation/reuse assertions"
+    }
+
     $computer = Get-ComputerInfo
     [object[]]$networkObservationArray = $networkObservations.ToArray()
     $report | Add-Member -NotePropertyName qualificationHost -NotePropertyValue ([pscustomobject]@{
@@ -214,11 +231,14 @@ try {
             "ได้รับ verified Ticket 14A manifest สำหรับ self-contained installer/portable ZIP จาก local clean commit"
         }
     })
+    $report | Add-Member -NotePropertyName globalHotkey -NotePropertyValue $globalHotkeyReport
     $unresolvedQualification = @(
-        "warm hotkey-to-visible จริงยังต้องวัดด้วย global hotkey และ foreground app จริง",
         "upstream ไม่มีตัวเลข search, scroll, decode/cache และ package ที่ทำซ้ำได้ใน repository",
         "manual app/OS/accessibility/DPI/input/clipboard matrices ยังต้องทดสอบตาม docs/qualification/manual-matrices.md"
     )
+    if ($null -eq $globalHotkeyReport) {
+        $unresolvedQualification = @("warm hotkey-to-visible จริงยังต้องวัดด้วย global hotkey และ foreground app จริง") + $unresolvedQualification
+    }
     if ($null -eq $releaseManifest) {
         $unresolvedQualification += "installer และ portable ZIP size ต้องรับจาก Ticket 14A artifact manifest"
     }

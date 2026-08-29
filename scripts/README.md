@@ -142,7 +142,15 @@ pwsh scripts/verify-settings-privacy.ps1
 pwsh scripts/verify-qualification.ps1 -OutputPath docs/qualification/results/automated-win10-19045.json
 ```
 
-คำสั่งนี้รัน regression suite ที่สร้างไว้ใน Ticket 01–12 แล้ววัด warm open-to-render proxy, search, virtualized scroll, working set และ decode/cache จาก self-contained Release process ตรวจ performance budgets, accessibility/High Contrast wiring, ขนาด publish และเฝ้าดู TCP/UDP socket ของ process ระหว่าง smoke จริง ผลที่ได้ไม่แทน manual matrix, packet capture, hotkey-to-visible จริง หรือผลบน Windows 11 ดูขอบเขตและแบบบันทึกผลที่ [การรับรองคุณภาพ](../docs/qualification/README.md)
+คำสั่งนี้รัน regression suite ที่สร้างไว้ใน Ticket 01–12 แล้ววัด warm open-to-render proxy, search, virtualized scroll, working set และ decode/cache จาก self-contained Release process ตรวจ performance budgets, accessibility/High Contrast wiring, ขนาด publish และเฝ้าดู TCP/UDP socket ของ process ระหว่าง smoke จริง ผลที่ได้ไม่แทน manual matrix, packet capture หรือผลบน Windows 11 ดูขอบเขตและแบบบันทึกผลที่ [การรับรองคุณภาพ](../docs/qualification/README.md)
+
+วัด warm global hotkey-to-visible จริงกับ Notepad ที่สคริปต์เปิดเองได้ด้วย:
+
+```powershell
+pwsh scripts/measure-global-hotkey.ps1 -OutputPath artifacts/ticket-13/global-hotkey-win10-19045.json
+```
+
+คำสั่งนี้ต้องไม่มี Modern Emoji Picker instance อื่นทำงานอยู่ จากนั้นจะติดตั้ง low-level hook แบบ isolated, ส่ง `Win + .` ด้วย `SendInput` 20 ครั้ง, ตรวจ target/focused control/caret, การ activate Picker, category-cache semantics และ P95 ≤ 100 ms โดยไม่เลือก Emoji หรือแตะ Clipboard หากต้องการผูกหลักฐานนี้กับ qualification report ให้ส่ง path ผ่าน `verify-qualification.ps1 -GlobalHotkeyReportPath <path>`
 
 ## สร้าง product icon
 

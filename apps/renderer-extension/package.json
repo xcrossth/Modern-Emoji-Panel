@@ -5,6 +5,9 @@
   "type": "module",
   "scripts": {
     "build": "node ./scripts/build.mjs",
+    "build:production": "node ./scripts/build.mjs --production",
+    "release": "node ./scripts/build-release.mjs",
+    "verify:release": "node ./scripts/verify-release.mjs",
     "generate:data": "node ./scripts/generate-emoji-data.mjs",
     "check:data": "node ./scripts/generate-emoji-data.mjs --check",
     "test": "vitest run",

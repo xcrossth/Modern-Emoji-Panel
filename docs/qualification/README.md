@@ -48,6 +48,22 @@ qualification smoke ปกติไม่ติดตั้ง global hook, ไ�
 
 ให้ใช้ [manual matrices](./manual-matrices.md) บันทึกแต่ละกรณี ห้ามเปลี่ยนแถวเป็น “ผ่าน” โดยไม่มีวันที่ ผู้ทดสอบ environment และหลักฐานที่ตรวจย้อนกลับได้
 
+## ตัวช่วย Manual Qualification
+
+เมื่อผู้ทดสอบพร้อมอยู่หน้าเครื่อง ให้ build commit ที่ต้องการตรวจ แล้วเปิด Git Bash จาก root ของ repository:
+
+```bash
+bash scripts/manual-qualification-wizard.sh
+```
+
+wizard มี 7 stage ครอบคลุม preflight, Tier A apps, keyboard/accessibility, input/sequence/queue, Clipboard/target safety, privacy 15 นาที และสรุปผล สามารถกด `Ctrl+C` แล้วรันซ้ำภายในวันเดียวกันเพื่อเก็บผลเดิมหรือแก้เฉพาะกรณีได้ ผลดิบและรายงาน JSON/Markdown อยู่ใต้ `artifacts/ticket-13/manual/` ซึ่ง Git ignore ไว้
+
+ผลจาก wizard เป็นเพียงหลักฐานที่มนุษย์บันทึกและมี `acceptedAutomatically: false` เสมอ Agent/maintainer ต้อง review ก่อนคัดลอกเข้าสู่ `manual-matrices.md` ตรวจโครงสร้างตัวช่วยได้โดยไม่เริ่ม session ด้วย:
+
+```powershell
+pwsh scripts/verify-manual-qualification-wizard.ps1
+```
+
 ## สถานะปัจจุบัน
 
 ผลอัตโนมัติของเครื่อง Windows 10 build 19045 อยู่ที่ [`results/automated-win10-19045.json`](./results/automated-win10-19045.json) และผล hook-to-visible จริงอยู่ที่ [`results/global-hotkey-win10-19045.json`](./results/global-hotkey-win10-19045.json) ส่วน manual matrices ยังเป็น “ยังไม่ทดสอบ” ทั้งหมด จึงยังไม่ถือว่า Ticket 13 หรือ Picker MVP ผ่านการรับรองปล่อยจริง

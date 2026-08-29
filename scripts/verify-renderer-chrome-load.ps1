@@ -2,6 +2,8 @@
 param(
     [string]$ChromePath = "",
 
+    [string]$ExtensionPath = "",
+
     [switch]$SkipBuild
 )
 
@@ -9,7 +11,10 @@ $ErrorActionPreference = "Stop"
 Set-StrictMode -Version Latest
 
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
-$extensionPath = [System.IO.Path]::GetFullPath((Join-Path $repositoryRoot "artifacts\renderer-extension\unpacked"))
+if ([string]::IsNullOrWhiteSpace($ExtensionPath)) {
+    $ExtensionPath = Join-Path $repositoryRoot "artifacts\renderer-extension\unpacked"
+}
+$extensionPath = [System.IO.Path]::GetFullPath($ExtensionPath)
 $chromeForTestingRoot = [System.IO.Path]::GetFullPath(
     (Join-Path $repositoryRoot "artifacts\tooling\chrome-for-testing"))
 $temporaryRoot = [System.IO.Path]::GetFullPath([System.IO.Path]::GetTempPath())

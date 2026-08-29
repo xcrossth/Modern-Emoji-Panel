@@ -60,6 +60,11 @@ internal sealed class NotoEmojiAssetProvider
     {
         try
         {
+            if (key.RelativePath.StartsWith(FamilyToneVariants.AssetPrefix, StringComparison.Ordinal))
+            {
+                return FamilyToneVariants.TryRender(key.RelativePath, key.DecodePixelWidth);
+            }
+
             var path = EmojiCatalog.ResolveBundledPath(key.RelativePath);
             var assetRoot = Path.GetFullPath(EmojiCatalog.AssetRoot) + Path.DirectorySeparatorChar;
             if (!path.StartsWith(assetRoot, StringComparison.OrdinalIgnoreCase) || !File.Exists(path))

@@ -75,7 +75,79 @@ foreach (var entry in catalog.Entries)
 
 Assert(baseIds.Contains(Find("1F1F9 1F1ED").Id), "Thailand flag must remain browsable.");
 Assert(baseIds.Contains(Find("0031 FE0F 20E3").Id), "Keycap sequence must remain browsable.");
-Assert(baseIds.Contains(Find("1F468 200D 1F469 200D 1F467").Id), "Complex ZWJ family must remain browsable.");
+var family = Find("1F468 200D 1F469 200D 1F466");
+Assert(baseIds.Contains(family.Id), "Complex ZWJ family must remain browsable.");
+var lightFamily = variants.Resolve(family, SkinTonePreference.Light);
+Assert(variants.SupportsSkinTone(family), "An explicit family must follow the global skin tone.");
+Assert(lightFamily.ResolvedEntry.Character == "👨🏻‍👩🏻‍👦🏻",
+    "Global light tone must apply to every explicit family member.");
+Assert(lightFamily.ResolvedEntry.CanonicalSequence ==
+    "1F468 1F3FB 200D 1F469 1F3FB 200D 1F466 1F3FB",
+    "Family tone resolution must preserve the ZWJ structure and add every modifier.");
+Assert(lightFamily.ResolvedEntry.AssetPath.StartsWith("generated/family-tone/128/", StringComparison.Ordinal),
+    "A toned family must use generated Noto composite artwork in the grid.");
+Assert(lightFamily.ResolvedEntry.PreviewAssetPath.StartsWith("generated/family-tone/512/", StringComparison.Ordinal),
+    "A toned family must use generated Noto composite artwork in preview.");
+var familyBases = variants.BaseEntries
+    .Where(entry => entry.EnglishName.StartsWith("family", StringComparison.OrdinalIgnoreCase))
+    .ToArray();
+Assert(familyBases.Length == 30, "Expected all 30 explicit and generic family entries in browse data.");
+var neutralFamilyPresentations = familyBases
+    .Select(entry => variants.Resolve(entry, SkinTonePreference.Neutral).ToPresentation())
+    .ToArray();
+Assert(neutralFamilyPresentations.All(entry =>
+        entry.AssetPath.StartsWith("generated/family-tone/128/neutral/", StringComparison.Ordinal) &&
+        entry.Character == familyBases.Single(baseEntry => baseEntry.Id == entry.Id).Character),
+    "Neutral families must use yellow Noto composites while preserving their baseline sequence.");
+var tonePreferences = Enum.GetValues<SkinTonePreference>()
+    .Where(preference => preference != SkinTonePreference.Neutral)
+    .ToArray();
+var derivedFamilyEntries = new List<Emoji>(familyBases.Length * tonePreferences.Length);
+foreach (var familyBase in familyBases)
+{
+    foreach (var preference in tonePreferences)
+    {
+        var resolved = variants.Resolve(familyBase, preference);
+        Assert(resolved.ResolvedEntry.Id != familyBase.Id,
+            $"Family {familyBase.CanonicalSequence} did not resolve for {preference}.");
+        Assert(resolved.ResolvedEntry.AssetPath.StartsWith(FamilyToneVariants.AssetPrefix, StringComparison.Ordinal),
+            $"Family {familyBase.CanonicalSequence} did not use composite artwork for {preference}.");
+        Assert(variants.TryRestore(resolved.ResolvedEntry.Id, resolved.ResolvedEntry.Character)?.ResolvedEntry.Id ==
+            resolved.ResolvedEntry.Id,
+            $"Family {familyBase.CanonicalSequence} {preference} could not be restored for Recent.");
+        var modifiers = Modifiers(resolved.ResolvedEntry).ToArray();
+        Assert(modifiers.Length is >= 2 and <= 4 && modifiers.Distinct(StringComparer.Ordinal).Count() == 1,
+            $"Family {familyBase.CanonicalSequence} did not apply one uniform tone to every member.");
+        derivedFamilyEntries.Add(resolved.ResolvedEntry);
+    }
+}
+Assert(variants.ResolvedEntryIds.Count == catalog.Entries.Count + (familyBases.Length * tonePreferences.Length),
+    "Variant catalog must expose every derived family ID for Activity Data pruning.");
+var allFamilyGridArtwork = Task.WhenAll(derivedFamilyEntries.Select(entry =>
+        NotoEmojiAssetProvider.Shared.LoadAsync(entry.AssetPath, 32)))
+    .GetAwaiter()
+    .GetResult();
+Assert(allFamilyGridArtwork.All(image => image is { IsFrozen: true }),
+    "Every derived family/tone combination must render from bundled Noto member artwork.");
+var allNeutralFamilyArtwork = Task.WhenAll(neutralFamilyPresentations.Select(entry =>
+        NotoEmojiAssetProvider.Shared.LoadAsync(entry.AssetPath, 32)))
+    .GetAwaiter()
+    .GetResult();
+Assert(allNeutralFamilyArtwork.All(image => image is { IsFrozen: true }),
+    "Every neutral family must render a yellow composite from bundled Noto member artwork.");
+
+var familyGridArtwork = NotoEmojiAssetProvider.Shared
+    .LoadAsync(lightFamily.ResolvedEntry.AssetPath, 128)
+    .GetAwaiter()
+    .GetResult() as System.Windows.Media.Imaging.BitmapSource;
+var familyPreviewArtwork = NotoEmojiAssetProvider.Shared
+    .LoadAsync(lightFamily.ResolvedEntry.PreviewAssetPath, 160)
+    .GetAwaiter()
+    .GetResult() as System.Windows.Media.Imaging.BitmapSource;
+Assert(familyGridArtwork is { IsFrozen: true, PixelWidth: 128 } && HasColoredPixel(familyGridArtwork),
+    "Generated family grid artwork must be frozen, correctly sized and colored.");
+Assert(familyPreviewArtwork is { IsFrozen: true, PixelWidth: 160 } && HasColoredPixel(familyPreviewArtwork),
+    "Generated family preview artwork must be frozen, correctly sized and colored.");
 
 ActivityDataSmoke.Run();
 SettingsPrivacySmoke.Run();
@@ -107,7 +179,9 @@ finally
 
 Console.WriteLine(
     $"Emoji variant verification passed: {catalog.Entries.Count} baseline sequences, " +
-    $"{variants.BaseEntries.Count} browse entries, global tone, mixed overrides and local Activity Data");
+    $"{variants.BaseEntries.Count} browse entries, {derivedFamilyEntries.Count} derived family tones, " +
+    $"{neutralFamilyPresentations.Length} neutral family composites, " +
+    "global tone, mixed overrides and local Activity Data");
 return;
 
 Emoji Find(string canonicalSequence) => catalog.Entries.Single(entry =>
@@ -126,6 +200,31 @@ static SkinTonePreference PreferenceFor(string codePoint) => codePoint switch
     "1F3FF" => SkinTonePreference.Dark,
     _ => throw new ArgumentOutOfRangeException(nameof(codePoint)),
 };
+
+static bool HasColoredPixel(System.Windows.Media.Imaging.BitmapSource source)
+{
+    var converted = new System.Windows.Media.Imaging.FormatConvertedBitmap(
+        source,
+        System.Windows.Media.PixelFormats.Bgra32,
+        destinationPalette: null,
+        alphaThreshold: 0);
+    var stride = converted.PixelWidth * 4;
+    var pixels = new byte[stride * converted.PixelHeight];
+    converted.CopyPixels(pixels, stride, 0);
+    for (var index = 0; index < pixels.Length; index += 4)
+    {
+        var blue = pixels[index];
+        var green = pixels[index + 1];
+        var red = pixels[index + 2];
+        var alpha = pixels[index + 3];
+        if (alpha > 0 && (red != green || green != blue))
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
 
 static void Assert(bool condition, string message)
 {

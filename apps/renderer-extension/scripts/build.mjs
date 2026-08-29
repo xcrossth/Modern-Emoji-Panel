@@ -19,6 +19,7 @@ await mkdir(outputRoot, { recursive: true });
 const entryPoints = {
   "background/service-worker": join(extensionRoot, "src", "background", "service-worker.ts"),
   "content/index": join(extensionRoot, "src", "content", "index.ts"),
+  "fixtures/dom-renderer": join(extensionRoot, "src", "fixtures", "dom-renderer.ts"),
 };
 
 await build({
@@ -42,9 +43,18 @@ if (manifest.manifest_version !== 3) {
 
 await cp(manifestSource, join(outputRoot, "manifest.json"));
 await cp(join(extensionRoot, "assets"), join(outputRoot, "assets"), { recursive: true });
+await mkdir(join(outputRoot, "data"), { recursive: true });
+await cp(
+  join(extensionRoot, "src", "generated", "emoji-sequences.json"),
+  join(outputRoot, "data", "emoji-sequences.json"),
+);
 await mkdir(join(outputRoot, "fixtures"), { recursive: true });
 await cp(
   join(extensionRoot, "tests", "fixtures", "rendering.html"),
   join(outputRoot, "fixtures", "rendering.html"),
+);
+await cp(
+  join(extensionRoot, "tests", "fixtures", "dom-renderer.html"),
+  join(outputRoot, "fixtures", "dom-renderer.html"),
 );
 console.log(`Renderer Extension unpacked build: ${outputRoot}`);

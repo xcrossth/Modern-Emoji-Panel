@@ -83,6 +83,14 @@ namespace EmojiPicker
                     resolvedIdForSequence: sequence => baselineEmojis
                         .FirstOrDefault(entry => string.Equals(entry.Character, sequence, StringComparison.Ordinal))?.Id)
                 : ActivityDataStore.CreateTransient();
+            var activityPrune = activityData.PruneToBaseline(
+                allEmojis.Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal),
+                baselineEmojis.Select(entry => entry.Id).ToHashSet(StringComparer.Ordinal));
+            if (activityPrune.Changed)
+            {
+                Logger.Log($"Pruned Activity Data after baseline load: recent={activityPrune.RecentRemoved}; ranking={activityPrune.RankingRemoved}");
+            }
+
             searchIndex = new EmojiSearchIndex(allEmojis, activityData.GetLearnedScores);
             InitializeSkinTonePicker();
             RefreshRecentEmojis();
@@ -363,7 +371,7 @@ namespace EmojiPicker
         private void PositionNearCursor()
         {
             // Prefer the captured text caret. When a target does not expose one,
-            // center on that same target window and monitor (not the mouse, which
+            // centre on that same target window and monitor (not the mouse, which
             // may already have moved to a different display).
             System.Drawing.Rectangle? targetRect = null;
             if (App.PreviousForegroundWindow != IntPtr.Zero &&
@@ -891,6 +899,16 @@ namespace EmojiPicker
 
                     break;
             }
+
+            if (!e.Handled && sessionState.Mode == PickerInputMode.Browse &&
+                TypingHandoffInput.TryCaptureShortcut(
+                    KeyInterop.VirtualKeyFromKey(key),
+                    GetShortcutModifiers(),
+                    out var shortcut))
+            {
+                e.Handled = true;
+                BeginTypingHandoff(shortcut);
+            }
         }
 
         private void MainWindow_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -1321,17 +1339,23 @@ namespace EmojiPicker
 
         private void BeginTypingHandoff(string committedText)
         {
+            BeginTypingHandoff(TypingHandoffPayload.Text(committedText));
+        }
+
+        private void BeginTypingHandoff(TypingHandoffPayload payload)
+        {
             HidePreview();
             HideInsertionError();
             var cancelled = insertionQueue.StopAndCancelPending(
-                QueueTerminalIntent.TypingHandoff(committedText));
+                QueueTerminalIntent.TypingHandoff(payload));
             Logger.Log($"Typing Handoff started; cancelled {cancelled} not-started insertion(s)");
             UpdateInsertionQueueStatus();
-            AnnounceStatus("Returning committed text to the original target.", busy: true);
+            AnnounceStatus("Returning the first input to the original target.", busy: true);
             Hide();
 
             // Input priority prevents another desktop key message overtaking target
-            // activation. Only the already-committed TextInput is buffered/re-sent.
+            // activation. Only one committed TextInput or exact shortcut chord is
+            // buffered and handed to the validated captured target.
             ScheduleInsertionPump(DispatcherPriority.Input, replacePending: true);
         }
 
@@ -1342,15 +1366,21 @@ namespace EmojiPicker
 
             if (intent.Kind == QueueTerminalKind.TypingHandoff)
             {
-                var committedText = intent.CommittedText
-                    ?? throw new InvalidOperationException("Typing Handoff has no committed text.");
+                var payload = intent.Handoff
+                    ?? throw new InvalidOperationException("Typing Handoff has no payload.");
                 InsertionResult handoff;
                 try
                 {
-                    handoff = await TextInjector.TryInsertAsync(
-                        App.PreviousForegroundWindow,
-                        App.PreviousFocusWindow,
-                        committedText);
+                    handoff = payload.Kind == TypingHandoffKind.CommittedText
+                        ? await TextInjector.TryInsertAsync(
+                            App.PreviousForegroundWindow,
+                            App.PreviousFocusWindow,
+                            payload.CommittedText ?? throw new InvalidOperationException("Typing Handoff has no committed text."))
+                        : await TextInjector.TrySendShortcutAsync(
+                            App.PreviousForegroundWindow,
+                            App.PreviousFocusWindow,
+                            payload.VirtualKey,
+                            payload.Modifiers);
                 }
                 catch (Exception ex)
                 {
@@ -1363,7 +1393,7 @@ namespace EmojiPicker
                 if (!handoff.Accepted)
                 {
                     ShowInsertionError(
-                        committedText,
+                        payload.Kind == TypingHandoffKind.CommittedText ? payload.CommittedText : null,
                         handoff.Message ?? "The first typed input could not be handed off safely.",
                         lastInsertionSnapshot ?? CaptureViewSnapshot());
                     lastInsertionSnapshot = null;
@@ -1380,6 +1410,32 @@ namespace EmojiPicker
             lastInsertionSnapshot = null;
             UpdateInsertionQueueStatus();
             FinalizeHiddenDismiss(returnFocus);
+        }
+
+        private static ShortcutModifiers GetShortcutModifiers()
+        {
+            var modifiers = ShortcutModifiers.None;
+            if ((Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            {
+                modifiers |= ShortcutModifiers.Control;
+            }
+
+            if ((Keyboard.Modifiers & ModifierKeys.Alt) != 0)
+            {
+                modifiers |= ShortcutModifiers.Alt;
+            }
+
+            if ((Keyboard.Modifiers & ModifierKeys.Shift) != 0)
+            {
+                modifiers |= ShortcutModifiers.Shift;
+            }
+
+            if (Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin))
+            {
+                modifiers |= ShortcutModifiers.Windows;
+            }
+
+            return modifiers;
         }
 
         private void UpdateInsertionQueueStatus(bool queueFullAttempted = false)
@@ -1479,7 +1535,7 @@ namespace EmojiPicker
                 "Copy selected emoji to clipboard");
         }
 
-        private void ShowInsertionError(string recoverableText, string message, PickerViewSnapshot? snapshot = null)
+        private void ShowInsertionError(string? recoverableText, string message, PickerViewSnapshot? snapshot = null)
         {
             failedInsertionText = recoverableText;
             InsertionErrorText.Text = message;
@@ -1487,6 +1543,7 @@ namespace EmojiPicker
             System.Windows.Automation.AutomationProperties.SetName(
                 ExplicitCopyButton,
                 "Copy unsent text to clipboard");
+            ExplicitCopyButton.Visibility = recoverableText == null ? Visibility.Collapsed : Visibility.Visible;
 
             // The picker was hidden before target activation. Bring the same shell
             // back without resetting query/category/selection/scroll.
@@ -1499,6 +1556,7 @@ namespace EmojiPicker
             failedInsertionText = null;
             InsertionErrorPanel.Visibility = Visibility.Collapsed;
             InsertionErrorText.Text = string.Empty;
+            ExplicitCopyButton.Visibility = Visibility.Visible;
             System.Windows.Automation.AutomationProperties.SetName(
                 ExplicitCopyButton,
                 "Copy selected emoji to clipboard");

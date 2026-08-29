@@ -22,15 +22,44 @@ internal enum QueueTerminalKind
     TypingHandoff,
 }
 
+internal enum TypingHandoffKind
+{
+    CommittedText,
+    Shortcut,
+}
+
+[Flags]
+internal enum ShortcutModifiers
+{
+    None = 0,
+    Control = 1,
+    Alt = 2,
+    Shift = 4,
+    Windows = 8,
+}
+
+internal sealed record TypingHandoffPayload(
+    TypingHandoffKind Kind,
+    string? CommittedText = null,
+    ushort VirtualKey = 0,
+    ShortcutModifiers Modifiers = ShortcutModifiers.None)
+{
+    internal static TypingHandoffPayload Text(string committedText) =>
+        new(TypingHandoffKind.CommittedText, CommittedText: committedText);
+
+    internal static TypingHandoffPayload Shortcut(ushort virtualKey, ShortcutModifiers modifiers) =>
+        new(TypingHandoffKind.Shortcut, VirtualKey: virtualKey, Modifiers: modifiers);
+}
+
 /// <summary>
 /// Describes what must happen after the active insertion finishes. A committed
-/// Typing Handoff string lives only in this in-memory object: it is never logged,
+/// Typing Handoff payload lives only in this in-memory object: it is never logged,
 /// persisted or copied to the clipboard without a separate explicit action.
 /// </summary>
 internal sealed record QueueTerminalIntent(
     QueueTerminalKind Kind,
     bool ReturnFocusToTarget,
-    string? CommittedText = null)
+    TypingHandoffPayload? Handoff = null)
 {
     internal static QueueTerminalIntent AfterCommit() =>
         new(QueueTerminalKind.CommitDismiss, ReturnFocusToTarget: false);
@@ -39,7 +68,10 @@ internal sealed record QueueTerminalIntent(
         new(QueueTerminalKind.Dismiss, PickerSessionState.ReturnsFocusAfter(reason));
 
     internal static QueueTerminalIntent TypingHandoff(string committedText) =>
-        new(QueueTerminalKind.TypingHandoff, ReturnFocusToTarget: true, committedText);
+        TypingHandoff(TypingHandoffPayload.Text(committedText));
+
+    internal static QueueTerminalIntent TypingHandoff(TypingHandoffPayload payload) =>
+        new(QueueTerminalKind.TypingHandoff, ReturnFocusToTarget: true, payload);
 }
 
 /// <summary>
@@ -166,6 +198,12 @@ internal sealed class InsertionQueue<T>
 
 internal static class TypingHandoffInput
 {
+    private const ushort VkShift = 0x10;
+    private const ushort VkControl = 0x11;
+    private const ushort VkAlt = 0x12;
+    private const ushort VkLeftWindows = 0x5B;
+    private const ushort VkRightWindows = 0x5C;
+
     /// <summary>
     /// Accepts only text produced by WPF's committed TextInput event. IME pre-edit,
     /// dead-key prefixes and shortcuts do not reach this seam as committed printable
@@ -196,6 +234,28 @@ internal static class TypingHandoffInput
         }
 
         committedText = text;
+        return true;
+    }
+
+    /// <summary>
+    /// Captures a complete shortcut chord rather than treating its key as text.
+    /// Shift alone is excluded because its printable result arrives through the
+    /// committed TextInput path. Modifier-only events are also excluded.
+    /// </summary>
+    internal static bool TryCaptureShortcut(
+        int virtualKey,
+        ShortcutModifiers modifiers,
+        out TypingHandoffPayload payload)
+    {
+        payload = TypingHandoffPayload.Shortcut(0, ShortcutModifiers.None);
+        if (virtualKey is <= 0 or > byte.MaxValue ||
+            (modifiers & (ShortcutModifiers.Control | ShortcutModifiers.Alt | ShortcutModifiers.Windows)) == 0 ||
+            virtualKey is VkShift or VkControl or VkAlt or VkLeftWindows or VkRightWindows)
+        {
+            return false;
+        }
+
+        payload = TypingHandoffPayload.Shortcut((ushort)virtualKey, modifiers);
         return true;
     }
 }

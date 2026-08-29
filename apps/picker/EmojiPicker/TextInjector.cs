@@ -89,6 +89,50 @@ namespace EmojiPicker
         /// </summary>
         public static async Task<InsertionResult> TryInsertAsync(IntPtr targetWindow, IntPtr focusWindow, string text)
         {
+            var activationFailure = await TryActivateValidatedTargetAsync(targetWindow, focusWindow);
+            if (activationFailure != null)
+            {
+                return activationFailure;
+            }
+
+            var method = InsertionPolicy.SelectMethod(Settings.Current.InsertMode, text);
+            if (method == InsertionMethod.TemporaryPaste)
+            {
+                return await PasteViaClipboardAsync(text);
+            }
+
+            return SendUnicodeKeystrokes(text);
+        }
+
+        /// <summary>
+        /// Replays one captured shortcut chord only after restoring and revalidating
+        /// the exact pre-picker target. The chord is held only in memory and is never
+        /// logged, persisted or translated through the clipboard.
+        /// </summary>
+        internal static async Task<InsertionResult> TrySendShortcutAsync(
+            IntPtr targetWindow,
+            IntPtr focusWindow,
+            ushort virtualKey,
+            ShortcutModifiers modifiers)
+        {
+            if (virtualKey == 0 || modifiers == ShortcutModifiers.None)
+            {
+                return InsertionResult.Failure("The shortcut handoff was invalid.");
+            }
+
+            var activationFailure = await TryActivateValidatedTargetAsync(targetWindow, focusWindow);
+            if (activationFailure != null)
+            {
+                return activationFailure;
+            }
+
+            return SendShortcutKeystrokes(virtualKey, modifiers);
+        }
+
+        private static async Task<InsertionResult?> TryActivateValidatedTargetAsync(
+            IntPtr targetWindow,
+            IntPtr focusWindow)
+        {
             if (targetWindow == IntPtr.Zero || !NativeMethods.IsWindow(targetWindow))
             {
                 return InsertionResult.Failure(
@@ -102,12 +146,11 @@ namespace EmojiPicker
             }
 
             // Restore focus to the exact control that had it; activating our picker
-            // moves focus off edits like Explorer's Search box or address bar
+            // moves focus off edits like Explorer's Search box or address bar.
             RestoreFocus(targetWindow, focusWindow);
 
-            // Wait for the target to actually become foreground before typing -
-            // usually one or two ticks - rather than a fixed worst-case delay.
-            // Awaited (not slept) so the UI thread keeps pumping.
+            // Wait for the target to actually become foreground before injecting,
+            // then give keyboard focus one additional dispatcher-independent tick.
             var waited = 0;
             while (waited < 250 && NativeMethods.GetForegroundWindow() != targetWindow)
             {
@@ -115,7 +158,6 @@ namespace EmojiPicker
                 waited += 15;
             }
 
-            // One extra tick for keyboard focus to settle inside the window
             await Task.Delay(15);
             Logger.Log($"Insert: target foreground after ~{waited}ms");
 
@@ -131,19 +173,13 @@ namespace EmojiPicker
                 foregroundTarget,
                 CurrentIntegrityRid,
                 targetIntegrityRid);
-            if (validation != TargetValidationFailure.None)
+            if (validation == TargetValidationFailure.None)
             {
-                Logger.Log($"Insert aborted by target validation: {validation}");
-                return InsertionResult.Failure(TargetFailureMessage(validation), validation);
+                return null;
             }
 
-            var method = InsertionPolicy.SelectMethod(Settings.Current.InsertMode, text);
-            if (method == InsertionMethod.TemporaryPaste)
-            {
-                return await PasteViaClipboardAsync(text);
-            }
-
-            return SendUnicodeKeystrokes(text);
+            Logger.Log($"Insert aborted by target validation: {validation}");
+            return InsertionResult.Failure(TargetFailureMessage(validation), validation);
         }
 
         /// <summary>
@@ -414,7 +450,55 @@ namespace EmojiPicker
         }
 
         private const ushort VkControl = 0x11;
+        private const ushort VkAlt = 0x12;
+        private const ushort VkShift = 0x10;
+        private const ushort VkLeftWindows = 0x5B;
         private const ushort VkV = 0x56;
+
+        private static InsertionResult SendShortcutKeystrokes(ushort virtualKey, ShortcutModifiers modifiers)
+        {
+            var modifierKeys = new List<ushort>(capacity: 4);
+            AddModifier(ShortcutModifiers.Control, VkControl);
+            AddModifier(ShortcutModifiers.Alt, VkAlt);
+            AddModifier(ShortcutModifiers.Shift, VkShift);
+            AddModifier(ShortcutModifiers.Windows, VkLeftWindows);
+
+            var inputs = new List<NativeMethods.INPUT>((modifierKeys.Count * 2) + 2);
+            inputs.AddRange(modifierKeys.Select(key => VirtualKeyEvent(key, keyUp: false)));
+            inputs.Add(VirtualKeyEvent(virtualKey, keyUp: false));
+            inputs.Add(VirtualKeyEvent(virtualKey, keyUp: true));
+            for (var index = modifierKeys.Count - 1; index >= 0; index--)
+            {
+                inputs.Add(VirtualKeyEvent(modifierKeys[index], keyUp: true));
+            }
+
+            var inputArray = inputs.ToArray();
+            var accepted = NativeMethods.SendInput(
+                (uint)inputArray.Length,
+                inputArray,
+                Marshal.SizeOf<NativeMethods.INPUT>());
+            return accepted == (uint)inputArray.Length
+                ? new InsertionResult(
+                    true,
+                    InsertionMethod.ShortcutKeystrokes,
+                    null,
+                    AcceptedInputCount: accepted,
+                    RequestedInputCount: (uint)inputArray.Length)
+                : new InsertionResult(
+                    false,
+                    InsertionMethod.ShortcutKeystrokes,
+                    $"Windows accepted {accepted} of {inputArray.Length} shortcut input events. The operation was not retried.",
+                    AcceptedInputCount: accepted,
+                    RequestedInputCount: (uint)inputArray.Length);
+
+            void AddModifier(ShortcutModifiers modifier, ushort key)
+            {
+                if ((modifiers & modifier) != 0)
+                {
+                    modifierKeys.Add(key);
+                }
+            }
+        }
 
         private static NativeMethods.INPUT VirtualKeyEvent(ushort virtualKey, bool keyUp)
         {

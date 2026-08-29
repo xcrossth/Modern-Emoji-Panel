@@ -17,4 +17,5 @@
 ## Comments
 
 - Automated Instagram DM fixture ผ่าน sent/received/preview/live/history, Emoji matrix และ Editable Content boundary โดยใช้ generic DOM traversal ไม่ผูก production pipeline กับ selector ของ Instagram
+- จาก manual รอบแรกพบ wrapper ทำงานแต่ bundled font ไม่ถูกใช้; repro ผ่าน Extension จริงยืนยันว่า relative font URL ถูก resolve เป็น origin ของ Instagram แล้วแก้ให้ใช้ `chrome.runtime.getURL` พร้อม regression ที่ตรวจ actual platform font จาก Chrome โดยตรง
 - งานที่เหลือเป็น manual E2E บนบัญชีจริง: layout/typography/selection/Copy และ composer/Thai IME ตาม `docs/qualification/renderer-primary-sites.md` จึงส่งต่อเป็น `ready-for-human` โดยไม่บล็อก Tickets 07–08

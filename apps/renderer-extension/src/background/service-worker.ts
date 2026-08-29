@@ -13,7 +13,6 @@ async function synchronizeContentScripts(settings?: RendererSettings): Promise<v
     id: DYNAMIC_SCRIPT_ID,
     matches: [...policy.matches],
     js: ["content/index.js"],
-    css: ["assets/styles/renderer.css"],
     runAt: "document_start",
     persistAcrossSessions: true,
     ...(policy.excludeMatches.length ? { excludeMatches: [...policy.excludeMatches] } : {}),

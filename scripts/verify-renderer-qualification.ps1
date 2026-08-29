@@ -15,6 +15,8 @@ try {
     & .\scripts\verify-renderer-ui.ps1 -SkipBuild
     & .\scripts\verify-renderer-performance.ps1 -SkipBuild
     & .\scripts\verify-renderer-chrome-load.ps1 -SkipBuild
+    npm --prefix .\apps\renderer-extension run verify:extension-font
+    if ($LASTEXITCODE -ne 0) { throw "Renderer bundled-font verification failed" }
 
     $vitestReport = Join-Path $evidenceRoot "vitest-report.json"
     npm --prefix .\apps\renderer-extension test -- --reporter=json --outputFile="$vitestReport"

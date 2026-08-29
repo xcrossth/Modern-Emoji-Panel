@@ -56,6 +56,14 @@ const qualificationPath = join(
   "qualification-report.json",
 );
 const qualification = await readJson(qualificationPath);
+const extensionFontEvidencePath = join(
+  repositoryRoot,
+  "docs",
+  "qualification",
+  "results",
+  "renderer-font-runtime-win10-20260830.json",
+);
+const extensionFontEvidence = await readJson(extensionFontEvidencePath);
 const packageFiles = await listFiles(packageRoot);
 const zipName = `modern-emoji-renderer-${manifest.version}.zip`;
 const zipPath = join(releaseRoot, zipName);
@@ -69,7 +77,6 @@ const requiredFiles = [
   "THIRD-PARTY-NOTICES.md",
   "assets/fonts/Noto-COLRv1.ttf",
   "assets/fonts/OFL.txt",
-  "assets/styles/renderer.css",
   "background/service-worker.js",
   "content/index.js",
   "licenses/UNICODE-LICENSE-V3.txt",
@@ -144,6 +151,15 @@ const checks = [
   check("ไม่มี Apple Emoji ในแพ็กเกจ", !packageFiles.some(file => /apple/iu.test(file)), packageFiles.filter(file => /apple/iu.test(file))),
   check("ไม่มี runtime network API หรือ remote code", remoteCodeHits.length === 0, remoteCodeHits),
   check("อ้างอิง qualification report ตรงไฟล์จริง", metadata.qualification?.status === qualification.status && metadata.qualification?.reportSha256 === sha256(await readFile(qualificationPath)), metadata.qualification),
+  check(
+    "หลักฐานยืนยันว่า glyph ใช้ bundled Noto จริง",
+    extensionFontEvidence.status === "passed"
+      && metadata.qualification?.extensionFont?.reportSha256 === sha256(await readFile(extensionFontEvidencePath))
+      && metadata.qualification?.extensionFont?.familyName === "Noto Color Emoji"
+      && metadata.qualification?.extensionFont?.isCustomFont === true
+      && metadata.qualification?.extensionFont?.requestScheme === "chrome-extension",
+    metadata.qualification?.extensionFont,
+  ),
 ];
 
 const passed = checks.every(item => item.passed);

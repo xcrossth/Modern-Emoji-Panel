@@ -10,6 +10,7 @@ const performance = await readJson("evidence/ticket-09/performance-report.json")
 const dom = await readJson("evidence/tickets-03-04/report.json");
 const ui = await readJson("evidence/tickets-07-08/report.json");
 const rendering = await readJson("evidence/ticket-02/report.json");
+const extensionFont = await readJson("evidence/extension-font/report.json");
 const vitest = await readJson("evidence/ticket-09/vitest-report.json");
 const report = {
   schemaVersion: 1,
@@ -26,6 +27,7 @@ const report = {
     testSuitesPassed: vitest.numPassedTestSuites,
     testsFailed: vitest.numFailedTests,
     rendering,
+    extensionFont,
     dom,
     ui,
     performance,
@@ -38,7 +40,18 @@ const report = {
     requiredSites: ["Instagram Web DM", "TikTok Web Chat"],
   },
 };
-if (report.automated.testsFailed !== 0 || !Object.values(performance.assertions).every(Boolean)) {
+const bundledNotoUsed = extensionFont.platformFonts.some(font => (
+  font.isCustomFont && /noto.*emoji/iu.test(`${font.familyName} ${font.postScriptName}`)
+));
+const pageOriginFontRequest = extensionFont.fontNetworkEvents.some(event => (
+  typeof event.url === "string" && event.url.startsWith("https://www.instagram.com/")
+));
+if (
+  report.automated.testsFailed !== 0
+  || !Object.values(performance.assertions).every(Boolean)
+  || !bundledNotoUsed
+  || pageOriginFontRequest
+) {
   throw new Error("Cannot write a passing qualification report from failed evidence");
 }
 await mkdir(output, { recursive: true });
@@ -74,6 +87,7 @@ wrapper ไม่โตจาก scrolling, repeated start ไม่สร้า
 - Wrapper ใช้ text semantic เดิม ไม่มี role/aria-label ซ้ำ
 - Composer/caret/selection/composition events ไม่ถูกแก้ DOM; หลัง submit จึง render เฉพาะ display content
 - all-sites fixtures ผ่านสำหรับ Instagram feed/comments, Google, GitHub, Reddit, Facebook และ Discord Web
+- Extension E2E fixture ยืนยันผ่าน Chrome ว่า glyph ใช้ bundled Noto Color Emoji จริง และโหลดจาก chrome-extension URL ไม่ใช่ origin ของเว็บไซต์
 - production bundles ไม่มี Fetch/XHR/WebSocket/EventSource/importScripts/remote import/eval และ font/style/script มาจาก package เท่านั้น
 
 ## งานที่ยังรอผู้ใช้

@@ -55,7 +55,6 @@ async function ensureSitePermission(site: string): Promise<void> {
 
 async function injectCurrentTabIfNeeded(): Promise<void> {
   if (!tab?.id || pageAvailable) return;
-  await chrome.scripting.insertCSS({ target: { tabId: tab.id }, files: ["assets/styles/renderer.css"] });
   await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ["content/index.js"] });
 }
 

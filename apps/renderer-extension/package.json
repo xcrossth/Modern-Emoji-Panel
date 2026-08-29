@@ -13,6 +13,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "verify:rendering": "node ./scripts/verify-rendering.mjs",
+    "verify:extension-font": "node ./scripts/verify-extension-font.mjs",
     "verify:dom": "node ./scripts/verify-dom-renderer.mjs",
     "verify:ui": "node ./scripts/verify-ui.mjs",
     "verify:performance": "node ./scripts/verify-performance.mjs",

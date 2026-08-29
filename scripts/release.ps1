@@ -111,7 +111,9 @@ try {
     Assert-Condition (Test-Path -LiteralPath $portablePath) "Portable ZIP was not created"
     Assert-Condition (Test-Path -LiteralPath $installerPath) "Inno installer was not created"
     Assert-Condition (-not (Get-ChildItem -LiteralPath $releaseRoot -File -Recurse -Filter "*.msi")) "MVP output must not contain MSI files"
-    Assert-Condition (-not (Get-ChildItem -LiteralPath $releaseRoot -File -Recurse | Where-Object Name -Match '(?i)lite|framework')) "MVP output must not contain framework-dependent files"
+    $unsupportedArtifacts = Get-ChildItem -LiteralPath $releaseRoot -File -Recurse |
+        Where-Object Name -Match '(?i)(framework[-_. ]?dependent|setup[-_.]?lite|[-_.]lite[-_.])'
+    Assert-Condition (-not $unsupportedArtifacts) "MVP output must not contain framework-dependent or lite artifacts"
 
     $portableHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $portablePath).Hash.ToLowerInvariant()
     $installerHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $installerPath).Hash.ToLowerInvariant()

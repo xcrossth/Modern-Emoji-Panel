@@ -101,3 +101,11 @@ verifier ผ่านบน Windows 10 build 19045; การรัน wizard �
 แก้ Browse เป็น pointer-first โดยจับ physical virtual key กับ modifiers ก่อน WPF แปล layout แล้ว handoff ให้ target ตีความเอง รวม Space/Enter/Tab/ลูกศร/shortcut พร้อม committed-text fallback สำหรับ IME/dead key เปลี่ยน pointer/Shift+Enter insertion ที่ดำเนิน session ต่อให้ Picker visible ตลอด และเปลี่ยน uniform skin-tone ใน Hybrid เป็น grouped Unicode keystrokes โดยคง ZWJ/flag/keycap/mixed-tone ไว้ที่ Temporary Paste
 
 automated regression ผ่าน Picker Session 14 checks, Insertion Queue/Typing Handoff 26 checks และ Safe Insertion 18 checks พร้อม Release self-contained build 0 warnings/errors แต่ผล desktop จริงทั้งสี่ข้อยังรอ maintainer ทดสอบซ้ำจาก artifact ล่าสุด จึงยังไม่เปลี่ยน manual matrix หรือสถานะ `needs-info`
+
+### 29 สิงหาคม 2026 — แก้ภาพธง alias ที่แสดง placeholder
+
+ระหว่างทดสอบหมวด Flags maintainer พบ tile บางรายการแสดง `?` ตัวตรวจที่เพิ่มใหม่ยืนยันว่า WPF ถอดรหัสไม่ได้ 8 จาก 270 รายการ ได้แก่ BV, CP, DG, EA, HM, MF, SJ และ UM เพราะ source ของ Noto เก็บรายการเหล่านี้เป็น alias ขนาด 6 ไบต์ เช่น `BV.png` มีข้อความ `NO.png` แต่ generator เดิมตรวจเพียงว่าไฟล์มีอยู่และส่ง path ของ alias ให้ runtime
+
+แก้ generator ให้ resolve alias แบบทั่วไปไปยัง PNG ปลายทาง พร้อม guard สำหรับ cycle, target ที่หาย, ข้อความที่ไม่ใช่ alias ที่ปลอดภัย และตรวจ PNG signature ของ asset ที่ map ทุกไฟล์ baseline ใหม่จึงชี้แปดรายการไปยัง NO, FR, IO, ES, AU และ US ตามข้อมูล upstream โดยไม่แก้หรือทำสำเนา vendor source
+
+เพิ่ม `scripts/verify-flag-assets.ps1` ซึ่งใช้ WPF decoder เดียวกับ Picker ตรวจธง Emoji 17 ทั้ง 270 รายการ และผูกเข้ากับ `verify-noto-grid.ps1` รวมทั้งล็อก alias mapping ใน generator determinism verifier ผล automated ผ่าน 270/270 แล้ว แต่ยังรอ maintainer เปิดหมวด Flags ตรวจด้วยสายตาจาก artifact ล่าสุดก่อนเปลี่ยนผล manual matrix

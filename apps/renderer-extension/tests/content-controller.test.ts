@@ -15,6 +15,9 @@ describe("content renderer settings synchronization", () => {
     document.body.innerHTML = "<article>ข้อความ 🫯</article><div contenteditable=true>composer 🫯</div>";
     stored = { ...DEFAULT_SETTINGS, sites: [...DEFAULT_SETTINGS.sites] };
     vi.stubGlobal("chrome", {
+      runtime: {
+        getURL: (path: string) => `chrome-extension://renderer-test/${path}`,
+      },
       storage: {
         local: {
           get: async () => ({ [SETTINGS_STORAGE_KEY]: stored }),
@@ -35,6 +38,9 @@ describe("content renderer settings synchronization", () => {
     await controller.start();
     await vi.runAllTimersAsync();
     expect(document.querySelectorAll(`[${RENDERER_ATTRIBUTE}]`)).toHaveLength(1);
+    expect(document.querySelector("#modern-emoji-renderer-styles")?.textContent).toContain(
+      'url("chrome-extension://renderer-test/assets/fonts/Noto-COLRv1.ttf")',
+    );
     expect(document.body.textContent).toBe("ข้อความ 🫯composer 🫯");
 
     const disabled = { ...DEFAULT_SETTINGS, enabled: false, sites: [...DEFAULT_SETTINGS.sites] };

@@ -25,11 +25,12 @@ describe("runtime network and remote-code policy", () => {
 
   it("loads scripts, styles and fonts only from the packaged extension", async () => {
     const manifest = JSON.parse(await readFile(join(output, "manifest.json"), "utf8"));
-    const css = await readFile(join(output, "assets", "styles", "renderer.css"), "utf8");
+    const content = await readFile(join(output, "content", "index.js"), "utf8");
     const popup = await readFile(join(output, "popup", "popup.html"), "utf8");
     const options = await readFile(join(output, "options", "options.html"), "utf8");
     expect(manifest).not.toHaveProperty("update_url");
-    expect(css).not.toMatch(/url\(\s*["']?https?:/u);
+    expect(content).toContain('getURL("assets/fonts/Noto-COLRv1.ttf")');
+    expect(content).not.toMatch(/url\(\s*["']?https?:/u);
     expect(popup + options).not.toMatch(/<(?:script|link)[^>]+(?:src|href)=["']https?:/u);
   });
 });

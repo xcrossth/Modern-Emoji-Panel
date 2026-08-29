@@ -20,4 +20,5 @@
 - `scripts/verify-renderer-qualification.ps1` ผ่าน 62 tests / 26 suites และ Chrome fixtures ทั้ง rendering, DOM, UI, performance, load smoke
 - ผลรอบ Windows 10: initial 2,000 ข้อความ 62.3 ms, burst 1,000 ข้อความ 29.7 ms, batch สูงสุด 9.1 ms, navigation processing 134.6 ms, retained heap 296,536 bytes ทุกค่าอยู่ใน budget
 - production bundle ไม่มี outbound network API หรือ remote-code path จาก static audit; details อยู่ที่ `docs/qualification/results/renderer-automated-win10-20260830/`
+- เพิ่ม Extension E2E font gate หลังพบว่า computed `font-family` อย่างเดียวให้ผลบวกลวง ตัว gate ตรวจผ่าน CDP ว่า glyph ใช้ `Noto Color Emoji`, `isCustomFont=true` และ request มาจาก `chrome-extension://` จริง
 - เหลือ checkbox manual matrix บน Instagram/TikTok บัญชีจริงเท่านั้น จึงตั้ง `ready-for-human` และไม่ใช้ผลอัตโนมัติแทน E2E จริง

@@ -59,6 +59,15 @@
       "lineHeight": 100,
       "surroundingFont": "18px / 27px \"Segoe UI\", Tahoma, sans-serif"
     },
+    "extensionFont": {
+      "status": "passed",
+      "fontFaceStatus": "loaded",
+      "familyName": "Noto Color Emoji",
+      "postScriptName": "NotoColorEmoji",
+      "isCustomFont": true,
+      "requestScheme": "chrome-extension",
+      "evidence": "docs/qualification/results/renderer-font-runtime-win10-20260830.json"
+    },
     "dom": {
       "fontLoaded": true,
       "initialTextPreserved": true,

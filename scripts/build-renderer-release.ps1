@@ -47,6 +47,10 @@ try {
         -ExtensionPath (Join-Path $releaseRoot "package") `
         -SkipBuild
 
+    node .\apps\renderer-extension\scripts\verify-extension-font.mjs `
+        --extension-root (Join-Path $releaseRoot "package")
+    if ($LASTEXITCODE -ne 0) { throw "Renderer release bundled-font verification failed" }
+
     [ordered]@{
         schemaVersion = 1
         status = "passed"

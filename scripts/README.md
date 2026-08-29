@@ -180,6 +180,20 @@ bash scripts/manual-qualification-wizard.sh
 pwsh scripts/verify-manual-qualification-wizard.ps1
 ```
 
+## ตรวจ Renderer Extension
+
+```powershell
+.\scripts\verify-renderer-qualification.ps1
+```
+
+คำสั่งนี้ตรวจ generated Emoji data, TypeScript, unit/integration tests, DOM/text integrity, Popup/Options, performance, Chrome load และเส้นทางโหลดฟอนต์ของ extension จริงบน URL fixture ที่ตรงกับ Instagram โดยใช้ Chrome for Testing กับโปรไฟล์ชั่วคราว การตรวจฟอนต์ถาม Chrome ว่า glyph มาจาก bundled `Noto Color Emoji` จริง ไม่ได้สรุปจากชื่อ `font-family` หรือการมีไฟล์เพียงอย่างเดียว
+
+สร้าง deterministic release candidate ในเครื่องพร้อม ZIP, SHA-256, licenses และ verification report ด้วย:
+
+```powershell
+.\scripts\build-renderer-release.ps1
+```
+
 ## สร้าง product icon
 
 ```powershell

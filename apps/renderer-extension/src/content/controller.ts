@@ -1,5 +1,6 @@
 import { IncrementalRenderer } from "../core/incremental-renderer";
 import { RENDERER_ATTRIBUTE, renderSubtree, unwrapRenderedEmoji } from "../core/dom-renderer";
+import { ensureRendererStyles } from "../core/renderer-styles";
 import { SETTINGS_STORAGE_KEY, isSiteEnabled, migrateSettings, type RendererSettings } from "../settings/settings";
 import { loadSettings } from "../settings/storage";
 
@@ -54,6 +55,10 @@ export class ContentRendererController {
     this.renderer?.stop();
     this.renderer = null;
     this.activeSignature = signature;
+    ensureRendererStyles(
+      this.document,
+      chrome.runtime.getURL("assets/fonts/Noto-COLRv1.ttf"),
+    );
     if (settings.processDynamicContent) {
       this.staticMetrics = null;
       this.renderer = new IncrementalRenderer(this.document, { debug: settings.debug });

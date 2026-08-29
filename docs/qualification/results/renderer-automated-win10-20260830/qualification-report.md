@@ -29,6 +29,7 @@ wrapper ไม่โตจาก scrolling, repeated start ไม่สร้า
 - Wrapper ใช้ text semantic เดิม ไม่มี role/aria-label ซ้ำ
 - Composer/caret/selection/composition events ไม่ถูกแก้ DOM; หลัง submit จึง render เฉพาะ display content
 - all-sites fixtures ผ่านสำหรับ Instagram feed/comments, Google, GitHub, Reddit, Facebook และ Discord Web
+- Extension E2E fixture ยืนยันว่า glyph ใช้ bundled Noto Color Emoji จริงและโหลดด้วย `chrome-extension://` ดู [หลักฐานฟอนต์](../renderer-font-runtime-win10-20260830.md)
 - production bundles ไม่มี Fetch/XHR/WebSocket/EventSource/importScripts/remote import/eval และ font/style/script มาจาก package เท่านั้น
 
 ## งานที่ยังรอผู้ใช้

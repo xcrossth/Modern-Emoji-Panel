@@ -23,6 +23,11 @@ namespace EmojiPicker
         double FocusMilliseconds,
         double TotalMilliseconds);
 
+    internal sealed record VirtualizedScrollMeasurement(
+        IReadOnlyList<double> FrameMilliseconds,
+        IReadOnlyList<double> ScrollCommandMilliseconds,
+        IReadOnlyList<double> RenderWaitMilliseconds);
+
     public partial class MainWindow : Window
     {
         private const int MaxPendingInsertions = 20;
@@ -181,7 +186,7 @@ namespace EmojiPicker
             return results;
         }
 
-        internal async Task<IReadOnlyList<double>> MeasureVirtualizedScrollFramesForSmokeAsync(int samples)
+        internal async Task<VirtualizedScrollMeasurement> MeasureVirtualizedScrollFramesForSmokeAsync(int samples)
         {
             var largestCategory = allEmojis
                 .GroupBy(emoji => emoji.Category, StringComparer.Ordinal)
@@ -208,24 +213,28 @@ namespace EmojiPicker
                 }
 
                 var results = new List<double>(samples);
+                var scrollCommands = new List<double>(samples);
+                var renderWaits = new List<double>(samples);
                 for (var index = 0; index < samples; index++)
                 {
                     var fraction = ((index * 37) % samples) / (double)Math.Max(1, samples - 1);
-                    var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+                    var frameStartedAt = System.Diagnostics.Stopwatch.GetTimestamp();
                     viewer.ScrollToVerticalOffset(viewer.ScrollableHeight * fraction);
+                    var scrollEndedAt = System.Diagnostics.Stopwatch.GetTimestamp();
                     await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.Render);
-                    stopwatch.Stop();
-                    results.Add(stopwatch.Elapsed.TotalMilliseconds);
+                    var renderEndedAt = System.Diagnostics.Stopwatch.GetTimestamp();
+                    results.Add(ElapsedMilliseconds(frameStartedAt, renderEndedAt));
+                    scrollCommands.Add(ElapsedMilliseconds(frameStartedAt, scrollEndedAt));
+                    renderWaits.Add(ElapsedMilliseconds(scrollEndedAt, renderEndedAt));
 
                     // Model a 60 Hz input cadence instead of enqueueing 100 synthetic
-                    // jumps back-to-back. The delay is outside the measured frame;
-                    // ContextIdle lets async image callbacks from this viewport settle
-                    // before the next independent sample starts.
+                    // jumps back-to-back. Do not drain the dispatcher to ContextIdle:
+                    // real continuous scrolling starts the next input frame even when
+                    // lower-priority image-completion work is still settling.
                     await Task.Delay(16);
-                    await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.ContextIdle);
                 }
 
-                return results;
+                return new VirtualizedScrollMeasurement(results, scrollCommands, renderWaits);
             }
             finally
             {

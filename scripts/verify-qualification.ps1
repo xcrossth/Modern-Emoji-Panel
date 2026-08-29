@@ -58,23 +58,6 @@ try {
         Invoke-CheckedScript "build.ps1" @{ Configuration = "Release"; NoRestore = $true; PublishSelfContained = $true }
     }
 
-    if (-not $SkipRegressionSuite) {
-        Invoke-CheckedScript "verify-product-identity.ps1" @{ Configuration = "Release"; NoBuild = $true }
-        Invoke-CheckedScript "verify-generated-emoji-baseline.ps1"
-        foreach ($verification in @(
-            "verify-noto-grid.ps1",
-            "verify-safe-insertion.ps1",
-            "verify-search-preview.ps1",
-            "verify-emoji-variants.ps1",
-            "verify-picker-session.ps1",
-            "verify-activity-data.ps1",
-            "verify-insertion-queue.ps1",
-            "verify-settings-privacy.ps1"
-        )) {
-            Invoke-CheckedScript $verification @{ SkipBuild = $true }
-        }
-    }
-
     $executablePath = if (Test-Path -LiteralPath $publishExecutable -PathType Leaf) {
         $publishExecutable
     }
@@ -107,47 +90,91 @@ try {
     }
 
     $quotedReportPath = '"' + $OutputPath + '"'
-    $process = Start-Process `
+    $performanceProcess = Start-Process `
         -FilePath $executablePath `
-        -ArgumentList @("--qualification-smoke", $quotedReportPath, "2000") `
+        -ArgumentList @("--qualification-smoke", $quotedReportPath, "0") `
+        -Wait `
         -PassThru `
         -WindowStyle Hidden
+
+    Assert-Condition ($performanceProcess.ExitCode -eq 0) "Qualification performance smoke failed with exit code $($performanceProcess.ExitCode)"
+    Assert-Condition (Test-Path -LiteralPath $OutputPath -PathType Leaf) "Qualification performance report is missing"
+
+    $report = Get-Content -Raw -LiteralPath $OutputPath | ConvertFrom-Json
+    Assert-Condition ($report.passed -eq $true) "One or more Modern performance/accessibility smoke budgets failed"
 
     $socketMonitorAvailable = (Get-Command Get-NetTCPConnection -ErrorAction SilentlyContinue) -and
         (Get-Command Get-NetUDPEndpoint -ErrorAction SilentlyContinue)
     Assert-Condition ($null -ne $socketMonitorAvailable) "Windows socket monitor commands are unavailable"
 
-    $networkObservations = New-Object System.Collections.Generic.List[object]
-    $networkSampleCount = 0
-    while (-not $process.HasExited) {
-        $networkSampleCount++
-        foreach ($connection in @(Get-NetTCPConnection -OwningProcess $process.Id -ErrorAction SilentlyContinue)) {
-            $networkObservations.Add([pscustomobject]@{
-                protocol = "tcp"
-                local = "$($connection.LocalAddress):$($connection.LocalPort)"
-                remote = "$($connection.RemoteAddress):$($connection.RemotePort)"
-                state = [string]$connection.State
-            })
+    $networkReportPath = Join-Path ([IO.Path]::GetTempPath()) ("modern-emoji-network-observation-" + [Guid]::NewGuid().ToString("N") + ".json")
+    $networkProcess = $null
+    try {
+        $quotedNetworkReportPath = '"' + $networkReportPath + '"'
+        $networkProcess = Start-Process `
+            -FilePath $executablePath `
+            -ArgumentList @("--qualification-smoke", $quotedNetworkReportPath, "2000") `
+            -PassThru `
+            -WindowStyle Hidden
+
+        $networkObservations = New-Object System.Collections.Generic.List[object]
+        $networkSampleCount = 0
+        while (-not $networkProcess.HasExited) {
+            $networkSampleCount++
+            foreach ($connection in @(Get-NetTCPConnection -OwningProcess $networkProcess.Id -ErrorAction SilentlyContinue)) {
+                $networkObservations.Add([pscustomobject]@{
+                    protocol = "tcp"
+                    local = "$($connection.LocalAddress):$($connection.LocalPort)"
+                    remote = "$($connection.RemoteAddress):$($connection.RemotePort)"
+                    state = [string]$connection.State
+                })
+            }
+            foreach ($endpoint in @(Get-NetUDPEndpoint -OwningProcess $networkProcess.Id -ErrorAction SilentlyContinue)) {
+                $networkObservations.Add([pscustomobject]@{
+                    protocol = "udp"
+                    local = "$($endpoint.LocalAddress):$($endpoint.LocalPort)"
+                    remote = $null
+                    state = "bound"
+                })
+            }
+            Start-Sleep -Milliseconds 50
+            $networkProcess.Refresh()
         }
-        foreach ($endpoint in @(Get-NetUDPEndpoint -OwningProcess $process.Id -ErrorAction SilentlyContinue)) {
-            $networkObservations.Add([pscustomobject]@{
-                protocol = "udp"
-                local = "$($endpoint.LocalAddress):$($endpoint.LocalPort)"
-                remote = $null
-                state = "bound"
-            })
+
+        Assert-Condition (Test-Path -LiteralPath $networkReportPath -PathType Leaf) "Runtime network-observation workload did not complete"
+        $networkWorkloadReport = Get-Content -Raw -LiteralPath $networkReportPath | ConvertFrom-Json
+        Assert-Condition ($networkWorkloadReport.PSObject.Properties.Name -contains "modern") "Runtime network-observation workload failed before exercising the Picker"
+        Assert-Condition ($networkSampleCount -ge 10) "Runtime socket observation window was too short"
+        Assert-Condition ($networkObservations.Count -eq 0) "Runtime qualification observed a TCP connection or UDP endpoint"
+    }
+    finally {
+        if ($null -ne $networkProcess -and -not $networkProcess.HasExited) {
+            Stop-Process -Id $networkProcess.Id -Force -ErrorAction SilentlyContinue
         }
-        Start-Sleep -Milliseconds 50
-        $process.Refresh()
+        if (Test-Path -LiteralPath $networkReportPath) {
+            Remove-Item -LiteralPath $networkReportPath -Force
+        }
     }
 
-    Assert-Condition ($process.ExitCode -eq 0) "Qualification smoke failed with exit code $($process.ExitCode)"
-    Assert-Condition (Test-Path -LiteralPath $OutputPath -PathType Leaf) "Qualification smoke report is missing"
-    Assert-Condition ($networkSampleCount -ge 10) "Runtime socket observation window was too short"
-    Assert-Condition ($networkObservations.Count -eq 0) "Runtime qualification observed a TCP connection or UDP endpoint"
-
-    $report = Get-Content -Raw -LiteralPath $OutputPath | ConvertFrom-Json
-    Assert-Condition ($report.passed -eq $true) "One or more Modern performance/accessibility smoke budgets failed"
+    # Run file-heavy generator/regression gates after timing. They remain required,
+    # but scanning thousands of temporary PNG/baseline files immediately before a
+    # frame benchmark makes the benchmark measure filter-driver I/O contention.
+    if (-not $SkipRegressionSuite) {
+        Invoke-CheckedScript "verify-product-identity.ps1" @{ Configuration = "Release"; NoBuild = $true }
+        Invoke-CheckedScript "verify-generated-emoji-baseline.ps1"
+        foreach ($verification in @(
+            "verify-noto-grid.ps1",
+            "verify-safe-insertion.ps1",
+            "verify-search-preview.ps1",
+            "verify-emoji-variants.ps1",
+            "verify-picker-session.ps1",
+            "verify-activity-data.ps1",
+            "verify-insertion-queue.ps1",
+            "verify-settings-privacy.ps1"
+        )) {
+            Invoke-CheckedScript $verification @{ SkipBuild = $true }
+        }
+    }
 
     $publishBytes = Get-DirectoryLength $publishRoot
     $rawAssetBytes = Get-DirectoryLength (Join-Path $repositoryRoot "vendor\noto-emoji\v2.051")
@@ -196,12 +223,13 @@ try {
     $report | Add-Member -NotePropertyName runtimeNetwork -NotePropertyValue ([pscustomobject]@{
         staticRuntimeSourceScanPassed = $true
         socketMonitor = "Get-NetTCPConnection + Get-NetUDPEndpoint"
+        observedWorkload = "separate full qualification workload plus 2000 ms resident hold; isolated from the accepted performance run"
         sampleIntervalMilliseconds = 50
         samples = $networkSampleCount
         observedSocketCount = $networkObservations.Count
         observedSockets = $networkObservationArray
         passed = $networkObservations.Count -eq 0
-        interpretation = "ไม่พบ TCP connection หรือ UDP endpoint ของ process ระหว่าง qualification smoke; ผลนี้ไม่ใช่ packet-capture certification"
+        interpretation = "ไม่พบ TCP connection หรือ UDP endpoint ระหว่าง qualification workload แยกต่างหาก; แยก process เพื่อไม่ให้ CIM socket monitor รบกวน performance และผลนี้ไม่ใช่ packet-capture certification"
     })
     $report | Add-Member -NotePropertyName packages -NotePropertyValue ([pscustomobject]@{
         rawNotoAssetBytes = $rawAssetBytes

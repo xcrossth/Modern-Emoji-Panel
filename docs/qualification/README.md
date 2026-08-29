@@ -16,7 +16,7 @@ pwsh scripts/verify-qualification.ps1 -OutputPath docs/qualification/results/aut
 - build และ publish แบบ Release, self-contained, win-x64
 - วัด warm open-to-render **proxy** 20 ครั้ง, search 1,000 ครั้ง, virtualized scroll 100 ตำแหน่ง, working set หลัง trim และ decode/cache 128 ภาพ
 - ตรวจ accessible name, live state, focus indicator, virtualization, DPI decode calculation และ High Contrast theme ที่อ้าง `SystemColors`
-- scan runtime source เพื่อหา network/telemetry/upload/sync API และเฝ้าดู TCP connection/UDP endpoint ของ process ทุก 50 ms ระหว่าง qualification smoke
+- scan runtime source เพื่อหา network/telemetry/upload/sync API และเฝ้าดู TCP connection/UDP endpoint ทุก 50 ms ระหว่าง qualification workload แยก process เพื่อไม่ให้ CIM socket monitor รบกวน performance sample
 - บันทึก machine, SDK, commit, ขนาด Noto assets และ self-contained publish ลง JSON
 
 การวัด warm global hotkey-to-visible จริงต้องรันแบบตั้งใจ เพราะสคริปต์จะเปิด Notepad ชั่วคราว, นำหน้าต่างนั้นขึ้น foreground และส่ง `Win + .` ด้วย `SendInput` 20 ครั้ง:

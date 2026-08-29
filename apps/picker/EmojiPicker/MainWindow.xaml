@@ -252,7 +252,7 @@
                          ScrollViewer.CanContentScroll="True"
                          VirtualizingPanel.IsVirtualizing="True"
                          VirtualizingPanel.VirtualizationMode="Recycling"
-                         VirtualizingPanel.CacheLength="1,1"
+                         VirtualizingPanel.CacheLength="0.1,0.1"
                          VirtualizingPanel.CacheLengthUnit="Page"
                          AutomationProperties.LiveSetting="Assertive"
                          SelectionChanged="EmojiGrid_SelectionChanged"

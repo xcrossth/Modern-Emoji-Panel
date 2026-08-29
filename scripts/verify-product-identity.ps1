@@ -12,7 +12,8 @@ Set-StrictMode -Version Latest
 $repositoryRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $projectPath = Join-Path $repositoryRoot "apps\picker\EmojiPicker\EmojiPicker.csproj"
 $innoPath = Join-Path $repositoryRoot "apps\picker\installer\EmojiPicker.iss"
-$wixPath = Join-Path $repositoryRoot "apps\picker\installer\msi\Package.wxs"
+$productIconPath = Join-Path $repositoryRoot "apps\picker\EmojiPicker\Resources\modern-emoji-picker.ico"
+$classicIconPath = Join-Path $repositoryRoot "apps\picker\EmojiPicker\Resources\app.ico"
 $appSourcePath = Join-Path $repositoryRoot "apps\picker\EmojiPicker"
 $artifactDirectory = Join-Path $repositoryRoot "artifacts\ticket-02"
 $reportPath = Join-Path $artifactDirectory "identity-smoke.json"
@@ -47,8 +48,12 @@ try {
     Assert-True ($properties.AssemblyTitle -eq "Modern Emoji Picker") "AssemblyTitle ไม่ใช่ Modern"
     Assert-True ($properties.AssemblyProduct -eq "Modern Emoji Picker") "AssemblyProduct ไม่ใช่ Modern"
     Assert-True ($properties.Company -eq "X CroSs") "Publisher ใน assembly ไม่ตรงกับเจ้าของ repository"
-    Assert-True ($null -eq $properties.SelectSingleNode("ApplicationIcon")) `
-        "Modern ต้องไม่ reuse application icon ของ Classic"
+    Assert-True ($properties.ApplicationIcon -eq "Resources\modern-emoji-picker.ico") `
+        "Modern executable ต้องใช้ product icon ใหม่"
+    Assert-True (Test-Path -LiteralPath $productIconPath) "ไม่พบ Modern product icon"
+    Assert-True ((Get-FileHash -Algorithm SHA256 -LiteralPath $productIconPath).Hash -ne
+        (Get-FileHash -Algorithm SHA256 -LiteralPath $classicIconPath).Hash) `
+        "Modern product icon ต้องไม่ซ้ำกับ Classic"
 
     $inno = Get-Content -Raw -LiteralPath $innoPath
     Assert-ContainsLiteral $inno 'AppId={{6AFB6AF4-F41A-412A-8749-9BF9FD673855}' "Inno"
@@ -58,16 +63,6 @@ try {
     Assert-True (-not $inno.Contains("B6C3E1A2-7F4D-4C9E-9B21-1E2A3C4D5E6F")) `
         "Inno AppId ยังซ้ำกับ Classic"
 
-    $wix = Get-Content -Raw -LiteralPath $wixPath
-    Assert-ContainsLiteral $wix 'UpgradeCode="EB407AE1-9D49-43A7-AA0A-208EC973479E"' "WiX"
-    Assert-ContainsLiteral $wix 'Target="ModernEmojiPicker.exe"' "WiX"
-    Assert-ContainsLiteral $wix 'Name="ModernEmojiPicker" Type="string"' "WiX"
-    Assert-ContainsLiteral $wix 'Name="Modern Emoji Picker"' "WiX"
-    Assert-True (-not $wix.Contains("899B683B-F905-46AC-A590-05616BFCA4C7")) `
-        "WiX UpgradeCode ยังซ้ำกับ Classic"
-    [xml]$wixDocument = $wix
-    Assert-True ($null -ne $wixDocument.DocumentElement) "WiX XML ไม่สมบูรณ์"
-
     foreach ($fileName in @("Settings.cs", "Logger.cs", "MainWindow.xaml.cs")) {
         $content = Get-Content -Raw -LiteralPath (Join-Path $appSourcePath $fileName)
         Assert-True (-not $content.Contains('"ClassicEmojiPicker"')) `
@@ -75,7 +70,7 @@ try {
         Assert-ContainsLiteral $content "ProductIdentity.DataDirectory" $fileName
     }
 
-    foreach ($activeIdentityFile in @($projectPath, $innoPath, $wixPath)) {
+    foreach ($activeIdentityFile in @($projectPath, $innoPath)) {
         $content = Get-Content -Raw -LiteralPath $activeIdentityFile
         Assert-True (-not $content.Contains("Resources\app.ico")) `
             "$activeIdentityFile ยัง reuse icon ของ Classic"

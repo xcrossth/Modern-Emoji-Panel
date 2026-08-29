@@ -1,39 +1,30 @@
-# Version Information
+# สถานะเวอร์ชัน Modern Emoji Picker
 
-## Current Version: v0.1.9
+## Development snapshot
 
-**Release Date**: 2026-07-22
-**Build**: Release
-**Target Framework**: .NET 8.0-windows
-**Architecture**: x64 (self-contained; a framework-dependent "lite" build is also published)
+- Product metadata: `0.1.9`
+- Target framework: `.NET 10` (`net10.0-windows`)
+- Runtime identifier: `win-x64`
+- รูปแบบ build: self-contained local publish
+- สถานะ release: ยังไม่มี public MVP release
 
-### Version Details
-- **Assembly Version**: 0.1.9.0
-- **File Version**: 0.1.9.0
-- **Product Version**: 0.1.9
-- **Informational Version**: 0.1.9
+หมายเลข `0.1.9` เป็น metadata ของ checkpoint ระหว่างพัฒนา ไม่ใช่คำประกาศว่า Modern Emoji Picker v0.1.9 ถูกเผยแพร่แล้ว เวอร์ชัน release จริงต้องผ่าน Ticket 13 และ Ticket 15 (14B)
 
-### Release Notes (hardening pass from a multi-agent adversarial review)
-- Paste-insert now preserves the whole clipboard (images/files too), skips the restore if you copied during the wait, and no longer risks losing content on slow/remote targets (`pasteRestoreDelayMs`)
-- Win+. recovers if Windows drops the keyboard hook (session change / timeout), and holding it no longer thrashes the picker
-- MSI remembers `AUTOSTART=0` across upgrade/repair (secure property)
-- Search-box IME composition, atomic recent.json writes, degenerate-caret and shutdown-race guards
+## ความเข้ากันได้ที่ยืนยันแล้ว
 
-### Previous Release (v0.1.8)
-- Text editing shortcuts work in the search box: Ctrl+Shift+Left/Right, Ctrl+Left/Right, Shift+Left/Right; plain arrows still browse the grid
-- Add/Remove Programs no longer repeats the version in the entry name
+- Automated qualification ผ่านบน Windows 10 Enterprise N 22H2 build 19045 x64
+- Release build และ self-contained publish ด้วย .NET SDK 10 ผ่านโดยไม่มี warning/error
+- Runtime ใช้ Emoji 17 baseline และ Noto assets ที่ bundle อยู่ใน package โดยไม่ใช้ network
 
-### Compatibility
-- **OS**: Windows 11, Windows 10 (version 1809+)
-- **Runtime**: Self-contained builds need nothing extra; lite builds need the .NET Desktop Runtime 8 (x64)
-- **Emoji Font**: System Segoe UI Emoji (ships with supported Windows versions)
+Windows 11, แอป Tier A/Tier B, screen reader, mixed-DPI และ input/clipboard matrix บน desktop จริงยังอยู่ใน Ticket 13 จึงห้ามตีความ automated result เป็น support certification ที่ครบแล้ว
 
-### Known Issues
-- No skin-tone modifiers yet
-- The Win+. hook requires the app to be running (tray)
-- Caret anchoring relies on the target app exposing a system caret; apps that don't fall back to the mouse pointer
-- Elevated (run-as-administrator) apps: Windows blocks non-elevated hooks from elevated input, so Win+. there opens the built-in panel, and picks targeting an elevated window land on the clipboard
+## Package ของ MVP
 
-### Next Release
-- **Target**: v0.1.5
-- **Focus**: MSI installer for silent/enterprise deploys, install-for-all-users option, category tab sizing, code-review fixes
+มีเพียง self-contained win-x64 Inno per-user installer และ portable ZIP ไม่มี framework-dependent, lite หรือ MSI package
+
+- Product: Modern Emoji Picker
+- Executable/assembly: `ModernEmojiPicker`
+- User data: `%APPDATA%\ModernEmojiPicker`
+- Tag เมื่อได้รับอนุมัติ: `picker-v<version>`
+
+รายละเอียด local artifacts อยู่ใน [Ticket 14](../../.scratch/modern-emoji-picker/issues/14-package-and-release-locally.md) และ release gate อยู่ใน [Ticket 15](../../.scratch/modern-emoji-picker/issues/15-publish-picker-release.md)

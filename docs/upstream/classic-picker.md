@@ -43,7 +43,7 @@ Git ไม่เก็บ remote configuration ไว้ใน commit ผู้�
 
 ## Workflows ที่มากับ upstream
 
-ไฟล์ภายใต้ `apps/picker/.github/workflows/` เป็นประวัติจาก subtree และ **ไม่ใช่ active workflow** เพราะ GitHub อ่าน workflow เฉพาะ `.github/workflows/` ที่ repository root เท่านั้น โครงการเก็บไฟล์เหล่านี้เป็นข้อมูลอ้างอิงของ upstream โดยไม่คัดลอกหรือเปิดใช้งาน เนื่องจาก release ของ Modern ต้องเป็น local-first และแยกจาก Classic
+ไฟล์ workflow ที่เคยอยู่ใต้ `apps/picker/.github/workflows/` ถูกถอดออกใน Ticket 14A เพราะเป็นเส้นทาง build/release ของ Classic ที่มี framework-dependent และ MSI artifacts ประวัติเดิมยังอยู่ใน Git import history ส่วน Modern ใช้ local-only `scripts/release.ps1` และไม่มี active workflow ที่ repository root
 
 ## การแก้ migration หลัง import
 
@@ -53,7 +53,11 @@ Ticket 01 เปลี่ยนเฉพาะรากฐานที่จำ�
 - ย้าย package versions ไปไว้ที่ `Directory.Packages.props`
 - ใช้ NuGet lock file
 - ให้ build/quality wrappers เดิมเรียกสคริปต์จาก monorepo root
-- ปรับ path และ runtime probe ของ installer เดิมเป็น .NET 10
+- ปรับ path ของ installer เดิมเป็น .NET 10 ระหว่าง migration; Ticket 14A ถอด lite/MSI routes และแทนด้วย self-contained per-user installer เท่านั้น
 - เพิ่ม `--foundation-smoke` เพื่อตรวจการโหลด WPF shell, Emoji data, browse category และ English search โดยไม่แย่ง Classic mutex, global hook, tray หรือข้อมูลผู้ใช้
 
 ชื่อ executable, mutex, registry, installer identity และข้อมูลผู้ใช้ยังเป็น Classic ตาม upstream ใน Ticket 01 การแยก identity ทั้งหมดเป็นขอบเขตของ Ticket 02
+
+## ตัวเลข performance ที่ upstream เคยรายงาน
+
+Classic changelog ที่ import เคยรายงานเวลาเปิดโดยประมาณ 35–40 ms และ idle working set ประมาณ 20 MiB แต่ไม่มี raw samples, machine metadata หรือวิธีวัดที่ทำซ้ำได้ ตัวเลขนี้จึงเป็น approximate historical context เท่านั้น ไม่ใช่ performance gate ของ Modern และประวัติฉบับเต็มยังตรวจได้จาก Git import history

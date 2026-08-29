@@ -158,6 +158,8 @@ pwsh scripts/measure-global-hotkey.ps1 -OutputPath artifacts/ticket-13/global-ho
 bash scripts/manual-qualification-wizard.sh
 ```
 
+ให้รันจาก PowerShell หรือ Windows Terminal แบบปกติเท่านั้น ห้ามใช้หน้าต่างที่มีคำว่า `Administrator` เพราะแอปเป้าหมายที่ wizard เปิดจะมีสิทธิ์สูงกว่า Modern Emoji Picker และทำให้ `Win + .` ดูเหมือนเสียทั้งที่แอปทำงานปกติ ตัว wizard จะตรวจและหยุดก่อนเริ่มทดสอบหากพบสิทธิ์ Administrator
+
 ตัวช่วยบันทึกผลที่มนุษย์เลือกพร้อม environment/evidence เป็น JSON และ Markdown ใต้ `artifacts/ticket-13/manual/` โดยไม่แก้ manual matrix หรือรับรองผลอัตโนมัติ ตรวจโครงสร้างและ report writer แยกต่างหากได้ด้วย:
 
 ```powershell

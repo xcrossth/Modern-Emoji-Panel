@@ -21,5 +21,14 @@
       "js": ["content/index.js"],
       "run_at": "document_start"
     }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/fonts/Noto-COLRv1.ttf"],
+      "matches": [
+        "https://www.instagram.com/*",
+        "https://www.tiktok.com/*"
+      ]
+    }
   ]
 }

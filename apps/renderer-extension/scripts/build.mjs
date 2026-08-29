@@ -41,4 +41,10 @@ if (manifest.manifest_version !== 3) {
 }
 
 await cp(manifestSource, join(outputRoot, "manifest.json"));
+await cp(join(extensionRoot, "assets"), join(outputRoot, "assets"), { recursive: true });
+await mkdir(join(outputRoot, "fixtures"), { recursive: true });
+await cp(
+  join(extensionRoot, "tests", "fixtures", "rendering.html"),
+  join(outputRoot, "fixtures", "rendering.html"),
+);
 console.log(`Renderer Extension unpacked build: ${outputRoot}`);

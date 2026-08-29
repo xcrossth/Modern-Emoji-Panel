@@ -1,4 +1,5 @@
 import { readFile, stat } from "node:fs/promises";
+import { createHash } from "node:crypto";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
@@ -43,5 +44,23 @@ describe("Renderer Extension foundation", () => {
       expect(script).not.toContain("eval(");
       expect(script).not.toContain("sourceMappingURL");
     }
+  });
+
+  it("bundles the pinned Noto COLRv1 font and exposes it only to primary sites", async () => {
+    const font = await readFile(join(outputRoot, "assets/fonts/Noto-COLRv1.ttf"));
+    const manifest = JSON.parse(await readOutput("manifest.json"));
+
+    expect(createHash("sha256").update(font).digest("hex").toUpperCase()).toBe(
+      "0AE57FE58645638523BA35F388D93739D292539A9ACB84DF5700C81B1E1A28D2",
+    );
+    expect(manifest.web_accessible_resources).toEqual([
+      {
+        resources: ["assets/fonts/Noto-COLRv1.ttf"],
+        matches: manifest.host_permissions,
+      },
+    ]);
+    await expect(stat(join(outputRoot, "assets/fonts/OFL.txt"))).resolves.toMatchObject({
+      size: expect.any(Number),
+    });
   });
 });

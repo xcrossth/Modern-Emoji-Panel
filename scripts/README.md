@@ -24,7 +24,7 @@
 .\scripts\verify-product-identity.ps1
 ```
 
-คำสั่งนี้ตรวจ executable/assembly, mutex, named event, Run value, data directory, Inno AppId, WiX UpgradeCode, artifact names และการไม่ reuse icon ของ Classic พร้อมรัน smoke สำหรับ secondary-launch signal กับ Classic Conflict seam โดยไม่ติดตั้ง global hook ไม่เปิด tray และไม่อ่านหรือเขียนข้อมูลผู้ใช้
+คำสั่งนี้ตรวจ executable/assembly, mutex, named event, Run value, data directory, Inno AppId, artifact names และ product icon ใหม่ที่ไม่ reuse Classic พร้อมรัน smoke สำหรับ secondary-launch signal กับ Classic Conflict seam โดยไม่ติดตั้ง global hook ไม่เปิด tray และไม่อ่านหรือเขียนข้อมูลผู้ใช้
 
 หลัง commit แล้ว สามารถพิสูจน์การ build จาก checkout ใหม่ที่ไม่มีไฟล์ build ค้างได้ด้วย:
 
@@ -143,3 +143,28 @@ pwsh scripts/verify-qualification.ps1 -OutputPath docs/qualification/results/aut
 ```
 
 คำสั่งนี้รัน regression suite ที่สร้างไว้ใน Ticket 01–12 แล้ววัด warm open-to-render proxy, search, virtualized scroll, working set และ decode/cache จาก self-contained Release process ตรวจ performance budgets, accessibility/High Contrast wiring, ขนาด publish และเฝ้าดู TCP/UDP socket ของ process ระหว่าง smoke จริง ผลที่ได้ไม่แทน manual matrix, packet capture, hotkey-to-visible จริง หรือผลบน Windows 11 ดูขอบเขตและแบบบันทึกผลที่ [การรับรองคุณภาพ](../docs/qualification/README.md)
+
+## สร้าง product icon
+
+```powershell
+.\scripts\build-product-icon.ps1
+.\scripts\build-product-icon.ps1 -VerifyOnly
+```
+
+คำสั่งนี้ตรวจ hash ของ artwork master แล้วสร้าง/ตรวจ ICO 16–256 px และภาพ preview 512 px รายละเอียดอยู่ที่ [`design/brand/README.md`](../design/brand/README.md)
+
+## สร้าง local qualification artifacts
+
+```powershell
+.\scripts\release.ps1 -Version 0.1.9
+```
+
+ต้องรันจาก clean commit และมี Inno Setup 6 สคริปต์จะตรวจ icon, baseline/generator, regression/qualification และ product version ก่อนสร้าง self-contained per-user installer กับ portable ZIP พร้อม notices, SHA-256 และ manifest ใต้ `artifacts/release/picker-v<version>/` โดยไม่มี tag, upload หรือ GitHub Release
+
+ตรวจ artifact ที่สร้างแล้วแยกต่างหากได้ด้วย:
+
+```powershell
+.\scripts\verify-release-artifacts.ps1 -Version 0.1.9
+```
+
+MVP ไม่มี framework-dependent, lite หรือ MSI package การเตรียม Draft/public releaseอยู่ใน Ticket 15 และไม่ใช่หน้าที่ของ `release.ps1`

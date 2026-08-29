@@ -4,7 +4,9 @@ param(
 
     [switch]$SkipRegressionSuite,
 
-    [string]$OutputPath
+    [string]$OutputPath,
+
+    [string]$ReleaseManifestPath
 )
 
 $ErrorActionPreference = "Stop"
@@ -151,6 +153,17 @@ try {
         Assert-Condition ($publishBytes -le $publishSizeBudgetBytes) "Self-contained publish exceeds the 350 MiB qualification budget"
     }
 
+    $releaseManifest = $null
+    if (-not [string]::IsNullOrWhiteSpace($ReleaseManifestPath)) {
+        $resolvedReleaseManifestPath = [IO.Path]::GetFullPath($ReleaseManifestPath)
+        Assert-Condition (Test-Path -LiteralPath $resolvedReleaseManifestPath -PathType Leaf) "Release artifact manifest is missing"
+        $releaseManifest = Get-Content -Raw -LiteralPath $resolvedReleaseManifestPath | ConvertFrom-Json
+        Assert-Condition ($releaseManifest.product -eq "Modern Emoji Picker") "Release artifact manifest has the wrong product"
+        Assert-Condition ($releaseManifest.targetFramework -eq "net10.0-windows") "Release artifact manifest has the wrong framework"
+        Assert-Condition ($releaseManifest.runtimeIdentifier -eq "win-x64" -and $releaseManifest.selfContained -eq $true) "Release artifact manifest is not self-contained win-x64"
+        Assert-Condition ($releaseManifest.uploaded -eq $false) "Qualification accepts only local, not-uploaded artifacts"
+    }
+
     $computer = Get-ComputerInfo
     [object[]]$networkObservationArray = $networkObservations.ToArray()
     $report | Add-Member -NotePropertyName qualificationHost -NotePropertyValue ([pscustomobject]@{
@@ -178,11 +191,11 @@ try {
         selfContainedPublishBytes = $publishBytes
         selfContainedPublishBudgetBytes = $publishSizeBudgetBytes
         selfContainedPublishPassed = $null -ne $publishBytes -and $publishBytes -le $publishSizeBudgetBytes
-        portableZipBytes = $null
-        installerBytes = $null
+        portableZipBytes = if ($null -eq $releaseManifest) { $null } else { [long]$releaseManifest.sizes.portableZipBytes }
+        installerBytes = if ($null -eq $releaseManifest) { $null } else { [long]$releaseManifest.sizes.installerBytes }
     })
     $report | Add-Member -NotePropertyName upstreamBaseline -NotePropertyValue ([pscustomobject]@{
-        source = "apps/picker/CHANGELOG.md (imported Classic history)"
+        source = "docs/upstream/classic-picker.md (สรุปจาก imported Git history)"
         reportedWarmOpenApproxMilliseconds = 35
         reportedSteadyStateOpenApproxMilliseconds = 40
         reportedIdleWorkingSetApproxMiB = 20
@@ -193,15 +206,23 @@ try {
     })
     $report | Add-Member -NotePropertyName automatedRegressionSuite -NotePropertyValue ([pscustomobject]@{
         runInThisInvocation = -not $SkipRegressionSuite
-        scopes = @("generator", "search tiers", "ranking", "variants", "Recent", "persistence recovery", "queue", "target validation", "insertion modes", "clipboard rules", "settings/privacy")
-        releasePreconditions = "รอ Ticket 14: release script, installer และ portable ZIP ยังไม่มีใน commit นี้"
+        scopes = @("generator", "search tiers", "ranking", "variants", "Recent", "persistence recovery", "queue", "target validation", "insertion modes", "clipboard rules", "settings/privacy", "product icon", "local packaging policy")
+        releasePreconditions = if ($null -eq $releaseManifest) {
+            "local package scripts มีใน commit แต่ invocation นี้ยังไม่ได้รับ Ticket 14A artifact manifest"
+        }
+        else {
+            "ได้รับ verified Ticket 14A manifest สำหรับ self-contained installer/portable ZIP จาก local clean commit"
+        }
     })
-    $report | Add-Member -NotePropertyName unresolvedQualification -NotePropertyValue @(
+    $unresolvedQualification = @(
         "warm hotkey-to-visible จริงยังต้องวัดด้วย global hotkey และ foreground app จริง",
         "upstream ไม่มีตัวเลข search, scroll, decode/cache และ package ที่ทำซ้ำได้ใน repository",
-        "installer และ portable ZIP size รอ Ticket 14",
         "manual app/OS/accessibility/DPI/input/clipboard matrices ยังต้องทดสอบตาม docs/qualification/manual-matrices.md"
     )
+    if ($null -eq $releaseManifest) {
+        $unresolvedQualification += "installer และ portable ZIP size ต้องรับจาก Ticket 14A artifact manifest"
+    }
+    $report | Add-Member -NotePropertyName unresolvedQualification -NotePropertyValue $unresolvedQualification
 
     $report | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $OutputPath -Encoding utf8NoBOM
 

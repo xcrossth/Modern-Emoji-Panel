@@ -19,6 +19,14 @@ pwsh scripts/verify-qualification.ps1 -OutputPath docs/qualification/results/aut
 - scan runtime source เพื่อหา network/telemetry/upload/sync API และเฝ้าดู TCP connection/UDP endpoint ของ process ทุก 50 ms ระหว่าง qualification smoke
 - บันทึก machine, SDK, commit, ขนาด Noto assets และ self-contained publish ลง JSON
 
+เมื่อต้องการหลักฐาน installer/portable และ release preconditions ให้รันจาก clean commit:
+
+```powershell
+pwsh scripts/release.ps1 -Version 0.1.9
+```
+
+คำสั่งนี้สร้าง artifact เฉพาะใน `artifacts/release/`, ตรวจ checksum/contents/identity/architecture และรัน qualification ซ้ำพร้อม package metrics โดยไม่สร้าง tag, upload หรือ GitHub Release หลักฐาน Ticket 14A ที่ commit ได้อยู่ใน `results/local-artifacts-v0.1.9-win10-19045.json`
+
 Smoke mode ไม่ติดตั้ง global hook, ไม่สร้าง tray, ไม่อ่านหรือเขียนข้อมูลผู้ใช้, ไม่ inject input และไม่แตะ Clipboard การไม่พบ socket ในช่วง smoke เป็นหลักฐานเชิงสังเกตที่ทำซ้ำได้ แต่ไม่ใช่ packet-capture certification
 
 ## สิ่งที่ผลอัตโนมัติพิสูจน์ไม่ได้
@@ -29,7 +37,7 @@ Smoke mode ไม่ติดตั้ง global hook, ไม่สร้าง 
 - คุณภาพการอ่านด้วย Narrator/NVDA, focus indicator ด้วยสายตา และ High Contrast palette จริง
 - DPI 100–250% กับจอหลายตัวต่าง DPI
 - Windows 11, RDP, Citrix และ Tier B apps
-- installer/portable ZIP size และ release preconditions ซึ่งเป็นงาน Ticket 14
+- การเผยแพร่ Draft/public release ซึ่งแยกเป็น Ticket 15 (14B) และยังรอ manual qualification กับคำสั่งโดยเจตนาจาก maintainer
 
 ให้ใช้ [manual matrices](./manual-matrices.md) บันทึกแต่ละกรณี ห้ามเปลี่ยนแถวเป็น “ผ่าน” โดยไม่มีวันที่ ผู้ทดสอบ environment และหลักฐานที่ตรวจย้อนกลับได้
 

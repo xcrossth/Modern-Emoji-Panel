@@ -146,6 +146,7 @@ namespace EmojiPicker
         internal bool InsertionQueueFull => insertionQueue.IsFull;
         internal bool EmojiGridInteractiveForSmoke => EmojiGrid.IsHitTestVisible;
         internal bool PointerActivationSuppressedForSmoke => pointerActivationSuppressed;
+        internal bool InsertionIdleForSmoke => !insertionPumpRunning && !insertionQueue.HasWork;
         internal void CommitEmojiForSmoke(Emoji emoji) => CommitEmoji(emoji, CommitGesture.Pointer);
         internal object? EmojiItemsSourceForSmoke => EmojiGrid.ItemsSource;
         internal void LoadDefaultCategoryForSmoke() => LoadCategory(DefaultCategoryKey);
@@ -153,6 +154,12 @@ namespace EmojiPicker
         {
             SearchBox.Text = query;
             RunSearch();
+        }
+
+        internal void FocusSearchForSmoke()
+        {
+            SearchBox.Focus();
+            Keyboard.Focus(SearchBox);
         }
 
         internal async Task<IReadOnlyList<double>> MeasureWarmOpenToRenderProxyForSmokeAsync(int samples)

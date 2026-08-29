@@ -9,6 +9,7 @@ Modern Emoji Picker รวมค่าที่ผู้ใช้ควบคุ
 - ภาษา UI เลือก System, English หรือไทย เมื่อเลือก System จะใช้ไทยเฉพาะเมื่อ Windows display language เป็นไทย ภาษาอื่นใช้ English โดยการค้นหายังค้นชื่อและ keyword ไทยกับอังกฤษพร้อมกันเสมอ
 - ธีมเลือก System, Light หรือ Dark
 - เมื่อ Windows เปิด High Contrast แอปจะใช้สีระบบของ High Contrast แทน Light/Dark override เพื่อเคารพ palette ที่ผู้ใช้เลือก
+- เมื่อ Windows เปลี่ยนธีมหรือเปิด/ปิด High Contrast แอปจะรวม notification ที่มาติดกัน แล้วอ่านสถานะใหม่บน UI thread หลังค่าระบบนิ่ง เพื่อไม่ให้ Theme = System ค้างอยู่ที่ Light/Dark เดิม
 - สีผิวเริ่มต้นเป็นค่าระดับ global และไม่เปลี่ยนพฤติกรรม Variant Override แบบครั้งเดียว
 
 ## การส่ง Emoji และค่าขั้นสูง
@@ -54,4 +55,4 @@ Diagnostic logging ปิดเป็นค่าเริ่มต้นแล�
 pwsh scripts/verify-settings-privacy.ps1
 ```
 
-คำสั่งนี้ตรวจ default ที่ปลอดภัย การ persist และ normalize, ภาษา fallback, theme, hotkey, insertion mode, advanced reset, Welcome, Activity Data wiring, ขอบเขต autostart, logging opt-in และการไม่มี network/telemetry/sync/upload code ใน runtime
+คำสั่งนี้ตรวจ default ที่ปลอดภัย การ persist และ normalize, ภาษา fallback, System/Light/Dark/High Contrast theme resolution, hotkey, insertion mode, advanced reset, Welcome, Activity Data wiring, ขอบเขต autostart, logging opt-in และการไม่มี network/telemetry/sync/upload code ใน runtime

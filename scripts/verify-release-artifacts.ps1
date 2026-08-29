@@ -82,7 +82,10 @@ try {
     foreach ($required in @("ModernEmojiPicker.exe", "LICENSE", "THIRD-PARTY-NOTICES.md", "README-th.md", "coreclr.dll")) {
         Assert-Condition ($entries -contains $required) "Portable ZIP is missing $required"
     }
-    Assert-Condition (-not ($entries | Where-Object { $_ -match '(?i)ClassicEmojiPicker|\.msi$|lite|framework-dependent' })) "Portable ZIP contains a legacy or unsupported payload"
+    $unsupportedEntries = $entries | Where-Object {
+        $_ -match '(?i)ClassicEmojiPicker|\.msi$|framework[-_. ]?dependent|setup[-_.]?lite|[-_.]lite[-_.]'
+    }
+    Assert-Condition (-not $unsupportedEntries) "Portable ZIP contains a legacy or unsupported payload"
 
     $temporaryDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("modern-emoji-release-" + [Guid]::NewGuid().ToString("N"))
     New-Item -ItemType Directory -Path $temporaryDirectory | Out-Null

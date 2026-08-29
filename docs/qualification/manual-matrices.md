@@ -6,7 +6,7 @@
 
 ## Matrix A — แอปเป้าหมายและระบบปฏิบัติการ
 
-Workflow ต่อแถว: เปิดด้วย hotkey จาก text control จริง, ค้นหาไทยและอังกฤษ, เลือก single/complex sequence, ทดสอบ click, Enter, Shift+Enter, Esc, click ภายนอก และ Typing Handoff โดยตรวจว่า focus กลับถูก app/control และ input แรกไม่หาย
+Workflow ต่อแถว: เปิดด้วย hotkey จาก text control จริง, ใน Browse ตรวจ physical-key handoff/keyboard layout, คลิก single/complex sequence และ rapid multi-insert โดย Picker ไม่กระพริบ จากนั้นคลิก Search เพื่อทดสอบไทย/อังกฤษ, Enter, Shift+Enter, Esc และตรวจว่า focus กลับถูก app/control กับ input แรกไม่หาย
 
 | Tier | OS / session | Target | Result | วันที่/ผู้ทดสอบ | หลักฐาน/issue | หมายเหตุ |
 |---|---|---|---|---|---|---|
@@ -25,7 +25,7 @@ Workflow ต่อแถว: เปิดด้วย hotkey จาก text cont
 
 ## Matrix B — DPI, monitor และ accessibility
 
-ทดสอบ Browse/Search ด้วย keyboard ทั้งหมด, Tab/arrow/F1/Alt+T/Alt+Down/Enter/Shift+Enter/Esc, ตรวจ focus indicator ด้วยสายตา และใช้ Narrator หรือ NVDA อ่านชื่อ tile, selection, busy, queue full และ error state
+ทดสอบว่า Browse ส่ง Tab/arrow/Enter กลับ target และทดสอบ keyboard navigation ภายใน Search ด้วย arrow/Enter/Shift+Enter/Esc ตรวจ focus indicator ด้วยสายตา และใช้ Narrator หรือ NVDA อ่านชื่อ tile, selection, busy, queue full และ error state
 
 | Environment / case | Result | วันที่/ผู้ทดสอบ | หลักฐาน/issue | หมายเหตุ |
 |---|---|---|---|---|

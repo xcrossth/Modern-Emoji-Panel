@@ -26,6 +26,10 @@ internal static class PickerSessionSmoke
         checks["pointer-continues-session"] = PickerSessionState.ContinuesAfter(CommitGesture.Pointer);
         checks["enter-dismisses-session"] = !PickerSessionState.ContinuesAfter(CommitGesture.Enter);
         checks["shift-enter-continues-session"] = PickerSessionState.ContinuesAfter(CommitGesture.ShiftEnter);
+        checks["pointer-insertion-keeps-picker-visible"] =
+            !PickerSessionState.ShouldHideDuringInsertion(CommitGesture.Pointer);
+        checks["dismiss-commit-may-hide-picker"] =
+            PickerSessionState.ShouldHideDuringInsertion(CommitGesture.Enter);
         checks["outside-click-preserves-user-focus"] =
             !PickerSessionState.ReturnsFocusAfter(PickerDismissReason.ExternalPointer);
         checks["explicit-dismiss-restores-target"] =

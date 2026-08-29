@@ -39,7 +39,7 @@ try {
     $report = Get-Content -Raw -LiteralPath $temporaryReport | ConvertFrom-Json
     $checks = @($report.checks.psobject.Properties)
     Assert-Condition ($report.passed -eq $true) "Insertion Queue report contains a failed check"
-    Assert-Condition ($checks.Count -eq 23) "Expected 23 Insertion Queue and Typing Handoff checks"
+    Assert-Condition ($checks.Count -eq 26) "Expected 26 Insertion Queue and Typing Handoff checks"
     Assert-Condition (@($checks | Where-Object { $_.Value -ne $true }).Count -eq 0) "One or more queue checks failed"
 
     $windowXaml = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot "apps\picker\EmojiPicker\MainWindow.xaml")
@@ -50,13 +50,13 @@ try {
     Assert-Condition ($windowXaml -match 'Insertion queue status[\s\S]*AutomationProperties.LiveSetting="Assertive"') "Queue accessibility live state is missing"
     Assert-Condition ($windowCode -match 'MaxPendingInsertions = 20') "Insertion Queue capacity is not fixed at 20"
     Assert-Condition ($windowCode -match 'TryCaptureCommittedText\(e\.Text') "Typing Handoff does not capture committed text"
-    Assert-Condition ($windowCode -match 'TryCaptureShortcut') "Typing Handoff does not capture shortcut chords"
+    Assert-Condition ($windowCode -match 'TryCaptureKeyStroke') "Typing Handoff does not capture physical keys"
     Assert-Condition ($windowCode -match 'StopAndCancelPending') "Dismissal does not cancel pending work"
     Assert-Condition ($windowCode -match 'TryInsertAsync\([\s\S]*payload\.CommittedText') "Committed text is not sent through target validation"
-    Assert-Condition ($windowCode -match 'TrySendShortcutAsync') "Shortcut chords are not sent through target validation"
+    Assert-Condition ($windowCode -match 'TrySendKeyStrokeAsync') "Physical keys are not sent through target validation"
     Assert-Condition ($appCode -match 'RequestProcessExit') "Tray Exit does not wait for active insertion"
 
-    Write-Host "Insertion Queue verification passed: $($checks.Count) deterministic queue, text, shortcut and WPF wiring checks" -ForegroundColor Green
+    Write-Host "Insertion Queue verification passed: $($checks.Count) deterministic queue, text, physical-key and WPF wiring checks" -ForegroundColor Green
 }
 finally {
     Pop-Location

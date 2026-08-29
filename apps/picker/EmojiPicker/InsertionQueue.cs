@@ -25,7 +25,7 @@ internal enum QueueTerminalKind
 internal enum TypingHandoffKind
 {
     CommittedText,
-    Shortcut,
+    KeyStroke,
 }
 
 [Flags]
@@ -47,8 +47,8 @@ internal sealed record TypingHandoffPayload(
     internal static TypingHandoffPayload Text(string committedText) =>
         new(TypingHandoffKind.CommittedText, CommittedText: committedText);
 
-    internal static TypingHandoffPayload Shortcut(ushort virtualKey, ShortcutModifiers modifiers) =>
-        new(TypingHandoffKind.Shortcut, VirtualKey: virtualKey, Modifiers: modifiers);
+    internal static TypingHandoffPayload KeyStroke(ushort virtualKey, ShortcutModifiers modifiers) =>
+        new(TypingHandoffKind.KeyStroke, VirtualKey: virtualKey, Modifiers: modifiers);
 }
 
 /// <summary>
@@ -238,24 +238,23 @@ internal static class TypingHandoffInput
     }
 
     /// <summary>
-    /// Captures a complete shortcut chord rather than treating its key as text.
-    /// Shift alone is excluded because its printable result arrives through the
-    /// committed TextInput path. Modifier-only events are also excluded.
+    /// Captures the physical key and modifiers before WPF translates them with the
+    /// Picker's per-app keyboard layout. The original target then interprets the
+    /// same key under its own layout. Modifier-only events are excluded.
     /// </summary>
-    internal static bool TryCaptureShortcut(
+    internal static bool TryCaptureKeyStroke(
         int virtualKey,
         ShortcutModifiers modifiers,
         out TypingHandoffPayload payload)
     {
-        payload = TypingHandoffPayload.Shortcut(0, ShortcutModifiers.None);
+        payload = TypingHandoffPayload.KeyStroke(0, ShortcutModifiers.None);
         if (virtualKey is <= 0 or > byte.MaxValue ||
-            (modifiers & (ShortcutModifiers.Control | ShortcutModifiers.Alt | ShortcutModifiers.Windows)) == 0 ||
             virtualKey is VkShift or VkControl or VkAlt or VkLeftWindows or VkRightWindows)
         {
             return false;
         }
 
-        payload = TypingHandoffPayload.Shortcut((ushort)virtualKey, modifiers);
+        payload = TypingHandoffPayload.KeyStroke((ushort)virtualKey, modifiers);
         return true;
     }
 }

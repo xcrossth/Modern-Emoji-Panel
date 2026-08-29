@@ -43,22 +43,23 @@ internal static class InsertionPolicy
 
     public static bool IsComplexSequence(string sequence)
     {
-        var scalarCount = 0;
+        var baseScalarCount = 0;
         var containsComplexMarker = false;
         foreach (var rune in sequence.EnumerateRunes())
         {
-            if (rune.Value == 0xFE0F)
+            // Variation selectors and a single skin-tone modifier can be delivered
+            // as one grouped Unicode-key sequence without using the clipboard.
+            if (rune.Value == 0xFE0F || rune.Value is >= 0x1F3FB and <= 0x1F3FF)
             {
                 continue;
             }
 
-            scalarCount++;
+            baseScalarCount++;
             containsComplexMarker |= rune.Value is 0x200D or 0x20E3 ||
-                rune.Value is >= 0x1F1E6 and <= 0x1F1FF ||
-                rune.Value is >= 0x1F3FB and <= 0x1F3FF;
+                rune.Value is >= 0x1F1E6 and <= 0x1F1FF;
         }
 
-        return scalarCount > 1 || containsComplexMarker;
+        return baseScalarCount > 1 || containsComplexMarker;
     }
 }
 

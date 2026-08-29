@@ -14,7 +14,7 @@ internal static class InsertionPolicySmoke
             ["hybrid-zwj-paste"] = InsertionPolicy.SelectMethod(EmojiInsertMode.Hybrid, "👨‍👩‍👧") == InsertionMethod.TemporaryPaste,
             ["hybrid-flag-paste"] = InsertionPolicy.SelectMethod(EmojiInsertMode.Hybrid, "🇹🇭") == InsertionMethod.TemporaryPaste,
             ["hybrid-keycap-paste"] = InsertionPolicy.SelectMethod(EmojiInsertMode.Hybrid, "1️⃣") == InsertionMethod.TemporaryPaste,
-            ["hybrid-skin-tone-paste"] = InsertionPolicy.SelectMethod(EmojiInsertMode.Hybrid, "👍🏽") == InsertionMethod.TemporaryPaste,
+            ["hybrid-skin-tone-keystroke"] = InsertionPolicy.SelectMethod(EmojiInsertMode.Hybrid, "👍🏽") == InsertionMethod.UnicodeKeystrokes,
             ["paste-always"] = InsertionPolicy.SelectMethod(EmojiInsertMode.Paste, "😀") == InsertionMethod.TemporaryPaste,
             ["keystroke-only"] = InsertionPolicy.SelectMethod(EmojiInsertMode.Keystroke, "👨‍👩‍👧") == InsertionMethod.UnicodeKeystrokes,
             ["target-valid"] = TargetValidationPolicy.Validate(1, true, 1, 0x2000, 0x2000) == TargetValidationFailure.None,

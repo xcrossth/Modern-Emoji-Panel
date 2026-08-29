@@ -50,6 +50,8 @@ internal sealed class PickerSessionState
 
     public static bool ContinuesAfter(CommitGesture gesture) => gesture != CommitGesture.Enter;
 
+    public static bool ShouldHideDuringInsertion(CommitGesture gesture) => !ContinuesAfter(gesture);
+
     public static bool ReturnsFocusAfter(PickerDismissReason reason) => reason != PickerDismissReason.ExternalPointer;
 }
 

@@ -39,7 +39,7 @@ try {
     $report = Get-Content -Raw -LiteralPath $temporaryReport | ConvertFrom-Json
     $checks = @($report.checks.psobject.Properties)
     Assert-Condition ($report.passed -eq $true) "Picker Session report contains a failed check"
-    Assert-Condition ($checks.Count -eq 12) "Expected 12 Picker Session policy checks"
+    Assert-Condition ($checks.Count -eq 14) "Expected 14 Picker Session policy checks"
     Assert-Condition (@($checks | Where-Object { $_.Value -ne $true }).Count -eq 0) "One or more Picker Session checks failed"
 
     $windowXaml = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot "apps\picker\EmojiPicker\MainWindow.xaml")

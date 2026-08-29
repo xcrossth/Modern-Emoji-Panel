@@ -1,14 +1,14 @@
 # Picker Session, focus และการวางหน้าต่าง
 
-Picker เปิดทุกครั้งใน Browse Mode โดย query ว่างและ focus อยู่ที่ Emoji grid ผู้ใช้กดลูกศรเพื่อเลื่อน selection ได้ ส่วน Ctrl+F หรือการคลิกช่องค้นหาจะเข้าสู่ Search Mode
+Picker เปิดทุกครั้งใน Browse Mode โดย query ว่างและใช้ pointer เลื่อน/คลิก Emoji ทุก physical key ที่ไม่ใช่ modifier รวม Space, Enter, Tab, ลูกศร และ shortcut chord จะเริ่ม Typing Handoff กลับไปยังแอปเป้าหมาย ส่วน Esc dismiss และการคลิกช่องค้นหาจะเข้าสู่ Search Mode
 
 ## Commit Gesture
 
-- คลิก Emoji: ส่งแล้วเปิด Picker Session เดิมต่อ
-- Enter: ส่งแล้ว dismiss และคง focus ที่แอปเป้าหมาย
-- Shift+Enter: ส่งแล้วเปิด Picker Session เดิมต่อ
+- คลิก Emoji ใน Browse/Search: ส่งแล้วเปิด Picker Session เดิมต่อโดยไม่ซ่อนหน้าต่าง
+- Enter ใน Search: ส่งแล้ว dismiss และคง focus ที่แอปเป้าหมาย
+- Shift+Enter ใน Search: ส่งแล้วเปิด Picker Session เดิมต่อโดยไม่ซ่อนหน้าต่าง
 
-ระหว่างการส่ง Picker จะซ่อนชั่วคราวเพื่อให้แอปเป้าหมายรับ focus เมื่อใช้คลิกหรือ Shift+Enter Picker จะกลับมา active พร้อม selection, query, หมวดหมู่ และตำแหน่ง scroll เดิม หากส่งไม่สำเร็จ Picker จะเปิด session เดิมพร้อมข้อความผิดพลาดและปุ่ม Explicit Copy
+ระหว่าง pointer/Shift+Enter insertion Picker ยังคง visible ขณะที่ focus สลับไปยังแอปเป้าหมายชั่วคราว จึงไม่เกิดภาพดับ–ติด เมื่อคิวจบ Picker กลับมา active พร้อม selection, query, หมวดหมู่ และตำแหน่ง scroll เดิม หากส่งไม่สำเร็จ Picker จะแสดง session เดิมพร้อมข้อความผิดพลาดและปุ่ม Explicit Copy
 
 ## Esc และการ dismiss
 
@@ -34,4 +34,4 @@ Emoji tile มี accessible name จากชื่อที่แปลตา�
 .\scripts\verify-picker-session.ps1
 ```
 
-ตัวตรวจครอบคลุม transition ของ Browse/Search, Esc สองจังหวะ, Commit Gesture, นโยบายคืน focus, placement ทั้ง monitor พิกัดบวกและลบ, การบันทึกขนาด และ wiring ของ WPF/accessibility
+ตัวตรวจครอบคลุม transition ของ Browse/Search, Esc สองจังหวะ, Commit Gesture, นโยบายคง visibility ระหว่าง multi-insert, การคืน focus, placement ทั้ง monitor พิกัดบวกและลบ, การบันทึกขนาด และ wiring ของ WPF/accessibility

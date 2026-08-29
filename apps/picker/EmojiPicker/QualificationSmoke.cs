@@ -34,7 +34,7 @@ internal static class QualificationSmoke
                 searchSamples.Add(stopwatch.Elapsed.TotalMilliseconds);
             }
 
-            var scrollFrames = await window.MeasureVirtualizedScrollFramesForSmokeAsync(samples: 100);
+            var scrollMeasurement = await window.MeasureVirtualizedScrollFramesForSmokeAsync(samples: 100);
 
             var decodeCandidates = window.SmokeEntries
                 .GroupBy(emoji => emoji.AssetPath, StringComparer.Ordinal)
@@ -90,7 +90,9 @@ internal static class QualificationSmoke
 
             var warmSummary = MetricSummary.From(warmOpen);
             var searchSummary = MetricSummary.From(searchSamples);
-            var scrollSummary = MetricSummary.From(scrollFrames);
+            var scrollSummary = MetricSummary.From(scrollMeasurement.FrameMilliseconds);
+            var scrollCommandSummary = MetricSummary.From(scrollMeasurement.ScrollCommandMilliseconds);
+            var scrollRenderWaitSummary = MetricSummary.From(scrollMeasurement.RenderWaitMilliseconds);
             var decodeSummary = MetricSummary.From(decodeSamples);
             var cacheHitSummary = MetricSummary.From(cacheHitSamples);
             var cacheCount = NotoEmojiAssetProvider.Shared.CachedImageCount;
@@ -129,6 +131,11 @@ internal static class QualificationSmoke
                     warmOpenToRenderProxy = warmSummary,
                     search = searchSummary,
                     virtualizedScrollFrame = scrollSummary,
+                    virtualizedScrollBoundaries = new
+                    {
+                        scrollCommand = scrollCommandSummary,
+                        renderWait = scrollRenderWaitSummary,
+                    },
                     idleWorkingSetMiB,
                     gridDecode = decodeSummary,
                     cacheHit = cacheHitSummary,

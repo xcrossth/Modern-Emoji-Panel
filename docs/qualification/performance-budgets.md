@@ -17,6 +17,10 @@
 
 global-hotkey metric ใช้ Notepad ที่สคริปต์เปิดเองเป็น foreground target และไม่เลือก/ส่ง Emoji จึงพิสูจน์เส้นทาง hook-to-visible แต่ไม่แทน manual app matrix ส่วน budgets ทั้งหมดตั้งใจจับ regression ที่มีผลต่อการใช้งาน ไม่ใช่คำรับรองว่า GPU/จอทุกแบบจะให้ frame time เดียวกัน ถ้าเปลี่ยนเครื่องมือวัด จำนวน sample หรือเส้นทาง code ต้องเพิ่ม schema version และอธิบายใน report ห้ามเลื่อน budget เพื่อให้ผลที่ล้มผ่านโดยไม่มีเหตุผลและ review
 
+performance process ไม่รันพร้อม `Get-NetTCPConnection`/`Get-NetUDPEndpoint` เพราะ CIM enumeration ทำให้ frame timing ของสิ่งที่กำลังวัดเปลี่ยนไป Network observation จึงใช้ process ที่สองจาก binary เดียวกัน รัน qualification workload ครบและถือ process ต่ออีก 2 วินาที ขณะที่ static source gate และ manual 15-minute packet/firewall matrix ยังคงแยกต่างหาก
+
+grid เก็บ near-viewport cache ก่อน–หลังอย่างละ 0.1 หน้า เพื่อให้การเลื่อนต่อเนื่องมีภาพสำรองหนึ่งช่วงสั้น ๆ โดยไม่ decode ภาพนอกจอหลายหน้าระหว่างการกระโดดไกล รายงานแยก `scrollCommand` กับ `renderWait` ไว้เพื่อระบุว่า regression เกิดในคำสั่ง virtualization หรือคิว render แต่ gate ยังคงตัดสินจากเวลารวม `virtualizedScrollFrame`
+
 ## Upstream comparison ที่มีอยู่
 
 ประวัติ Classic ที่สรุปไว้ใน `docs/upstream/classic-picker.md` รายงาน open speed โดยประมาณ 35–40 ms และ idle working set ประมาณ 20 MiB แต่ไม่มี raw samples, machine metadata หรือตัวเลข search, scroll, decode/cache และ package size ที่ทำซ้ำได้ ดังนั้น JSON เก็บตัวเลขเหล่านี้เป็น **reported approximate baseline** เท่านั้น ไม่ใช้เป็น gate เชิงสถิติ และบันทึก metric ที่ขาดเป็น `null`

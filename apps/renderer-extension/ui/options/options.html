@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>การตั้งค่า Modern Emoji Renderer</title>
+  <link rel="stylesheet" href="./options.css">
+</head>
+<body>
+  <main>
+    <h1>การตั้งค่า Modern Emoji Renderer</h1>
+    <p class="intro">กำหนดเว็บไซต์ที่ Renderer สามารถแสดง Emoji รุ่นใหม่ โดยไม่เปลี่ยนข้อความ Unicode เดิม</p>
+    <form id="settings-form">
+      <section>
+        <h2>การทำงาน</h2>
+        <label class="check"><input id="enabled" type="checkbox"> เปิด Renderer</label>
+        <label for="mode">ขอบเขตเว็บไซต์</label>
+        <select id="mode">
+          <option value="allowlist">ทำงานเฉพาะเว็บไซต์ในรายการ</option>
+          <option value="denylist">ทำงานทุกเว็บไซต์ยกเว้นรายการ</option>
+          <option value="all">ทำงานทุกเว็บไซต์</option>
+        </select>
+        <label for="sites">เว็บไซต์ (หนึ่ง domain ต่อบรรทัด)</label>
+        <textarea id="sites" rows="7" spellcheck="false" aria-describedby="sites-help"></textarea>
+        <p id="sites-help" class="help">ตัวอย่าง: <code>instagram.com</code> ไม่ต้องใส่ path</p>
+      </section>
+      <section>
+        <h2>Renderer และการวินิจฉัย</h2>
+        <label for="renderer-mode">รูปแบบ Renderer</label>
+        <select id="renderer-mode"><option value="noto-colrv1">Noto COLRv1 (แนะนำ)</option></select>
+        <label class="check"><input id="dynamic" type="checkbox"> ประมวลผลข้อความที่เพิ่มภายหลัง</label>
+        <label class="check"><input id="debug" type="checkbox"> Diagnostic logging</label>
+        <p class="help">Diagnostic logging บันทึกเฉพาะจำนวน node/batch และเวลา ไม่บันทึกข้อความหรือ Emoji</p>
+      </section>
+      <section>
+        <h2>ข้อมูลเวอร์ชัน</h2>
+        <dl>
+          <div><dt>Extension</dt><dd id="extension-version"></dd></div>
+          <div><dt>Unicode Emoji Baseline</dt><dd>17.0</dd></div>
+          <div><dt>Noto Emoji</dt><dd>v2.051 · COLRv1</dd></div>
+        </dl>
+      </section>
+      <p id="form-status" class="status" aria-live="polite"></p>
+      <div class="actions">
+        <button type="submit" class="primary">บันทึก</button>
+        <button type="button" id="reset">คืนค่าเริ่มต้น</button>
+      </div>
+    </form>
+  </main>
+  <script type="module" src="./options.js"></script>
+</body>
+</html>

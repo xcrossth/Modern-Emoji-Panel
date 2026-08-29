@@ -85,3 +85,14 @@ export function renderSubtree(root: Node): RenderResult {
   }
   return { wrappersCreated, skippedEditableNodes };
 }
+
+export function unwrapRenderedEmoji(root: ParentNode): number {
+  const wrappers = Array.from(root.querySelectorAll<HTMLElement>(`[${RENDERER_ATTRIBUTE}="emoji"]`));
+  const parents = new Set<ParentNode>();
+  for (const wrapper of wrappers) {
+    if (wrapper.parentNode) parents.add(wrapper.parentNode);
+    wrapper.replaceWith(wrapper.ownerDocument.createTextNode(wrapper.textContent ?? ""));
+  }
+  for (const parent of parents) parent.normalize();
+  return wrappers.length;
+}

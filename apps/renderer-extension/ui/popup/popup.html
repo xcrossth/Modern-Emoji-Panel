@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modern Emoji Renderer</title>
+  <link rel="stylesheet" href="./popup.css">
+</head>
+<body>
+  <main>
+    <h1>Modern Emoji Renderer</h1>
+    <p id="site" class="site">กำลังตรวจสอบเว็บไซต์…</p>
+    <label class="toggle-row" for="site-enabled">
+      <span>เปิดใช้บนเว็บไซต์นี้</span>
+      <input id="site-enabled" type="checkbox" role="switch" aria-describedby="site-status">
+    </label>
+    <p id="site-status" class="status" aria-live="polite">กำลังโหลดสถานะ…</p>
+    <dl>
+      <div><dt>รูปแบบ</dt><dd>Noto COLRv1</dd></div>
+      <div><dt>Emoji ที่แก้ในหน้านี้</dt><dd id="fixed-count">—</dd></div>
+    </dl>
+    <button id="open-options" type="button">การตั้งค่าทั้งหมด</button>
+  </main>
+  <script type="module" src="./popup.js"></script>
+</body>
+</html>

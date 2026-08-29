@@ -15,7 +15,8 @@ describe("Renderer Extension foundation", () => {
     const manifest = JSON.parse(await readOutput("manifest.json"));
 
     expect(manifest.manifest_version).toBe(3);
-    expect(manifest.permissions).toEqual(["storage"]);
+    expect(manifest.permissions).toEqual(["storage", "activeTab", "scripting"]);
+    expect(manifest.optional_host_permissions).toEqual(["<all_urls>"]);
     expect(manifest.host_permissions).toEqual([
       "https://www.instagram.com/*",
       "https://www.tiktok.com/*",
@@ -39,7 +40,9 @@ describe("Renderer Extension foundation", () => {
   });
 
   it("contains no remote module import, eval, or source map in production scripts", async () => {
-    for (const path of ["background/service-worker.js", "content/index.js"]) {
+    for (const path of [
+      "background/service-worker.js", "content/index.js", "popup/popup.js", "options/options.js",
+    ]) {
       const script = await readOutput(path);
       expect(script).not.toMatch(/import\s+[^;]*["']https?:/u);
       expect(script).not.toContain("eval(");
@@ -57,7 +60,7 @@ describe("Renderer Extension foundation", () => {
     expect(manifest.web_accessible_resources).toEqual([
       {
         resources: ["assets/fonts/Noto-COLRv1.ttf"],
-        matches: manifest.host_permissions,
+        matches: ["<all_urls>"],
       },
     ]);
     await expect(stat(join(outputRoot, "assets/fonts/OFL.txt"))).resolves.toMatchObject({

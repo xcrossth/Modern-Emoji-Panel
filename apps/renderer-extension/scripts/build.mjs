@@ -19,6 +19,8 @@ await mkdir(outputRoot, { recursive: true });
 const entryPoints = {
   "background/service-worker": join(extensionRoot, "src", "background", "service-worker.ts"),
   "content/index": join(extensionRoot, "src", "content", "index.ts"),
+  "popup/popup": join(extensionRoot, "src", "popup", "popup.ts"),
+  "options/options": join(extensionRoot, "src", "options", "options.ts"),
   "fixtures/dom-renderer": join(extensionRoot, "src", "fixtures", "dom-renderer.ts"),
 };
 
@@ -43,6 +45,10 @@ if (manifest.manifest_version !== 3) {
 
 await cp(manifestSource, join(outputRoot, "manifest.json"));
 await cp(join(extensionRoot, "assets"), join(outputRoot, "assets"), { recursive: true });
+await cp(join(extensionRoot, "ui", "popup", "popup.html"), join(outputRoot, "popup", "popup.html"));
+await cp(join(extensionRoot, "ui", "popup", "popup.css"), join(outputRoot, "popup", "popup.css"));
+await cp(join(extensionRoot, "ui", "options", "options.html"), join(outputRoot, "options", "options.html"));
+await cp(join(extensionRoot, "ui", "options", "options.css"), join(outputRoot, "options", "options.css"));
 await mkdir(join(outputRoot, "data"), { recursive: true });
 await cp(
   join(extensionRoot, "src", "generated", "emoji-sequences.json"),

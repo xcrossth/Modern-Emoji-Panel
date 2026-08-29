@@ -52,7 +52,9 @@ Assert-Condition (Test-Path -LiteralPath $checksumsPath) "SHA256SUMS.txt is miss
 Assert-Condition (Test-Path -LiteralPath $portablePath) "Portable ZIP is missing"
 Assert-Condition (Test-Path -LiteralPath $installerPath) "Inno installer is missing"
 Assert-Condition (-not (Get-ChildItem -LiteralPath $ArtifactRoot -File -Recurse -Filter "*.msi")) "Release output contains an MSI"
-Assert-Condition (-not (Get-ChildItem -LiteralPath $ArtifactRoot -File -Recurse | Where-Object Name -Match '(?i)lite|framework')) "Release output contains a framework-dependent artifact"
+$unsupportedArtifacts = Get-ChildItem -LiteralPath $ArtifactRoot -File -Recurse |
+    Where-Object Name -Match '(?i)(framework[-_. ]?dependent|setup[-_.]?lite|[-_.]lite[-_.])'
+Assert-Condition (-not $unsupportedArtifacts) "Release output contains a framework-dependent or lite artifact"
 
 $manifest = Get-Content -Raw -LiteralPath $manifestPath | ConvertFrom-Json
 Assert-Condition ($manifest.schemaVersion -eq 1) "Release manifest schema is unsupported"

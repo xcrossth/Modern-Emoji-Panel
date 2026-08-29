@@ -105,19 +105,19 @@ namespace EmojiPicker
         }
 
         /// <summary>
-        /// Replays one captured shortcut chord only after restoring and revalidating
-        /// the exact pre-picker target. The chord is held only in memory and is never
+        /// Replays one captured physical key and its modifiers only after restoring
+        /// and revalidating the exact pre-picker target. It is held only in memory and is never
         /// logged, persisted or translated through the clipboard.
         /// </summary>
-        internal static async Task<InsertionResult> TrySendShortcutAsync(
+        internal static async Task<InsertionResult> TrySendKeyStrokeAsync(
             IntPtr targetWindow,
             IntPtr focusWindow,
             ushort virtualKey,
             ShortcutModifiers modifiers)
         {
-            if (virtualKey == 0 || modifiers == ShortcutModifiers.None)
+            if (virtualKey == 0)
             {
-                return InsertionResult.Failure("The shortcut handoff was invalid.");
+                return InsertionResult.Failure("The key handoff was invalid.");
             }
 
             var activationFailure = await TryActivateValidatedTargetAsync(targetWindow, focusWindow);
@@ -126,7 +126,7 @@ namespace EmojiPicker
                 return activationFailure;
             }
 
-            return SendShortcutKeystrokes(virtualKey, modifiers);
+            return SendKeyStroke(virtualKey, modifiers);
         }
 
         private static async Task<InsertionResult?> TryActivateValidatedTargetAsync(
@@ -455,7 +455,7 @@ namespace EmojiPicker
         private const ushort VkLeftWindows = 0x5B;
         private const ushort VkV = 0x56;
 
-        private static InsertionResult SendShortcutKeystrokes(ushort virtualKey, ShortcutModifiers modifiers)
+        private static InsertionResult SendKeyStroke(ushort virtualKey, ShortcutModifiers modifiers)
         {
             var modifierKeys = new List<ushort>(capacity: 4);
             AddModifier(ShortcutModifiers.Control, VkControl);
@@ -487,7 +487,7 @@ namespace EmojiPicker
                 : new InsertionResult(
                     false,
                     InsertionMethod.ShortcutKeystrokes,
-                    $"Windows accepted {accepted} of {inputArray.Length} shortcut input events. The operation was not retried.",
+                    $"Windows accepted {accepted} of {inputArray.Length} key handoff events. The operation was not retried.",
                     AcceptedInputCount: accepted,
                     RequestedInputCount: (uint)inputArray.Length);
 

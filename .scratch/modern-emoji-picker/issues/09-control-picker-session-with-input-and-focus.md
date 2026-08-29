@@ -6,9 +6,9 @@
 
 **Status:** resolved
 
-- [x] Picker เปิดใน Browse Mode ด้วย query ว่าง และใช้ arrow keys เพื่อเลื่อน selection ได้
-- [x] click ส่งแล้วคง Picker, Enter ส่งแล้ว dismiss และ Shift+Enter ส่งแล้วคง Picker ตาม Commit Gesture ที่กำหนด
-- [x] หลัง click หรือ Shift+Enter Picker กลับมา active โดยคง selection, query, category และ scroll เดิม
+- [x] Picker เปิดใน Browse Mode แบบ pointer-first; ทุก non-modifier key ยกเว้น Esc handoff กลับ target และไม่ใช้ keyboard selection ใน Browse
+- [x] click ส่งแล้วคง Picker แบบ visible; Enter ส่งแล้ว dismiss และ Shift+Enter ส่งแล้วคง Picker เมื่ออยู่ใน Search Mode
+- [x] หลัง click หรือ Shift+Enter Picker ไม่ดับ–ติดและกลับมา active โดยคง selection, query, category และ scroll เดิม
 - [x] Esc ใน Search Mode ครั้งแรกกลับ Browse Mode และ Esc ถัดไป dismiss; Esc ใน Browse Mode dismiss ได้ทันที
 - [x] close button และ click ภายนอกจริง dismiss ได้ โดย click ภายนอกเคารพ focus ของหน้าต่างที่ผู้ใช้คลิกและไม่แย่งกลับ
 - [x] Picker เปิดใกล้ text caret หรือ fallback กลางหน้าต่างเป้าหมายบน monitor เดียวกัน พร้อม clamp ใน working area
@@ -17,13 +17,13 @@
 
 ## Answer
 
-เพิ่ม state model ของ Picker Session ที่แยก Browse/Search Mode, Commit Gesture และ dismissal focus policy ออกจาก WPF shell แล้ว เชื่อม click/Enter/Shift+Enter เข้ากับ insertion path โดยซ่อน Picker ชั่วคราวและ restore view snapshot เฉพาะ gesture ที่ดำเนิน session ต่อ ส่วน click ภายนอก dismiss โดยไม่ activate target เดิมซ้ำ
+เพิ่ม state model ของ Picker Session ที่แยก Browse/Search Mode, Commit Gesture, visibility ระหว่าง insertion และ dismissal focus policy ออกจาก WPF shell แล้ว Browse ใช้ pointer-first และ handoff physical key กลับ target ส่วน click/Shift+Enter ที่ดำเนิน session ต่อคงหน้าต่าง visible ระหว่าง target activation จึงไม่เกิดภาพดับ–ติด ส่วน click ภายนอก dismiss โดยไม่ activate target เดิมซ้ำ
 
 การวางหน้าต่างใช้ text caret ก่อน แล้ว fallback กึ่งกลางหน้าต่างเป้าหมายบน monitor เดียวกัน พร้อม clamp ใน working area ตาม DPI หน้าต่างปรับขนาดได้และเก็บขนาดใน settings ขณะที่ query/category/ตำแหน่งไม่ถูกนำข้าม session การประกาศสถานะใช้ UI Automation live region, ItemStatus, accessible name และ focus indicator
 
 หลักฐานการตรวจสอบ:
 
-- `scripts/verify-picker-session.ps1`: ผ่าน 12 policy checks และ WPF wiring checks โดยไม่ส่ง input จริง
+- `scripts/verify-picker-session.ps1`: ผ่าน 14 policy checks และ WPF wiring checks โดยไม่ส่ง input จริง
 - `scripts/verify-foundation.ps1 -SkipPublish`: ผ่านด้วย .NET SDK 10.0.400, build 0 warnings/errors และ WPF smoke
 - `scripts/verify-safe-insertion.ps1 -SkipBuild`: ผ่าน 18 policy checks
 - `scripts/verify-search-preview.ps1 -SkipBuild`: ผ่าน 3,944 entries และ 100 searches

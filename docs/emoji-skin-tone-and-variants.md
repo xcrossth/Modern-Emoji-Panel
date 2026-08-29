@@ -14,6 +14,8 @@ Picker แยกการเลือกสีผิวออกเป็นส�
 
 Variant Override มีผลกับการเลือกครั้งนั้นเท่านั้นและไม่เปลี่ยนสีผิวเริ่มต้น เมนูแสดงชื่อ localized ของ sequence จริงและใช้ภาพ Noto ที่ผูกไว้ใน Emoji Baseline หลังเลือกแล้ว Recent จะรับ resolved Unicode sequence จริงตามที่ส่ง
 
+ใน Hybrid insertion uniform skin-tone sequence เช่น `👌🏻` ใช้ grouped Unicode keystrokes จึงไม่รอรอบ Temporary Paste/Clipboard restore ต่อคลิก ส่วน mixed-tone ที่มี ZWJ และ sequence ซับซ้อนอื่นยังใช้ Temporary Paste เพื่อรักษาการประกอบเป็น sequence เดียว
+
 ## ความครบถ้วนของข้อมูล
 
 runtime ไม่ประกอบ Unicode sequence หรือเดาชื่อไฟล์ภาพเอง โมดูล variant จัดกลุ่มจากระเบียนที่ generator ตรวจแล้วและคืนเฉพาะ fully-qualified sequence ที่มีอยู่ใน Emoji Baseline เท่านั้น

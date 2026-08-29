@@ -57,7 +57,7 @@ _หลีกเลี่ยง_: Insert operation, app session
 _หลีกเลี่ยง_: แอปล่าสุด, หน้าต่างที่คลิกล่าสุด
 
 **Browse Mode**:
-โหมดเริ่มต้นสำหรับเลื่อนและเลือก Emoji โดยการเริ่มพิมพ์ข้อความหมายถึงผู้ใช้ต้องการกลับไปยังแอปเป้าหมาย
+โหมดเริ่มต้นแบบ pointer-first สำหรับเลื่อนและคลิก Emoji โดยทุก physical key ที่ไม่ใช่ modifier (ยกเว้น Esc) หมายถึงผู้ใช้ต้องการกลับไปยังแอปเป้าหมาย ไม่ใช้ Space, Enter หรือลูกศรเลือก Emoji ในโหมดนี้
 _หลีกเลี่ยง_: Search focus เริ่มต้น
 
 **Search Mode**:
@@ -65,7 +65,7 @@ _หลีกเลี่ยง_: Search focus เริ่มต้น
 _หลีกเลี่ยง_: Typing Handoff, implicit search
 
 **Commit Gesture**:
-คำสั่งที่ยืนยันการเลือก Emoji พร้อมระบุว่า Picker Session จะดำเนินต่อหรือ dismiss
+คำสั่งที่ยืนยันการเลือก Emoji พร้อมระบุว่า Picker Session จะดำเนินต่อหรือ dismiss ได้แก่ pointer click และคำสั่ง keyboard ภายใน Search Mode
 _หลีกเลี่ยง_: Selection movement
 
 **Hover Preview**:
@@ -73,7 +73,7 @@ _หลีกเลี่ยง_: Selection movement
 _หลีกเลี่ยง_: Selection popup, persistent detail panel
 
 **Typing Handoff**:
-การ dismiss Picker เมื่อผู้ใช้เริ่มพิมพ์ต่อ พร้อมส่ง input แรกและ input ที่เกี่ยวข้องไปยังแอปเป้าหมายโดยไม่สูญหาย
+การ dismiss Picker เมื่อผู้ใช้กด physical key ต่อใน Browse Mode พร้อมส่ง virtual key และ modifiers กลับไปให้ keyboard layout ของแอปเป้าหมายตีความ โดยมี committed-text fallback สำหรับ IME/dead key ที่ไม่มี physical key ให้ replay
 _หลีกเลี่ยง_: Swallowed key, search input
 
 **Recent**:

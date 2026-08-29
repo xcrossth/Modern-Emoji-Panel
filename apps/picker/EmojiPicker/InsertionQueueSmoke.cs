@@ -106,21 +106,28 @@ internal static class InsertionQueueSmoke
         checks["ime-preedit-without-commit-is-not-captured"] =
             !TypingHandoffInput.TryCaptureCommittedText(string.Empty, out _);
         checks["control-shortcut-is-captured-as-a-chord"] =
-            TypingHandoffInput.TryCaptureShortcut(
+            TypingHandoffInput.TryCaptureKeyStroke(
                 0x43,
                 ShortcutModifiers.Control,
                 out var copyShortcut) &&
-            copyShortcut == TypingHandoffPayload.Shortcut(0x43, ShortcutModifiers.Control);
+            copyShortcut == TypingHandoffPayload.KeyStroke(0x43, ShortcutModifiers.Control);
         checks["alt-shift-shortcut-preserves-all-modifiers"] =
-            TypingHandoffInput.TryCaptureShortcut(
+            TypingHandoffInput.TryCaptureKeyStroke(
                 0x53,
                 ShortcutModifiers.Alt | ShortcutModifiers.Shift,
                 out var altShiftShortcut) &&
             altShiftShortcut.Modifiers == (ShortcutModifiers.Alt | ShortcutModifiers.Shift);
-        checks["shift-only-printable-key-waits-for-committed-text"] =
-            !TypingHandoffInput.TryCaptureShortcut(0x41, ShortcutModifiers.Shift, out _);
+        checks["shift-printable-key-is-handed-to-target-layout"] =
+            TypingHandoffInput.TryCaptureKeyStroke(0x41, ShortcutModifiers.Shift, out _);
         checks["modifier-only-key-is-not-a-shortcut"] =
-            !TypingHandoffInput.TryCaptureShortcut(0x11, ShortcutModifiers.Control, out _);
+            !TypingHandoffInput.TryCaptureKeyStroke(0x11, ShortcutModifiers.Control, out _);
+        checks["plain-physical-key-is-handed-to-target-layout"] =
+            TypingHandoffInput.TryCaptureKeyStroke(0x56, ShortcutModifiers.None, out var plainKey) &&
+            plainKey == TypingHandoffPayload.KeyStroke(0x56, ShortcutModifiers.None);
+        checks["space-is-handed-back-from-browse"] =
+            TypingHandoffInput.TryCaptureKeyStroke(0x20, ShortcutModifiers.None, out _);
+        checks["enter-is-handed-back-from-browse"] =
+            TypingHandoffInput.TryCaptureKeyStroke(0x0D, ShortcutModifiers.None, out _);
 
         var passed = checks.Values.All(value => value);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportPath))!);

@@ -92,4 +92,12 @@ Maintainer ยืนยัน 7 stage และพร้อมเป็นผู
 
 เพิ่ม `write-manual-qualification-report.ps1` เพื่อสร้าง JSON/Markdown ที่ผูก commit, executable SHA-256, OS/build, app versions, DPI/จอ, input/insertion mode และกำหนด `acceptedAutomatically: false` เสมอ เพิ่ม `observe-manual-runtime-network.ps1` สำหรับ socket observation 15 นาทีโดยระบุชัดว่าไม่ใช่ packet capture และเพิ่ม `verify-manual-qualification-wizard.ps1` ตรวจ library เทียบ template, 7 stages, Bash/PowerShell syntax, result vocabulary, artifact path และ report smoke ภาษาไทย
 
-verifier ผ่านบน Windows 10 build 19045; การรัน wizard จริงยังต้องให้ maintainerตอบ prompt และสังเกต desktop จึงยังไม่เปลี่ยน manual matrix หรือสถานะ Ticket 13 ใน checkpoint นี้
+verifier ผ่านบน Windows 10 build 19045; การรัน wizard จริงยังต้องให้ maintainer ตอบ prompt และสังเกต desktop จึงยังไม่เปลี่ยน manual matrix หรือสถานะ Ticket 13 ใน checkpoint นี้
+
+### 29 สิงหาคม 2026 — ผลรอบ manual แรกและการแก้ interaction ก่อนทดสอบต่อ
+
+รอบแรกพบว่า wizard ถูกเปิดจาก Terminal แบบ Administrator ทำให้ Notepad มี integrity สูงกว่า Modern และให้ผลลวงว่า hotkey เสีย จึงเพิ่ม preflight ที่ปฏิเสธ elevated shell พร้อม regression verifier หลังกลับมาทดสอบแบบสิทธิ์ปกติ maintainer รายงาน interaction ที่ไม่ผ่านจริงสี่ข้อ: Browse ใช้ Enter/Space ควบคุม selection แทนกลับ target, per-app keyboard layout ทำให้ปุ่ม `อ` ถูกแปลเป็น `v` ใน Picker, pointer multi-insert ซ่อน/แสดงหน้าต่างจนกระพริบ และ uniform skin-tone เช่น `👌🏻` ช้าเพราะผ่าน Temporary Paste ทุกคลิก
+
+แก้ Browse เป็น pointer-first โดยจับ physical virtual key กับ modifiers ก่อน WPF แปล layout แล้ว handoff ให้ target ตีความเอง รวม Space/Enter/Tab/ลูกศร/shortcut พร้อม committed-text fallback สำหรับ IME/dead key เปลี่ยน pointer/Shift+Enter insertion ที่ดำเนิน session ต่อให้ Picker visible ตลอด และเปลี่ยน uniform skin-tone ใน Hybrid เป็น grouped Unicode keystrokes โดยคง ZWJ/flag/keycap/mixed-tone ไว้ที่ Temporary Paste
+
+automated regression ผ่าน Picker Session 14 checks, Insertion Queue/Typing Handoff 26 checks และ Safe Insertion 18 checks พร้อม Release self-contained build 0 warnings/errors แต่ผล desktop จริงทั้งสี่ข้อยังรอ maintainer ทดสอบซ้ำจาก artifact ล่าสุด จึงยังไม่เปลี่ยน manual matrix หรือสถานะ `needs-info`

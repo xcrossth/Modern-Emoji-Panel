@@ -887,6 +887,22 @@ namespace EmojiPicker
                 return;
             }
 
+            // In Browse, every non-modifier key except Escape belongs to the app
+            // the user was typing in. Capture the physical key before WPF translates
+            // it with the Picker's per-app keyboard layout (which may differ from
+            // the target's layout), then dismiss and replay it to the target.
+            var key = e.Key == Key.System ? e.SystemKey : e.Key;
+            if (sessionState.Mode == PickerInputMode.Browse && key != Key.Escape &&
+                TypingHandoffInput.TryCaptureKeyStroke(
+                    KeyInterop.VirtualKeyFromKey(key),
+                    GetShortcutModifiers(),
+                    out var keyStroke))
+            {
+                e.Handled = true;
+                BeginTypingHandoff(keyStroke);
+                return;
+            }
+
             if (e.Key == Key.F1)
             {
                 OpenKeyboardPreview();
@@ -907,11 +923,8 @@ namespace EmojiPicker
 
             // Alt combinations arrive as Key.System in WPF; use the underlying
             // key so Alt+T and Alt+Down remain keyboard-accessible.
-            var key = e.Key == Key.System ? e.SystemKey : e.Key;
-
-            // Browse navigation remains key-based. Printable text is handled by
-            // PreviewTextInput below so raw keys, dead-key prefixes and IME pre-edit
-            // are never replayed as if they were committed text.
+            // Search navigation remains key-based. Browse keys have already been
+            // handed back to the target above.
             switch (key)
             {
                 case Key.Enter:
@@ -972,15 +985,6 @@ namespace EmojiPicker
                     break;
             }
 
-            if (!e.Handled && sessionState.Mode == PickerInputMode.Browse &&
-                TypingHandoffInput.TryCaptureShortcut(
-                    KeyInterop.VirtualKeyFromKey(key),
-                    GetShortcutModifiers(),
-                    out var shortcut))
-            {
-                e.Handled = true;
-                BeginTypingHandoff(shortcut);
-            }
         }
 
         private void MainWindow_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -991,9 +995,8 @@ namespace EmojiPicker
                 return;
             }
 
-            // Capture the exact committed TextInput once. This deliberately does
-            // not handle PreviewKeyDown, TextInputStart or TextInputUpdate: shortcut
-            // chords, Thai IME pre-edit and dead-key prefixes stay with WPF/IME.
+            // Fallback for IME/dead-key commits that do not expose a replayable
+            // physical key through PreviewKeyDown.
             e.Handled = true;
             BeginTypingHandoff(committedText);
         }
@@ -1253,7 +1256,7 @@ namespace EmojiPicker
             HidePreview();
             var continueSession = PickerSessionState.ContinuesAfter(gesture);
             var snapshot = CaptureViewSnapshot();
-            var work = new InsertionWorkItem(emoji, snapshot);
+            var work = new InsertionWorkItem(emoji, snapshot, gesture);
             var enqueue = insertionQueue.Enqueue(work);
             if (enqueue.Status == QueueEnqueueStatus.Full)
             {
@@ -1334,7 +1337,10 @@ namespace EmojiPicker
                             ? $"Sending {work.Emoji.Name}."
                             : $"Sending {work.Emoji.Name}. {insertionQueue.PendingCount} pending.",
                         busy: true);
-                    Hide();
+                    if (PickerSessionState.ShouldHideDuringInsertion(work.Gesture))
+                    {
+                        Hide();
+                    }
 
                     InsertionResult result;
                     try
@@ -1448,7 +1454,7 @@ namespace EmojiPicker
                             App.PreviousForegroundWindow,
                             App.PreviousFocusWindow,
                             payload.CommittedText ?? throw new InvalidOperationException("Typing Handoff has no committed text."))
-                        : await TextInjector.TrySendShortcutAsync(
+                        : await TextInjector.TrySendKeyStrokeAsync(
                             App.PreviousForegroundWindow,
                             App.PreviousFocusWindow,
                             payload.VirtualKey,
@@ -1880,7 +1886,8 @@ namespace EmojiPicker
 
         private sealed record InsertionWorkItem(
             Emoji Emoji,
-            PickerViewSnapshot Snapshot);
+            PickerViewSnapshot Snapshot,
+            CommitGesture Gesture);
 
         private sealed record PickerViewSnapshot(
             PickerInputMode Mode,

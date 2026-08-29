@@ -132,6 +132,7 @@ namespace EmojiPicker
         internal int RealizedEmojiContainerCount => Enumerable.Range(0, EmojiGrid.Items.Count)
             .Count(index => EmojiGrid.ItemContainerGenerator.ContainerFromIndex(index) != null);
         internal bool InsertionErrorVisible => InsertionErrorPanel.Visibility == Visibility.Visible;
+        internal string InsertionErrorTextForSmoke => InsertionErrorText.Text;
         internal bool ExplicitCopyAvailable => ExplicitCopyButton.IsEnabled && ExplicitCopyButton.Visibility == Visibility.Visible;
         internal void ShowInsertionFailureForSmoke(Emoji emoji, string message) => ShowInsertionError(emoji, message);
         internal bool IsPreviewOpen => EmojiPreviewPopup.IsOpen;

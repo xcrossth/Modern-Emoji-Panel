@@ -94,6 +94,14 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 
 คำสั่งนี้ตรวจ Hybrid/Keystroke/Paste, target validation และ clipboard restore rules ผ่าน smoke seam โดยไม่ส่ง input จริง รายละเอียดและข้อจำกัดอยู่ที่ [การส่ง Emoji ไปยังแอปเป้าหมายอย่างปลอดภัย](../docs/safe-insertion.md)
 
+หากเครื่องมี Chrome เปิดอยู่ ให้ตรวจเส้นทางจริงของ address bar ซึ่งไม่มี child HWND ด้วย:
+
+```powershell
+.\scripts\verify-chrome-omnibox.ps1 -SkipBuild
+```
+
+คำสั่งนี้ focus address bar ชั่วคราว เปิด Picker test process ส่งหัวใจขาว `🤍` 10 ครั้งผ่าน MainWindow, Insertion Queue, target validation และ Hybrid insertion จริง จากนั้นตรวจ UTF-16 ว่าไม่มี `U+FFFD` ก่อนคืนค่า address bar เดิม คำสั่งไม่กด Enter จึงไม่เปิด URL ที่ใช้ทดสอบ
+
 ## ตรวจการค้นหาสองภาษาและ Hover Preview
 
 ```powershell

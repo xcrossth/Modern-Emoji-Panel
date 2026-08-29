@@ -49,9 +49,27 @@ try {
         -Wait `
         -PassThru `
         -WindowStyle Hidden
-    Assert-Condition ($desktopProcess.ExitCode -eq 0) "Desktop focus/rapid-insertion smoke failed with exit code $($desktopProcess.ExitCode)"
     Assert-Condition (Test-Path -LiteralPath $desktopReport) "Desktop focus/rapid-insertion report is missing"
     $desktop = Get-Content -Raw -LiteralPath $desktopReport | ConvertFrom-Json
+    if ($desktopProcess.ExitCode -ne 0) {
+        $failedChecks = @(
+            "accessibilityFocusCaptured",
+            "editableStateRestored",
+            "exactSequence",
+            "replacementOrUnpairedSurrogate",
+            "errorVisible",
+            "gridInteractive",
+            "dismissWorked",
+            "highContrastThemeApplied",
+            "highContrastEnterWorked",
+            "highContrastShiftEnterWorked"
+        ) | Where-Object {
+            $value = $desktop.$_
+            if ($_ -in @("replacementOrUnpairedSurrogate", "errorVisible")) { $value -eq $true }
+            else { $value -ne $true }
+        }
+        throw "Desktop focus/rapid-insertion smoke failed with exit code $($desktopProcess.ExitCode): $($failedChecks -join ', ')"
+    }
     Assert-Condition ($desktop.accessibilityFocusCaptured -eq $true) "The exact accessibility focus element was not captured"
     Assert-Condition ($desktop.editableStateRestored -eq $true) "Collapsed address/search edit state was not restored"
     Assert-Condition ($desktop.exactSequence -eq $true) "Rapid pointer insertion changed or dropped Unicode sequences"

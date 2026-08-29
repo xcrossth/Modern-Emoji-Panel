@@ -13,7 +13,7 @@ public partial class App
         ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown;
         Localizer.Apply(UiLanguagePreference.English);
         ThemeManager.Initialize();
-        Settings.ReplaceCurrent(new Settings { EmojiInsertMode = "hybrid" });
+        Settings.UseTransientForSmoke(new Settings { EmojiInsertMode = "hybrid" });
 
         var targetText = new TextBox { AcceptsReturn = true, FontSize = 20 };
         var collapsedEditFallback = new Button { Content = "Collapsed address/search UI fallback" };
@@ -33,15 +33,21 @@ public partial class App
         try
         {
             target.Show();
-            target.Activate();
-            targetText.Focus();
-            System.Windows.Input.Keyboard.Focus(targetText);
-            await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.ApplicationIdle);
-
             var targetHandle = new WindowInteropHelper(target).Handle;
+            AccessibilityFocusSnapshot? capturedAccessibilityFocus = null;
+            for (var attempt = 0; attempt < 10 && capturedAccessibilityFocus == null; attempt++)
+            {
+                ForceForegroundForGlobalHotkeySmoke(targetHandle);
+                targetText.Focus();
+                System.Windows.Input.Keyboard.Focus(targetText);
+                await Dispatcher.InvokeAsync(static () => { }, DispatcherPriority.ApplicationIdle);
+                await Task.Delay(25);
+                capturedAccessibilityFocus = AccessibilityFocusSnapshot.Capture(targetHandle);
+            }
+
             PreviousForegroundWindow = targetHandle;
             PreviousFocusWindow = TextInjector.GetFocusedControl(targetHandle);
-            PreviousAccessibilityFocus = AccessibilityFocusSnapshot.Capture(targetHandle);
+            PreviousAccessibilityFocus = capturedAccessibilityFocus;
             var accessibilityFocusCaptured = PreviousAccessibilityFocus != null;
             PreviousCaretRect = null;
 

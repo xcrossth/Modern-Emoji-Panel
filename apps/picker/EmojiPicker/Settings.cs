@@ -154,6 +154,12 @@ namespace EmojiPicker
             Save();
         }
 
+        /// <summary>Applies isolated process settings without touching the user's settings.json.</summary>
+        internal static void UseTransientForSmoke(Settings settings)
+        {
+            Current = settings.Normalize();
+        }
+
         internal Settings Normalize()
         {
             SchemaVersion = CurrentSchemaVersion;

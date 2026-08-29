@@ -33,13 +33,21 @@ internal sealed record InsertionResult(
 
 internal static class InsertionPolicy
 {
-    public static InsertionMethod SelectMethod(EmojiInsertMode mode, string sequence) => mode switch
+    public static InsertionMethod SelectMethod(
+        EmojiInsertMode mode,
+        string sequence,
+        bool targetRequiresAtomicSupplementaryText = false) => mode switch
     {
         EmojiInsertMode.Paste => InsertionMethod.TemporaryPaste,
         EmojiInsertMode.Keystroke => InsertionMethod.UnicodeKeystrokes,
+        _ when targetRequiresAtomicSupplementaryText && ContainsSupplementaryScalar(sequence) =>
+            InsertionMethod.TemporaryPaste,
         _ when IsComplexSequence(sequence) => InsertionMethod.TemporaryPaste,
         _ => InsertionMethod.UnicodeKeystrokes,
     };
+
+    internal static bool ContainsSupplementaryScalar(string sequence) =>
+        sequence.EnumerateRunes().Any(rune => rune.Value > char.MaxValue);
 
     public static bool IsComplexSequence(string sequence)
     {

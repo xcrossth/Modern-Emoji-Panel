@@ -108,7 +108,10 @@ namespace EmojiPicker
                 return activationFailure;
             }
 
-            var method = InsertionPolicy.SelectMethod(Settings.Current.InsertMode, text);
+            var method = InsertionPolicy.SelectMethod(
+                Settings.Current.InsertMode,
+                text,
+                accessibilityFocus?.RequiresAtomicSupplementaryText == true);
             if (method == InsertionMethod.TemporaryPaste)
             {
                 return await PasteViaClipboardAsync(text);

@@ -11,11 +11,22 @@ namespace EmojiPicker;
 internal sealed class AccessibilityFocusSnapshot
 {
     private readonly AutomationElement element;
+    private readonly string className;
+    private readonly string frameworkId;
 
-    private AccessibilityFocusSnapshot(AutomationElement element)
+    private AccessibilityFocusSnapshot(
+        AutomationElement element,
+        string className,
+        string frameworkId)
     {
         this.element = element;
+        this.className = className;
+        this.frameworkId = frameworkId;
     }
+
+    internal bool RequiresAtomicSupplementaryText =>
+        string.Equals(frameworkId, "Chrome", StringComparison.OrdinalIgnoreCase) &&
+        string.Equals(className, "OmniboxViewViews", StringComparison.Ordinal);
 
     internal static AccessibilityFocusSnapshot? Capture(IntPtr targetWindow)
     {
@@ -46,7 +57,10 @@ internal sealed class AccessibilityFocusSnapshot
                  bounds.Right > targetRect.Left && bounds.Left < targetRect.Right &&
                  bounds.Bottom > targetRect.Top && bounds.Top < targetRect.Bottom);
             return belongsToTarget
-                ? new AccessibilityFocusSnapshot(focused)
+                ? new AccessibilityFocusSnapshot(
+                    focused,
+                    current.ClassName,
+                    current.FrameworkId)
                 : null;
         }
         catch (ElementNotAvailableException)

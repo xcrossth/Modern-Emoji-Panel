@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modern Emoji Renderer — Static Fixture</title>
+  <style>
+    @font-face {
+      font-family: "ModernEmojiNoto";
+      src: url("../assets/fonts/Noto-COLRv1.ttf") format("truetype");
+      font-display: block;
+    }
+    :root { color-scheme: light dark; font-family: "Segoe UI", Tahoma, sans-serif; }
+    body { margin: 32px; background: Canvas; color: CanvasText; }
+    h1 { font-size: 24px; }
+    .row { margin: 16px 0; padding: 12px; border: 1px solid GrayText; }
+    .sample { font-size: 40px; line-height: 1.25; }
+    .noto { font-family: "ModernEmojiNoto", "Segoe UI Emoji", sans-serif; }
+    .surrounding { font: 18px/1.5 "Segoe UI", Tahoma, sans-serif; }
+    .surrounding .emoji { font-family: "ModernEmojiNoto", "Segoe UI Emoji", sans-serif; }
+  </style>
+</head>
+<body>
+  <h1>Static rendering fixture — Chrome / Windows 10</h1>
+  <div class="row"><strong>Windows system</strong><div class="sample system" id="system"></div></div>
+  <div class="row"><strong>Bundled Noto COLRv1</strong><div class="sample noto" id="noto"></div></div>
+  <p class="surrounding" id="surrounding">ภาษาไทยรอบข้าง The quick brown fox <span class="emoji">🫯</span> ต้องไม่เปลี่ยน 123</p>
+  <script>
+    const cases = ["🫩", "❤️", "👌🏻", "👩‍💻", "👨‍👩‍👧‍👦", "1️⃣", "🇹🇭", "🏴󠁧󠁢󠁥󠁮󠁧󠁿", "🫯"];
+    const expected = `${cases.join(" ")} `;
+    document.querySelector("#system").textContent = expected;
+    document.querySelector("#noto").textContent = expected;
+    window.collectFixtureReport = async () => {
+      await document.fonts.ready;
+      const noto = document.querySelector("#noto");
+      return {
+        userAgent: navigator.userAgent,
+        devicePixelRatio,
+        fontLoaded: document.fonts.check('40px "ModernEmojiNoto"'),
+        unicodePreserved: noto.textContent === expected,
+        codePoints: Array.from(expected).map(character => `U+${character.codePointAt(0).toString(16).toUpperCase()}`),
+        lineHeight: noto.getBoundingClientRect().height,
+        surroundingFont: getComputedStyle(document.querySelector("#surrounding")).font
+      };
+    };
+  </script>
+</body>
+</html>

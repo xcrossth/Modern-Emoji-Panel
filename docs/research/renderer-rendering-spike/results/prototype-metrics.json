@@ -1,0 +1,50 @@
+{
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/152.0.0.0 Safari/537.36",
+  "devicePixelRatio": 1,
+  "fonts": {
+    "cbdt": true,
+    "windows": true,
+    "colrv1": true
+  },
+  "expectedUnicode": "🫩 ❤️ 👌🏻 👩‍💻 👨‍👩‍👧‍👦 1️⃣ 🇹🇭 🏴󠁧󠁢󠁥󠁮󠁧󠁿 🫯 ",
+  "modes": {
+    "system": {
+      "textPreserved": true,
+      "height": 61,
+      "width": 529,
+      "fontFamily": "\"Segoe UI Emoji\", sans-serif"
+    },
+    "cbdt": {
+      "textPreserved": true,
+      "height": 61,
+      "width": 529,
+      "fontFamily": "SpikeCBDT, \"Segoe UI Emoji\", sans-serif"
+    },
+    "windows": {
+      "textPreserved": true,
+      "height": 61,
+      "width": 529,
+      "fontFamily": "SpikeWindows, \"Segoe UI Emoji\", sans-serif"
+    },
+    "colrv1": {
+      "textPreserved": true,
+      "height": 61,
+      "width": 529,
+      "fontFamily": "SpikeCOLRv1, \"Segoe UI Emoji\", sans-serif"
+    },
+    "png128": {
+      "textPreserved": true,
+      "height": 61.03125,
+      "width": 529,
+      "fontFamily": "\"Segoe UI\", Tahoma, sans-serif"
+    },
+    "png512": {
+      "textPreserved": true,
+      "height": 61.03125,
+      "width": 529,
+      "fontFamily": "\"Segoe UI\", Tahoma, sans-serif"
+    }
+  },
+  "surroundingTypographyPreserved": true,
+  "stressRenderMilliseconds": 13.799999952316284
+}

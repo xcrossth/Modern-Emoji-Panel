@@ -7,6 +7,7 @@
     "build": "node ./scripts/build.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
+    "verify:rendering": "node ./scripts/verify-rendering.mjs",
     "verify": "npm run typecheck && npm run build && npm run test"
   },
   "devDependencies": {

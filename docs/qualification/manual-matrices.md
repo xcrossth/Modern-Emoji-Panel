@@ -10,11 +10,11 @@ Workflow ต่อแถว: เปิดด้วย hotkey จาก text cont
 
 | Tier | OS / session | Target | Result | วันที่/ผู้ทดสอบ | หลักฐาน/issue | หมายเหตุ |
 |---|---|---|---|---|---|---|
-| A | Windows 10 22H2 x64 | Notepad | ยังไม่ทดสอบ | — | — | — |
-| A | Windows 10 22H2 x64 | Chrome | ยังไม่ทดสอบ | — | — | — |
-| A | Windows 10 22H2 x64 | VS Code | ยังไม่ทดสอบ | — | — | — |
+| A | Windows 10 22H2 x64 | Notepad | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | workflow หลักผ่าน |
+| A | Windows 10 22H2 x64 | Chrome | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | retest หลังแก้ caret placement ผ่าน |
+| A | Windows 10 22H2 x64 | VS Code | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | retest หลังแก้ caret placement ผ่าน |
 | A | Windows 10 22H2 x64 | Windows Terminal | ยังไม่ทดสอบ | — | — | — |
-| A | Windows 10 22H2 x64 | Explorer address bar | ยังไม่ทดสอบ | — | — | — |
+| A | Windows 10 22H2 x64 | Explorer address bar | ไม่ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) / Ticket 13 | lose focus แล้ว control กลับเป็น breadcrumb จึงพิมพ์ต่อไม่ได้ |
 | smoke | Windows 11 x64 | Notepad + Chrome | ยังไม่ทดสอบ | — | — | — |
 | B | เมื่อพร้อม | Discord | ยังไม่ทดสอบ | — | — | best-effort |
 | B | เมื่อพร้อม | Slack | ยังไม่ทดสอบ | — | — | best-effort |
@@ -29,19 +29,19 @@ Workflow ต่อแถว: เปิดด้วย hotkey จาก text cont
 
 | Environment / case | Result | วันที่/ผู้ทดสอบ | หลักฐาน/issue | หมายเหตุ |
 |---|---|---|---|---|
-| DPI 100% จอเดียว | ยังไม่ทดสอบ | — | — | — |
+| DPI 100% จอเดียว | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | 3440×1440, 96 DPI |
 | DPI 125% จอเดียว | ยังไม่ทดสอบ | — | — | — |
 | DPI 150% จอเดียว | ยังไม่ทดสอบ | — | — | — |
 | DPI 175% จอเดียว | ยังไม่ทดสอบ | — | — | — |
 | DPI 200% จอเดียว | ยังไม่ทดสอบ | — | — | — |
 | DPI 225% จอเดียว | ยังไม่ทดสอบ | — | — | — |
 | DPI 250% จอเดียว | ยังไม่ทดสอบ | — | — | — |
-| สองจอต่าง DPI: เปิด/ย้าย/เปิดซ้ำทั้งสองทิศ | ยังไม่ทดสอบ | — | — | บันทึก DPI ของแต่ละจอ |
-| keyboard-only workflow | ยังไม่ทดสอบ | — | — | mouse ไม่ใช้งานระหว่างกรณี |
-| focus indicator ทุก interactive control | ยังไม่ทดสอบ | — | — | ตรวจ Light/Dark/System |
-| Windows High Contrast | ยังไม่ทดสอบ | — | — | บันทึก scheme ที่ใช้ |
-| Narrator: name/selection/busy/error | ยังไม่ทดสอบ | — | — | ระบุ screen reader version |
-| NVDA: name/selection/busy/error | ยังไม่ทดสอบ | — | — | เมื่อ environment พร้อม |
+| สองจอต่าง DPI: เปิด/ย้าย/เปิดซ้ำทั้งสองทิศ | ทำไม่ได้ใน environment | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | มีจอเดียว |
+| keyboard-only workflow | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | Tier A ผ่าน; Codex Shift+Enter ยังมี compatibility issue |
+| focus indicator ทุก interactive control | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | ตรวจ Light/Dark/System |
+| Windows High Contrast | ไม่ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) / Ticket 13 | Search Enter/Shift+Enter ใช้ไม่ได้; System theme เลือก Light ผิด |
+| Narrator: name/selection/busy/error | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | อ่านสถานะปกติได้; rapid-click corruption แยกใน Matrix C |
+| NVDA: name/selection/busy/error | ทำไม่ได้ใน environment | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | ไม่มี NVDA |
 
 ## Matrix C — input, sequence และ queue
 
@@ -49,19 +49,19 @@ Workflow ต่อแถว: เปิดด้วย hotkey จาก text cont
 
 | Input / sequence | ตัวอย่าง | Result | วันที่/ผู้ทดสอบ | หลักฐาน/issue | หมายเหตุ |
 |---|---|---|---|---|---|
-| English keyboard | ค้น `heart` แล้วพิมพ์ต่อทันที | ยังไม่ทดสอบ | — | — | — |
-| Thai IME | ค้น `หัวใจ` และ Typing Handoff ตัวแรก | ยังไม่ทดสอบ | — | — | บันทึก IME/layout |
-| dead key | layout ที่มี dead key แล้ว commit ตัวแรก | ยังไม่ทดสอบ | — | — | ห้าม raw replay |
-| single code point | 😀 | ยังไม่ทดสอบ | — | — | — |
-| variation selector | ❤️ | ยังไม่ทดสอบ | — | — | ตรวจ code units |
-| skin tone | 🙋🏿 | ยังไม่ทดสอบ | — | — | global tone |
-| mixed tone | 🫱🏻‍🫲🏿 | ยังไม่ทดสอบ | — | — | one-shot override |
-| flag | 🇹🇭 | ยังไม่ทดสอบ | — | — | — |
-| keycap | 1️⃣ | ยังไม่ทดสอบ | — | — | — |
-| ZWJ family | 👨‍👩‍👧 | ยังไม่ทดสอบ | — | — | — |
-| rapid clicks ≤ 20 pending | เลือกลำดับต่างกัน ≥ 10 ตัว | ยังไม่ทดสอบ | — | — | ตรวจลำดับปลายทาง |
+| English keyboard | ค้น `heart` แล้วพิมพ์ต่อทันที | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | — |
+| Thai IME | ค้น `หัวใจ` และ Typing Handoff ตัวแรก | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | per-app Thai layout ผ่าน |
+| dead key | layout ที่มี dead key แล้ว commit ตัวแรก | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | — |
+| single code point | 😀 | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | ตรวจ code points |
+| variation selector | ❤️ | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | `U+2764 U+FE0F` |
+| skin tone | 🙋🏿 | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | global tone |
+| mixed tone | 🫱🏻‍🫲🏿 | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | one-shot override; Win10 อาจแสดง tofu แต่ code points ถูกต้อง |
+| flag | 🇹🇭 | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | `U+1F1F9 U+1F1ED` |
+| keycap | 1️⃣ | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | `U+0031 U+FE0F U+20E3` |
+| ZWJ family | 👨‍👩‍👧 | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | sequence ครบ |
+| rapid clicks ≤ 20 pending | เลือกลำดับต่างกัน ≥ 10 ตัว | ไม่ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) / Ticket 13 | พบ isolated `U+D83D`/`�`, แถบแดงกะพริบ และบางครั้ง UI ค้างจนต้องปิด Picker |
 | queue full | active + 20 pending แล้วคลิกเพิ่ม | ยังไม่ทดสอบ | — | — | ต้องไม่ drop เงียบ |
-| dismiss ระหว่างส่ง | active + pending แล้ว Esc | ยังไม่ทดสอบ | — | — | active จบ, pending cancel |
+| dismiss ระหว่างส่ง | active + pending แล้ว Esc | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | active จบ, pending cancel |
 
 ## Matrix D — Clipboard และ target safety
 
@@ -69,18 +69,18 @@ Workflow ต่อแถว: เปิดด้วย hotkey จาก text cont
 
 | Clipboard / target case | Result | วันที่/ผู้ทดสอบ | หลักฐาน/issue | หมายเหตุ |
 |---|---|---|---|---|
-| Clipboard ว่าง | ยังไม่ทดสอบ | — | — | restore กลับว่างเมื่อทำได้ |
-| Unicode text | ยังไม่ทดสอบ | — | — | content เดิมต้องกลับ |
-| image | ยังไม่ทดสอบ | — | — | บันทึก format list/hash |
-| files (`FileDrop`) | ยังไม่ทดสอบ | — | — | บันทึก path ชุดทดสอบ |
-| custom/private format | ยังไม่ทดสอบ | — | — | best-effort; ระบุ format |
-| Clipboard เปลี่ยนระหว่าง delay | ยังไม่ทดสอบ | — | — | ห้าม restore ทับของใหม่ |
-| target ปิดก่อน validation | ยังไม่ทดสอบ | — | — | ต้อง abort/reopen Picker |
-| focus เปลี่ยนไป window อื่น | ยังไม่ทดสอบ | — | — | ห้าม retarget |
-| elevated target จาก non-elevated Picker | ยังไม่ทดสอบ | — | — | ต้อง abort |
-| Explicit Copy | ยังไม่ทดสอบ | — | — | ต้องเข้า history ตามปกติ |
-| Windows Clipboard History เปิด | ยังไม่ทดสอบ | — | — | Temporary Paste ต้องใส่ exclusion marker |
-| Clipboard manager ภายนอก | ยังไม่ทดสอบ | — | — | best-effort; ระบุชื่อ/version |
+| Clipboard ว่าง | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | restore กลับว่าง |
+| Unicode text | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | content เดิมกลับครบ |
+| image | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | image format/content เดิมกลับ |
+| files (`FileDrop`) | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | FileDrop เดิมกลับ |
+| custom/private format | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | Chromium internal source formats กลับ |
+| Clipboard เปลี่ยนระหว่าง delay | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | ไม่ restore ทับข้อมูลใหม่ |
+| target ปิดก่อน validation | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | abort โดยไม่ retarget |
+| focus เปลี่ยนไป window อื่น | ทำไม่ได้ใน environment | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | การลองครั้งนี้ปิด Picker/Notepad จึงไม่ใช่ repro ที่ใช้ตัดสินได้ |
+| elevated target จาก non-elevated Picker | ทำไม่ได้ใน environment | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | target เปิด Windows 10 Picker เดิมแทน Modern |
+| Explicit Copy | ทำไม่ได้ใน environment | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | เข้า failure UI ของ Modern ไม่ได้ |
+| Windows Clipboard History เปิด | ทำไม่ได้ใน environment | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | เปิด History แล้ว แต่ไม่มีหลักฐานสรุปผล Temporary Paste/Explicit Copy ครบ |
+| Clipboard manager ภายนอก | ทำไม่ได้ใน environment | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | ไม่มี Clipboard manager ภายนอกติดตั้ง |
 
 ## Matrix E — privacy/runtime network แบบ manual
 
@@ -88,8 +88,8 @@ Workflow ต่อแถว: เปิดด้วย hotkey จาก text cont
 
 | Case | Result | วันที่/ผู้ทดสอบ | หลักฐาน/issue | หมายเหตุ |
 |---|---|---|---|---|
-| ไม่มี outbound DNS/TCP/UDP ระหว่าง resident workflow | ยังไม่ทดสอบ | — | — | ระบุเครื่องมือ/filter |
-| ไม่มี update polling/telemetry/analytics/cloud sync | ยังไม่ทดสอบ | — | — | ตรวจร่วมกับ source gate |
-| ไม่มี remote font/asset call | ยังไม่ทดสอบ | — | — | ปิด network แล้วยัง browse/preview ได้ |
-| diagnostic logging ปิด: ไม่มี log content | ยังไม่ทดสอบ | — | — | — |
-| diagnostic logging เปิด: ไม่มี query/emoji/clipboard/target title | ยังไม่ทดสอบ | — | — | แนบ sanitized log |
+| ไม่มี outbound DNS/TCP/UDP ระหว่าง resident workflow | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | 15 นาที, 1,157 samples, 0 sockets; ไม่ใช่ packet capture |
+| ไม่มี update polling/telemetry/analytics/cloud sync | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | socket observation ร่วมกับ automated source gate |
+| ไม่มี remote font/asset call | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | browse/preview ใช้ asset ในเครื่องและไม่พบ socket |
+| diagnostic logging ปิด: ไม่มี log content | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | ไม่มีรายการใหม่ก่อนเปิด logging เวลา 19:04:45 |
+| diagnostic logging เปิด: ไม่มี query/emoji/clipboard/target title | ผ่าน | 2026-08-29 / June | [ผล manual รอบ 2026-08-29](./results/manual-win10-19045-20260829.md) | ตรวจ sanitized log แล้วพบเฉพาะ metadata |

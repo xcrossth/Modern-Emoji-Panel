@@ -109,3 +109,11 @@ automated regression ผ่าน Picker Session 14 checks, Insertion Queue/Typi
 แก้ generator ให้ resolve alias แบบทั่วไปไปยัง PNG ปลายทาง พร้อม guard สำหรับ cycle, target ที่หาย, ข้อความที่ไม่ใช่ alias ที่ปลอดภัย และตรวจ PNG signature ของ asset ที่ map ทุกไฟล์ baseline ใหม่จึงชี้แปดรายการไปยัง NO, FR, IO, ES, AU และ US ตามข้อมูล upstream โดยไม่แก้หรือทำสำเนา vendor source
 
 เพิ่ม `scripts/verify-flag-assets.ps1` ซึ่งใช้ WPF decoder เดียวกับ Picker ตรวจธง Emoji 17 ทั้ง 270 รายการ และผูกเข้ากับ `verify-noto-grid.ps1` รวมทั้งล็อก alias mapping ใน generator determinism verifier ผล automated ผ่าน 270/270 แล้ว แต่ยังรอ maintainer เปิดหมวด Flags ตรวจด้วยสายตาจาก artifact ล่าสุดก่อนเปลี่ยนผล manual matrix
+
+### 29 สิงหาคม 2026 — review ผล manual qualification รอบ `830f53e`
+
+Maintainer รัน wizard ครบ 7 stage จาก commit `9953a9a242db190b9ed0c9a470369d5f8367e4d3` บน Windows 10 build 19045 แล้ว Agent เก็บไฟล์ผลดิบไว้โดยไม่แก้ย้อนหลังและเทียบกับข้อความ/ภาพใน Codex session ก่อนนำผลเข้า `docs/qualification/manual-matrices.md` ผล reviewed รวมเป็น ผ่าน 31, ไม่ผ่าน 3, ทำไม่ได้ใน environment 7 และยังไม่ทดสอบ 2 รายการ รายละเอียดและ correction mapping อยู่ที่ `docs/qualification/results/manual-win10-19045-20260829.md`
+
+รายการไม่ผ่านที่ยืนยันได้มีสามกลุ่ม: Explorer address bar กลับเป็น breadcrumb เมื่อเสีย focus, High Contrast ใช้ Enter/Shift+Enter ใน Search ไม่ได้และ System theme เลือก Light ผิด, และ rapid clicks ทำให้เกิด isolated surrogate `U+D83D`/replacement character `�` พร้อมแถบสถานะสีแดงกะพริบ บางครั้ง Picker ค้างจน control ทั้งหมดและ outside-click ใช้ไม่ได้ ต้องปิดแล้วเปิด process ใหม่จึงฟื้น
+
+ยังไม่มี agent-runnable feedback loop ที่ทำให้ rapid-click corruption และ UI hang เกิดซ้ำได้อย่างตรวจอัตโนมัติ จึงยังไม่ตั้งสมมติฐานสาเหตุหรือแก้โค้ดตามวินัย diagnosing-bugs ขั้นต่อไปต้องสร้าง stress harness ที่ assert ทั้ง Unicode sequence ปลายทาง, bounded queue/status และ dispatcher responsiveness ก่อน จากนั้นจึง reproduce/minimise และแก้พร้อม regression test

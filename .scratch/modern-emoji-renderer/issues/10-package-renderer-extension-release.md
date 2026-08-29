@@ -17,8 +17,8 @@
 
 ## Comments
 
-- คำสั่งหลักคือ `scripts/build-renderer-release.ps1` และไม่ใช้ GitHub Actions; รอบ clean checkout ที่ commit `308da46` ผ่านตั้งแต่ `npm ci`, qualification, production build, deterministic packaging, verification จนถึง Chrome for Testing load smoke
-- ZIP `modern-emoji-renderer-0.0.1.zip` ถูกสร้างซ้ำ 2 รอบได้ SHA-256 เดียวกันคือ `a5b06bf2a079bc6aa5c70a033f3f962a712827d0dbae20e692f4b1816806d2d0`; output และรายงานอยู่ใต้ `artifacts/renderer-extension/release/`
+- คำสั่งหลักคือ `scripts/build-renderer-release.ps1` และไม่ใช้ GitHub Actions; รอบ clean checkout ล่าสุดที่ commit `f005e79` ผ่าน qualification, production build, deterministic packaging, package verification, Chrome load smoke และ actual bundled-font gate
+- ZIP `modern-emoji-renderer-0.0.1.zip` หลังแก้ font URL ถูกสร้างซ้ำ 2 รอบได้ SHA-256 เดียวกันคือ `aad15a5f8cae0eeda80ecab0669e542afc97b5ebcfb79c9de52e3ea0cdf6d260`; output และรายงานอยู่ใต้ `artifacts/renderer-extension/release/`
 - ตัวตรวจเปิดอ่าน ZIP กลับมาเทียบ staging ทุกไบต์ และตรวจ required/prohibited contents, manifest permissions, SHA256SUMS, licenses, Unicode/Noto metadata, font hash, debug default, Apple asset exclusion, runtime network API และ qualification report
 - Production package โหลด service worker ใน Chrome for Testing 152.0.7977.64 ได้โดยใช้ temporary profile
 - งานสร้างแพ็กเกจเสร็จครบ แต่ยังระบุเป็น `release-candidate` และคงสถานะ `ready-for-human` เพราะ Ticket 09 ยังรอ manual E2E บน Instagram DM/TikTok Web Chat; เมื่อ manual gate ผ่านจึงสร้าง final release ใหม่จาก clean checkout

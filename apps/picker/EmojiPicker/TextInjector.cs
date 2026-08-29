@@ -38,11 +38,20 @@ namespace EmojiPicker
 
         /// <summary>
         /// Screen-coordinate rectangle of the text caret in <paramref name="topLevel"/>'s
-        /// thread, when the app exposes one (classic edit controls do; Chromium and
-        /// Electron apps publish one for accessibility). Returns false when there is
-        /// no system caret, so the caller can fall back to the mouse position.
+        /// thread. Classic edit controls expose a native caret; rendered Chromium and
+        /// Electron controls may expose only an accessibility caret. Returns false when
+        /// neither source is usable, so placement can fall back to the target window.
         /// </summary>
         public static bool TryGetCaretRect(IntPtr topLevel, out System.Drawing.Rectangle rect)
+        {
+            return CaretRectResolver.TryResolve(
+                topLevel,
+                TryGetNativeCaretRect,
+                MsaaCaretCapture.TryGetCaretRect,
+                out rect);
+        }
+
+        private static bool TryGetNativeCaretRect(IntPtr topLevel, out System.Drawing.Rectangle rect)
         {
             rect = default;
             if (topLevel == IntPtr.Zero)

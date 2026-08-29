@@ -47,6 +47,13 @@ namespace EmojiPicker
         [DllImport("user32.dll")]
         internal static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
+        [DllImport("oleacc.dll")]
+        internal static extern int AccessibleObjectFromWindow(
+            IntPtr hwnd,
+            uint objectId,
+            ref Guid interfaceId,
+            [In, Out, MarshalAs(UnmanagedType.Interface)] ref object accessibleObject);
+
         // --- Keyboard hook ---
 
         internal delegate IntPtr LowLevelKeyboardProc(int nCode, IntPtr wParam, IntPtr lParam);

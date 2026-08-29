@@ -2,6 +2,10 @@
 
 *.ps1 text eol=crlf
 *.sh text eol=lf
+data/emoji-baseline/** text eol=lf
+vendor/emoji-baseline/** binary
+vendor/noto-emoji/** binary
+*.sha256 text eol=lf
 
 *.png binary
 *.jpg binary

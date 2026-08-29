@@ -1,0 +1,258 @@
+{
+  "schemaVersion": 1,
+  "baselineId": "emoji-17.0_unicode-17.0.0_cldr-48.2_noto-v2.051",
+  "baseline": {
+    "unicode": "17.0.0",
+    "emoji": "17.0",
+    "cldr": "48.2",
+    "notoEmoji": "v2.051",
+    "notoCommit": "8998f5dd683424a73e2314a8c1f1e359c19e8742"
+  },
+  "sourceLock": {
+    "path": "vendor/emoji-baseline/sources.lock.json",
+    "sha256": "d9c349dfb75db28095391417dcb4731a854ebd41570dba02d96103a7b0c532ed",
+    "byteLength": 12110
+  },
+  "sources": [
+    {
+      "id": "unicode-emoji-test",
+      "sourceName": "Unicode Emoji emoji-test.txt",
+      "version": "17.0",
+      "immutableUrl": "https://www.unicode.org/Public/17.0.0/emoji/emoji-test.txt",
+      "commit": null,
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "1d8a944f88d7952f7ef7c5167fef3c67995bcae24543949710231b03a201acda",
+      "byteLength": 669326,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "unicode-emoji-sequences",
+      "sourceName": "Unicode Emoji emoji-sequences.txt",
+      "version": "17.0",
+      "immutableUrl": "https://www.unicode.org/Public/17.0.0/emoji/emoji-sequences.txt",
+      "commit": null,
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "12cc8267dc33cbd11ed32bcf6fc5dc2ad9c7a77bae1bdfba2f41b1b9b3ead8dd",
+      "byteLength": 194868,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "unicode-emoji-zwj-sequences",
+      "sourceName": "Unicode Emoji emoji-zwj-sequences.txt",
+      "version": "17.0",
+      "immutableUrl": "https://www.unicode.org/Public/17.0.0/emoji/emoji-zwj-sequences.txt",
+      "commit": null,
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "5b25441daed2322b068c5e70cda522946a4f0274df864445a1965a92e5fc5cad",
+      "byteLength": 277215,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "unicode-emoji-data",
+      "sourceName": "Unicode Character Database emoji-data.txt",
+      "version": "17.0.0",
+      "immutableUrl": "https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-data.txt",
+      "commit": null,
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "2cb2bb9455cda83e8481541ecf5b6dfda66a3bb89efa3fa7c5297eccf607b72b",
+      "byteLength": 107324,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "unicode-emoji-variation-sequences",
+      "sourceName": "Unicode Character Database emoji-variation-sequences.txt",
+      "version": "17.0.0",
+      "immutableUrl": "https://www.unicode.org/Public/17.0.0/ucd/emoji/emoji-variation-sequences.txt",
+      "commit": null,
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "bb3d09ef03f206012c7532dd52dc0a21c9efddba0135ea4cf0d9201b8b9bba7e",
+      "byteLength": 38315,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "unicode-grapheme-break-property",
+      "sourceName": "Unicode Character Database GraphemeBreakProperty.txt",
+      "version": "17.0.0",
+      "immutableUrl": "https://www.unicode.org/Public/17.0.0/ucd/auxiliary/GraphemeBreakProperty.txt",
+      "commit": null,
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "d6b51d1d2ae5c33b451b7ed994b48f1f4dc62b2272a5831e7fd418514a6bae89",
+      "byteLength": 99377,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "unicode-grapheme-break-test",
+      "sourceName": "Unicode Character Database GraphemeBreakTest.txt",
+      "version": "17.0.0",
+      "immutableUrl": "https://www.unicode.org/Public/17.0.0/ucd/auxiliary/GraphemeBreakTest.txt",
+      "commit": null,
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "e2d134d2c52919bace503ebb6a551c1855fe1a1faec18478c78fff254a1793ec",
+      "byteLength": 126570,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "cldr-annotations-en",
+      "sourceName": "CLDR JSON annotations (English)",
+      "version": "48.2",
+      "immutableUrl": "https://raw.githubusercontent.com/unicode-org/cldr-json/bb334e8d6250c9363e957e131bf7e6d08ec72f91/cldr-json/cldr-annotations-full/annotations/en/annotations.json",
+      "commit": "bb334e8d6250c9363e957e131bf7e6d08ec72f91",
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "f22083cb86dffb63a643d5bacb5d9899f82d2fa5d388ad4f3aed72184acef505",
+      "byteLength": 438314,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "cldr-annotations-th",
+      "sourceName": "CLDR JSON annotations (Thai)",
+      "version": "48.2",
+      "immutableUrl": "https://raw.githubusercontent.com/unicode-org/cldr-json/bb334e8d6250c9363e957e131bf7e6d08ec72f91/cldr-json/cldr-annotations-full/annotations/th/annotations.json",
+      "commit": "bb334e8d6250c9363e957e131bf7e6d08ec72f91",
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "fcc6301f8b0935921ecc3f6c8fe14873d5caadc433df2130d5657356d046c389",
+      "byteLength": 541296,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "cldr-annotations-derived-en",
+      "sourceName": "CLDR JSON annotationsDerived (English)",
+      "version": "48.2",
+      "immutableUrl": "https://raw.githubusercontent.com/unicode-org/cldr-json/bb334e8d6250c9363e957e131bf7e6d08ec72f91/cldr-json/cldr-annotations-derived-full/annotationsDerived/en/annotations.json",
+      "commit": "bb334e8d6250c9363e957e131bf7e6d08ec72f91",
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "15c9457afa703a32dcc78d54626418a91e820fe0ddd67b7d491c4c4d9f5846ab",
+      "byteLength": 782906,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "cldr-annotations-derived-th",
+      "sourceName": "CLDR JSON annotationsDerived (Thai)",
+      "version": "48.2",
+      "immutableUrl": "https://raw.githubusercontent.com/unicode-org/cldr-json/bb334e8d6250c9363e957e131bf7e6d08ec72f91/cldr-json/cldr-annotations-derived-full/annotationsDerived/th/annotations.json",
+      "commit": "bb334e8d6250c9363e957e131bf7e6d08ec72f91",
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "11e23db9b3605763c637a6fc0ec76c466a48dafde2347bcdb52ed646706e505c",
+      "byteLength": 990286,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "unicode-data-license",
+      "sourceName": "Unicode License V3 from CLDR JSON 48.2.0",
+      "version": "3.0",
+      "immutableUrl": "https://raw.githubusercontent.com/unicode-org/cldr-json/bb334e8d6250c9363e957e131bf7e6d08ec72f91/LICENSE",
+      "commit": "bb334e8d6250c9363e957e131bf7e6d08ec72f91",
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "220ba0e1c43b99530d2d5bdb892a99dca0989414f51ab695ecd90163eaa1ec3b",
+      "byteLength": 2033,
+      "licenseClass": "Unicode-3.0"
+    },
+    {
+      "id": "noto-canonical-png",
+      "sourceName": "Noto Emoji canonical PNG 128/512",
+      "version": "v2.051",
+      "immutableUrl": "https://github.com/googlefonts/noto-emoji/commit/8998f5dd683424a73e2314a8c1f1e359c19e8742",
+      "commit": "8998f5dd683424a73e2314a8c1f1e359c19e8742",
+      "upstreamCommit": null,
+      "tree": "f5de9223f07bb7c738724c53849c15b856ef5b45",
+      "sha256": "e73ca7eca9bf9c69eb1d9c9931018b1615ac24e6a294a0994e4ef324ae333356",
+      "byteLength": 115857449,
+      "licenseClass": "Apache-2.0"
+    },
+    {
+      "id": "noto-region-flags",
+      "sourceName": "Noto Emoji region-flags source PNG",
+      "version": "v2.051 (region-flags 743e1f4a92b7d2dac49d7e6af509af63a71f0b45)",
+      "immutableUrl": "https://github.com/googlefonts/noto-emoji/tree/8998f5dd683424a73e2314a8c1f1e359c19e8742/third_party/region-flags",
+      "commit": "8998f5dd683424a73e2314a8c1f1e359c19e8742",
+      "upstreamCommit": "743e1f4a92b7d2dac49d7e6af509af63a71f0b45",
+      "tree": "f5de9223f07bb7c738724c53849c15b856ef5b45",
+      "sha256": "63705d229883d5177efb884bf3ca22e8f1a27ff90e6674b16c8a35b4305c1118",
+      "byteLength": 10605106,
+      "licenseClass": "LicenseRef-Public-Domain"
+    },
+    {
+      "id": "noto-artwork-license",
+      "sourceName": "Noto Emoji artwork license notice",
+      "version": "v2.051",
+      "immutableUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/svg/LICENSE",
+      "commit": "8998f5dd683424a73e2314a8c1f1e359c19e8742",
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "611ceab36dae96644ca84e8ace6873821790192bf6f73b0d0624a21b24b4b332",
+      "byteLength": 574,
+      "licenseClass": "Apache-2.0"
+    },
+    {
+      "id": "apache-2-license",
+      "sourceName": "Apache License 2.0",
+      "version": "2.0",
+      "immutableUrl": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "commit": null,
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "byteLength": 11358,
+      "licenseClass": "Apache-2.0"
+    },
+    {
+      "id": "region-flags-license",
+      "sourceName": "Noto region-flags public-domain declaration",
+      "version": "743e1f4a92b7d2dac49d7e6af509af63a71f0b45",
+      "immutableUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/third_party/region-flags/LICENSE",
+      "commit": "8998f5dd683424a73e2314a8c1f1e359c19e8742",
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "73af5be6e2ea006b75bebfd2f463f252c5ce8c94024c639dbdd97f0456272a5a",
+      "byteLength": 3479,
+      "licenseClass": "LicenseRef-Public-Domain"
+    },
+    {
+      "id": "region-flags-authors",
+      "sourceName": "Noto region-flags authors",
+      "version": "743e1f4a92b7d2dac49d7e6af509af63a71f0b45",
+      "immutableUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/third_party/region-flags/AUTHORS",
+      "commit": "8998f5dd683424a73e2314a8c1f1e359c19e8742",
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "5fb1f4ea94ea4ee7ddae16847af335c9a1da06965af855c107239dcf9d38f521",
+      "byteLength": 65,
+      "licenseClass": "LicenseRef-Public-Domain"
+    },
+    {
+      "id": "region-flags-provenance",
+      "sourceName": "Noto region-flags third-party provenance",
+      "version": "743e1f4a92b7d2dac49d7e6af509af63a71f0b45",
+      "immutableUrl": "https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/third_party/region-flags/README.third_party",
+      "commit": "8998f5dd683424a73e2314a8c1f1e359c19e8742",
+      "upstreamCommit": null,
+      "tree": null,
+      "sha256": "afcde2aa95a727811568338c51f73506de136177965ae49d2a7f63d89e8edf16",
+      "byteLength": 459,
+      "licenseClass": "LicenseRef-Public-Domain"
+    }
+  ],
+  "generatedFiles": [
+    {
+      "path": "emoji.json",
+      "sha256": "39bfe2585abb47f51e85ab000795951a6d6553570248c52306a2a9cc6f854423",
+      "byteLength": 6465012
+    },
+    {
+      "path": "review-report.json",
+      "sha256": "adadfc611ad9ad8cd66475823f0b05227e539ec67345ada76f0d70e0c15668c7",
+      "byteLength": 150859
+    }
+  ]
+}

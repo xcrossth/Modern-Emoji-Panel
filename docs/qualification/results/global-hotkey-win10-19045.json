@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "measuredAtUtc": "2026-08-29T11:47:35.2510036+07:00",
+  "runtime": {
+    "framework": "10.0.11",
+    "operatingSystem": "Microsoft Windows NT 10.0.19045.0",
+    "processArchitecture": "X64"
+  },
+  "target": {
+    "expectedWindow": 13635102,
+    "processId": 55152,
+    "foregroundBeforeInjection": 13635102,
+    "capturedWindow": 13635102,
+    "capturedFocusWindow": 1778104,
+    "caretAvailable": true
+  },
+  "hook": {
+    "installed": true,
+    "syntheticInputEventsSent": 80
+  },
+  "picker": {
+    "window": 2294962,
+    "visible": true,
+    "foreground": true
+  },
+  "categoryCache": {
+    "reusedOnUnchangedData": true,
+    "invalidatedBySearchResults": true,
+    "reusedAfterSearchRefresh": true,
+    "passed": true
+  },
+  "measurement": {
+    "samples": 20,
+    "medianMilliseconds": 18.20075,
+    "p95Milliseconds": 21.438955000000014,
+    "maximumMilliseconds": 37.6641,
+    "valuesMilliseconds": [
+      16.9772,
+      17.0099,
+      17.1438,
+      17.3417,
+      17.3736,
+      17.3741,
+      17.7596,
+      17.9737,
+      18.0089,
+      18.0755,
+      18.326,
+      18.5155,
+      18.65,
+      18.8924,
+      18.9527,
+      19.2026,
+      19.2387,
+      19.8947,
+      20.585,
+      37.6641
+    ],
+    "budgetMilliseconds": 100,
+    "passed": true,
+    "boundaries": {
+      "hookDispatchMilliseconds": {
+        "median": 2.6340500000000002,
+        "p95": 3.5644500000000003,
+        "maximum": 4.1126
+      },
+      "targetCaptureMilliseconds": {
+        "median": 0.05775,
+        "p95": 0.12482000000000036,
+        "maximum": 0.623
+      },
+      "showPickerMilliseconds": {
+        "median": 13.815999999999999,
+        "p95": 15.99167000000001,
+        "maximum": 29.2455
+      },
+      "showToRenderMilliseconds": {
+        "median": 0.46895,
+        "p95": 0.7070400000000012,
+        "maximum": 2.3437
+      },
+      "showPickerStages": {
+        "resetMilliseconds": {
+          "median": 0.5724,
+          "p95": 1.354875000000003,
+          "maximum": 5.2551
+        },
+        "categoryMilliseconds": {
+          "median": 0.22325,
+          "p95": 0.27542500000000003,
+          "maximum": 0.2968
+        },
+        "positionMilliseconds": {
+          "median": 0.2267,
+          "p95": 1.244785000000006,
+          "maximum": 9.4164
+        },
+        "showMilliseconds": {
+          "median": 11.24015,
+          "p95": 12.388005,
+          "maximum": 12.7738
+        },
+        "activateMilliseconds": {
+          "median": 0.1851,
+          "p95": 0.31555,
+          "maximum": 0.3222
+        },
+        "focusMilliseconds": {
+          "median": 1.1071,
+          "p95": 1.4052250000000004,
+          "maximum": 2.0175
+        }
+      }
+    }
+  },
+  "passed": true,
+  "error": null,
+  "limitations": [
+    "Win + . is generated with SendInput rather than a physical keyboard.",
+    "The smoke proves hook, foreground capture and visible-window activation; it does not select or insert an emoji."
+  ],
+  "qualificationHost": {
+    "windowsProductName": "Windows 10 Enterprise N",
+    "windowsVersion": "2009",
+    "osBuildNumber": "19045",
+    "osArchitecture": "64-bit",
+    "processor": "Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz",
+    "dotnetSdk": "10.0.400",
+    "gitCommit": "2f5410ea72d8855d59dbb1c58d8f5196155d8e6e"
+  }
+}

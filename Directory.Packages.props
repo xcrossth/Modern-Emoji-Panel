@@ -1,0 +1,10 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Dependencies inherited from the pinned Classic Picker foundation. -->
+    <PackageVersion Include="VirtualizingWrapPanel" Version="2.5.2" />
+  </ItemGroup>
+</Project>

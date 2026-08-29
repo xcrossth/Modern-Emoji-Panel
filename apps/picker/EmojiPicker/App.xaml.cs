@@ -210,6 +210,41 @@ namespace EmojiPicker
                 return;
             }
 
+            var chromeOmniboxSmokeIndex = Array.FindIndex(
+                e.Args,
+                argument => string.Equals(argument, "--chrome-omnibox-regression-smoke", StringComparison.Ordinal));
+            if (chromeOmniboxSmokeIndex >= 0)
+            {
+                var reportPath = chromeOmniboxSmokeIndex + 1 < e.Args.Length
+                    ? e.Args[chromeOmniboxSmokeIndex + 1]
+                    : null;
+                if (string.IsNullOrWhiteSpace(reportPath))
+                {
+                    Shutdown(2);
+                }
+                else
+                {
+                    var requested = chromeOmniboxSmokeIndex + 2 < e.Args.Length &&
+                        int.TryParse(e.Args[chromeOmniboxSmokeIndex + 2], out var parsedRequested)
+                            ? Math.Clamp(parsedRequested, 1, 50)
+                            : 10;
+                    var insertionMode = chromeOmniboxSmokeIndex + 3 < e.Args.Length
+                        ? e.Args[chromeOmniboxSmokeIndex + 3]
+                        : "hybrid";
+                    var targetWindow = chromeOmniboxSmokeIndex + 4 < e.Args.Length &&
+                        long.TryParse(e.Args[chromeOmniboxSmokeIndex + 4], out var parsedTargetWindow)
+                            ? new IntPtr(parsedTargetWindow)
+                            : IntPtr.Zero;
+                    RunChromeOmniboxRegressionSmoke(
+                        reportPath,
+                        requested,
+                        insertionMode,
+                        targetWindow);
+                }
+
+                return;
+            }
+
             // Only one resident instance may own the global hook and tray icon
             if (!SingleInstanceCoordinator.TryAcquire(
                     ProductIdentity.MutexName,

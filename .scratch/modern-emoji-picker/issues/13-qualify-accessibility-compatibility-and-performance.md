@@ -57,3 +57,15 @@ Maintainer อนุมัติให้แยก Ticket 14 เดิมเป�
 Ticket 14A ผ่านครบสายจาก clean commit `181cfe09a69e59285bece176c86a36333bab04bc` แล้ว จึงปิดเกณฑ์ automated suite/release preconditions และเติม package metrics จริงได้: raw Noto 127,309,639 bytes, self-contained publish 313,238,522 bytes (ผ่าน budget 350 MiB), portable ZIP 202,376,122 bytes และ installer 174,151,850 bytes พร้อม checksum ที่ verifier ตรวจผ่าน
 
 หลักฐานล่าสุดอยู่ที่ `docs/qualification/results/automated-win10-19045.json` และ `docs/qualification/results/local-artifacts-v0.1.9-win10-19045.json` อย่างไรก็ตามเกณฑ์ performance โดยรวมยังไม่ปิด เพราะ warm hotkey-to-visible จริงและ upstream search/scroll/decode/package ที่ทำซ้ำได้ยังไม่มี ส่วน manual matrices ทุกชุดยังต้องให้มนุษย์ทดสอบ จึงคงสถานะ `needs-info` และไม่ปลด Ticket 15 (14B)
+
+### 29 สิงหาคม 2026 — วัด global hotkey จริงและทำ performance gate ให้เสถียร
+
+เพิ่ม qualification path ที่ติดตั้ง low-level hook จริง เปิด Notepad ทดสอบ จับ foreground/focused control/caret และส่ง `Win + .` ด้วย `SendInput` 20 รอบ โดยไม่เลือก Emoji ไม่แตะ Clipboard/tray/Activity Data ผลจาก clean commit `2f5410ea72d8855d59dbb1c58d8f5196155d8e6e` ผ่าน warm global hotkey-to-visible ที่ median 18.2008 ms, P95 21.4390 ms และ maximum 37.6641 ms จาก budget 100 ms พร้อมยืนยันว่า Picker visible/foreground และ category cache reuse/invalidation ถูกต้อง หลักฐานแยกอยู่ที่ `docs/qualification/results/global-hotkey-win10-19045.json`
+
+ก่อนแก้ เส้นทางจริงวัด P95 ประมาณ 172–187 ms โดย boundary ชี้ว่า `LoadCategory` ใช้เวลาประมาณ 147.5 ms จึง cache `ItemsSource` ตาม category/data generation และ invalidate เมื่อ search/data เปลี่ยน หลังแก้ hotkey ผ่านซ้ำในช่วง P95 ประมาณ 21–27 ms โดยไม่ได้ลด budget
+
+ระหว่าง qualification เต็มพบ virtualized-scroll แกว่งเกิน budget เพราะ grid เดิม prefetch ก่อน–หลังอย่างละหนึ่งหน้า การกระโดด 100 ตำแหน่งทำให้ decode 12,357 ภาพในชุดเดียว จึงลด near-viewport cache เป็น 0.1 หน้าต่อด้านและวัดที่ cadence 60 Hz โดยไม่บังคับ drain Dispatcher ถึง `ContextIdle` ระหว่าง sample ผลสุดท้าย P95 51.8716 ms และ maximum 72.3436 ms จาก budgets 60/150 ms รายงานแยก boundary ยืนยันว่า scroll command P95 0.2029 ms ส่วน render wait P95 51.7885 ms
+
+qualification เต็มรอบเดียวกันผ่าน automated regression suite, Release self-contained publish, package budget และ runtime network observation 37 sample โดยไม่พบ socket รายงานรวมอยู่ที่ `docs/qualification/results/automated-win10-19045.json` และอ้าง commit เดียวกัน
+
+เกณฑ์ performance โดยรวมยังไม่ทำเครื่องหมายผ่าน เพราะ imported upstream มีเพียงตัวเลข warm open/working set โดยประมาณ ไม่มี raw search/scroll/decode/package ที่ทำซ้ำได้ การพิสูจน์ฝั่ง Modern และ global hotkey จริงเสร็จแล้ว แต่ manual app/OS/accessibility/DPI/input/clipboard matrices ยังไม่ผ่าน จึงคงสถานะ `needs-info` และยังไม่ปลด Ticket 15 (14B)

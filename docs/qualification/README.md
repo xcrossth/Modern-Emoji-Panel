@@ -50,4 +50,4 @@ qualification smoke ปกติไม่ติดตั้ง global hook, ไ�
 
 ## สถานะปัจจุบัน
 
-ผลอัตโนมัติของเครื่อง Windows 10 build 19045 เก็บใน `results/` หลังรันคำสั่งข้างต้น ส่วน manual matrices ยังเป็น “ยังไม่ทดสอบ” ทั้งหมด จึงยังไม่ถือว่า Ticket 13 หรือ Picker MVP ผ่านการรับรองปล่อยจริง
+ผลอัตโนมัติของเครื่อง Windows 10 build 19045 อยู่ที่ [`results/automated-win10-19045.json`](./results/automated-win10-19045.json) และผล hook-to-visible จริงอยู่ที่ [`results/global-hotkey-win10-19045.json`](./results/global-hotkey-win10-19045.json) ส่วน manual matrices ยังเป็น “ยังไม่ทดสอบ” ทั้งหมด จึงยังไม่ถือว่า Ticket 13 หรือ Picker MVP ผ่านการรับรองปล่อยจริง

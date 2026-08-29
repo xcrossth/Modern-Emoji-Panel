@@ -58,7 +58,7 @@ internal static class InsertionQueueSmoke
         cancelled.CompleteActive();
         checks["committed-thai-input-survives-active-operation"] =
             cancelled.IsTerminalReady &&
-            cancelled.TerminalIntent?.CommittedText == thaiInput &&
+            cancelled.TerminalIntent?.Handoff?.CommittedText == thaiInput &&
             cancelled.TerminalIntent.ReturnFocusToTarget;
         cancelled.Reset();
 
@@ -105,6 +105,22 @@ internal static class InsertionQueueSmoke
             !TypingHandoffInput.TryCaptureCommittedText("\u0003", out _);
         checks["ime-preedit-without-commit-is-not-captured"] =
             !TypingHandoffInput.TryCaptureCommittedText(string.Empty, out _);
+        checks["control-shortcut-is-captured-as-a-chord"] =
+            TypingHandoffInput.TryCaptureShortcut(
+                0x43,
+                ShortcutModifiers.Control,
+                out var copyShortcut) &&
+            copyShortcut == TypingHandoffPayload.Shortcut(0x43, ShortcutModifiers.Control);
+        checks["alt-shift-shortcut-preserves-all-modifiers"] =
+            TypingHandoffInput.TryCaptureShortcut(
+                0x53,
+                ShortcutModifiers.Alt | ShortcutModifiers.Shift,
+                out var altShiftShortcut) &&
+            altShiftShortcut.Modifiers == (ShortcutModifiers.Alt | ShortcutModifiers.Shift);
+        checks["shift-only-printable-key-waits-for-committed-text"] =
+            !TypingHandoffInput.TryCaptureShortcut(0x41, ShortcutModifiers.Shift, out _);
+        checks["modifier-only-key-is-not-a-shortcut"] =
+            !TypingHandoffInput.TryCaptureShortcut(0x11, ShortcutModifiers.Control, out _);
 
         var passed = checks.Values.All(value => value);
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(reportPath))!);

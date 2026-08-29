@@ -6,9 +6,10 @@
 
 > Windows 10 สามารถรับ Unicode Emoji ใหม่ได้ แต่ Chrome/เว็บไซต์บางเว็บ render Emoji ใหม่เป็นสี่เหลี่ยม, tofu หรือแสดง sequence ไม่สมบูรณ์ เพราะ fallback ไปใช้ Emoji font ของ Windows 10 ที่เก่า
 
-ตัวอย่าง target หลัก:
+Target หลัก:
 
-- Instagram Web
+- หน้า DM ของ Instagram Web
+- หน้าแชทของ TikTok Web
 - Chrome บน Windows 10
 
 เป้าหมายคือ:
@@ -44,7 +45,7 @@ Picker มีหน้าที่ "ส่ง Unicode"
 - update Emoji renderer แยกจากตัว Picker
 - deploy ได้ง่าย
 - rollback ง่าย
-- เหมาะกับ Instagram Web โดยตรง
+- เหมาะกับ Instagram DM และ TikTok Web Chat โดยตรง
 
 ชื่อชั่วคราว:
 
@@ -293,7 +294,7 @@ Noto SVG/PNG
 
 # 10. Dynamic Pages
 
-Instagram เป็น SPA และ DOM เปลี่ยนตลอด
+Instagram และ TikTok เป็น SPA และ DOM ของหน้าแชทเปลี่ยนตลอด
 
 ต้องใช้:
 
@@ -330,7 +331,7 @@ process only changed subtree
 Mutation ทุกครั้ง → document.body full scan
 ```
 
-เพราะ Instagram feed จะ lag
+เพราะหน้าแชทที่มีประวัติข้อความยาวหรือมีข้อความเข้าใหม่ต่อเนื่องจะ lag
 
 ควรใช้:
 
@@ -389,32 +390,31 @@ v1 ไม่จำเป็นต้อง rewrite text
 เหตุผล:
 
 - DOM mutation ใน contenteditable ทำให้ cursor กระโดด
-- React/Instagram controlled editor อาจพัง
+- controlled editor ของ Instagram/TikTok อาจพัง
 - IME อาจพัง
 - selection state ซับซ้อน
 
 ---
 
-# 14. Instagram-Specific Behavior
+# 14. Primary Chat Target Behavior
 
 ต้องทดสอบ:
 
 ```text
-Feed caption
-Comments
-Comment replies
-DM / Threads-like UI ถ้ามีใน web
-Profile bio
-Notification text
-Search result text
+Instagram DM: ข้อความในห้องสนทนาและข้อความที่โหลดเพิ่ม
+Instagram DM: รายการสนทนาและ preview ข้อความ
+TikTok Web Chat: ข้อความในห้องสนทนาและข้อความที่โหลดเพิ่ม
+TikTok Web Chat: รายการสนทนาและ preview ข้อความ
+ข้อความที่ส่งเองและข้อความที่ได้รับใหม่แบบ dynamic
+ข้อความไทย/อังกฤษที่มี Emoji ปนกัน
 ```
 
 scope priority:
 
 ```text
-P0: Feed + Comments
-P1: Profile + notifications
-P2: DM
+P0: Instagram DM + TikTok Web Chat
+P1: รายการสนทนา, message preview และข้อความที่โหลดเพิ่มย้อนหลัง
+P2: Instagram feed/comments และหน้า display content อื่น
 ```
 
 ---
@@ -424,14 +424,14 @@ P2: DM
 Extension ควรมี 2 mode:
 
 ```text
-1. Instagram only
+1. Primary chat sites
 2. All sites
 ```
 
 Default:
 
 ```text
-Instagram only
+Instagram + TikTok
 ```
 
 เพื่อ minimize compatibility risk
@@ -449,7 +449,8 @@ User สามารถ enable per-site ได้จาก options
   "enabled": true,
   "mode": "allowlist",
   "sites": [
-    "instagram.com"
+    "instagram.com",
+    "tiktok.com"
   ],
   "emojiStyle": "noto",
   "processDynamicContent": true
@@ -572,7 +573,8 @@ permissions ให้น้อยที่สุด
     "storage"
   ],
   "host_permissions": [
-    "https://www.instagram.com/*"
+    "https://www.instagram.com/*",
+    "https://www.tiktok.com/*"
   ]
 }
 ```
@@ -694,7 +696,7 @@ Emoji wrapper ต้อง:
 }
 ```
 
-ต้อง test จริงกับ Instagram
+ต้อง test จริงกับ Instagram DM และ TikTok Web Chat
 
 ---
 
@@ -749,7 +751,7 @@ Wrapper ควรไม่ทำลาย:
 
 # 29. SPA Navigation
 
-Instagram เปลี่ยน route โดยไม่ reload
+Instagram และ TikTok เปลี่ยน route หรือห้องสนทนาโดยไม่ reload
 
 ต้อง detect:
 
@@ -851,7 +853,7 @@ Default ปิด
 
 เป้าหมายคร่าว ๆ:
 
-Initial scan ของ Instagram feed ต้องไม่ freeze UI อย่างเห็นได้ชัด
+Initial scan ของห้องแชทที่มีประวัติยาวต้องไม่ freeze UI อย่างเห็นได้ชัด
 
 Mutation processing ต่อ batch ควรสั้น
 
@@ -911,15 +913,17 @@ Chrome stable / Windows 10
 Chrome stable / Windows 11
 ```
 
-Target website:
+Target websites:
 
 ```text
-Instagram Web
+Instagram Web DM
+TikTok Web Chat
 ```
 
 Regression websites:
 
 ```text
+Instagram feed/comments
 Google
 GitHub
 Reddit
@@ -931,24 +935,26 @@ Discord Web
 
 ---
 
-# 38. Instagram Test Matrix
+# 38. Primary Chat Test Matrix
 
 ต้องทดสอบ:
 
-- [ ] caption
-- [ ] comments
-- [ ] nested comments/replies
-- [ ] emoji only comment
+- [ ] Instagram DM: ข้อความที่ส่งเองและข้อความที่ได้รับ
+- [ ] Instagram DM: เปลี่ยนห้อง, โหลดประวัติย้อนหลัง และรับข้อความใหม่
+- [ ] TikTok Web Chat: ข้อความที่ส่งเองและข้อความที่ได้รับ
+- [ ] TikTok Web Chat: เปลี่ยนห้อง, โหลดประวัติย้อนหลัง และรับข้อความใหม่
+- [ ] ข้อความที่มีเฉพาะ Emoji
 - [ ] Thai + Emoji
 - [ ] English + Emoji
 - [ ] new Emoji not supported by Win10
 - [ ] ZWJ Emoji
 - [ ] skin tone
-- [ ] infinite scrolling
-- [ ] route navigation
-- [ ] opening modal post viewer
+- [ ] เลื่อนอ่านข้อความย้อนหลัง
+- [ ] route/conversation navigation
+- [ ] conversation list/message preview
 - [ ] scrollingเร็ว
-- [ ] switching profile/feed
+- [ ] เปิด/ปิด Extension ระหว่างอยู่ในห้องสนทนา
+- [ ] composer และ Thai IME ไม่พังแม้ v1 จะไม่แก้ Emoji ขณะพิมพ์
 
 ---
 
@@ -957,15 +963,15 @@ Discord Web
 Scenario สำคัญ:
 
 ```text
-Classic Emoji Picker Fork
+Modern Emoji Picker
     ↓
 click new Emoji
     ↓
-Unicode inserted into Instagram comment box
+Unicode inserted into Instagram DM หรือ TikTok Web Chat composer
     ↓
-user submits
+user sends message
     ↓
-Instagram renders comment
+เว็บไซต์แสดงข้อความใน conversation transcript
     ↓
 Chrome extension wraps Emoji
     ↓
@@ -1000,7 +1006,7 @@ extension ก็ต้อง render ได้
 
 # 41. Phase 2 — Optional Editable Rendering
 
-ถ้าต้องการให้ Instagram composer แสดง Emoji ใหม่ถูกขณะพิมพ์:
+ถ้าต้องการให้ Instagram DM หรือ TikTok Web Chat composer แสดง Emoji ใหม่ถูกขณะพิมพ์:
 
 ศึกษาแยกเป็น phase 2
 
@@ -1044,12 +1050,13 @@ Chromium
 งาน v1 ถือว่าผ่านเมื่อ:
 
 - [ ] Chrome extension load แบบ unpacked ได้
-- [ ] Instagram feed render Emoji ใหม่ด้วย Noto
-- [ ] Emoji ที่ Win10 เดิมขึ้น tofu แสดงถูกใน post/comment
+- [ ] Instagram DM render Emoji ใหม่ด้วย Noto ในข้อความที่ส่งและได้รับ
+- [ ] TikTok Web Chat render Emoji ใหม่ด้วย Noto ในข้อความที่ส่งและได้รับ
+- [ ] Emoji ที่ Win10 เดิมขึ้น tofu แสดงถูกใน conversation transcript
 - [ ] surrounding Thai/English font ไม่เปลี่ยน
 - [ ] copy text ยังได้ Unicode เดิม
-- [ ] infinite scroll ไม่ทำให้ lag รุนแรง
-- [ ] dynamic comments ที่โหลดทีหลังถูก render
+- [ ] เลื่อนประวัติแชทและเปลี่ยนห้องไม่ทำให้ lag รุนแรง
+- [ ] dynamic messages และประวัติที่โหลดทีหลังถูก render
 - [ ] ไม่มี duplicate wrapping
 - [ ] contenteditable ไม่พัง
 - [ ] extension เปิด/ปิดต่อ site ได้
@@ -1104,7 +1111,7 @@ Phase 6
 ทำ MutationObserver แบบ incremental
 
 Phase 7
-test Instagram feed/comments
+test Instagram DM + TikTok Web Chat
 
 Phase 8
 ทำ popup + site toggle
@@ -1123,15 +1130,15 @@ packaging + README + release ZIP
 บน Windows 10:
 
 ```text
-Chrome เปิด Instagram
+Chrome เปิด Instagram DM หรือ TikTok Web Chat
         ↓
-มี comment/post ที่ใช้ Emoji ใหม่
+มีข้อความแชทที่ใช้ Emoji ใหม่
         ↓
 Windows 10 เดิมจะขึ้น □ / tofu
         ↓
 เปิด Extension
         ↓
-Emoji เดียวกันแสดงด้วย Noto/Android style
+ข้อความหลังส่งแสดง Emoji เดียวกันด้วย Noto/Android style
         ↓
 ข้อความภาษาไทย/อังกฤษรอบ ๆ ยังใช้ font เดิม
         ↓

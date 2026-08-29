@@ -3,7 +3,8 @@
   "name": "Modern Emoji Renderer",
   "version": "0.0.1",
   "description": "แสดง Emoji รุ่นใหม่ด้วย Noto บน Instagram DM และ TikTok Web Chat",
-  "permissions": ["storage"],
+  "permissions": ["storage", "activeTab", "scripting"],
+  "optional_host_permissions": ["<all_urls>"],
   "host_permissions": [
     "https://www.instagram.com/*",
     "https://www.tiktok.com/*"
@@ -11,6 +12,14 @@
   "background": {
     "service_worker": "background/service-worker.js",
     "type": "module"
+  },
+  "action": {
+    "default_title": "Modern Emoji Renderer",
+    "default_popup": "popup/popup.html"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
   },
   "content_scripts": [
     {
@@ -26,10 +35,7 @@
   "web_accessible_resources": [
     {
       "resources": ["assets/fonts/Noto-COLRv1.ttf"],
-      "matches": [
-        "https://www.instagram.com/*",
-        "https://www.tiktok.com/*"
-      ]
+      "matches": ["<all_urls>"]
     }
   ]
 }

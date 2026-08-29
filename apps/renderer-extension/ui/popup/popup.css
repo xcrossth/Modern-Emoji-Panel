@@ -1,0 +1,18 @@
+:root { color-scheme: light dark; font-family: "Segoe UI", Tahoma, sans-serif; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 310px; background: Canvas; color: CanvasText; }
+main { padding: 16px; }
+h1 { margin: 0 0 4px; font-size: 18px; }
+.site { margin: 0 0 16px; color: GrayText; overflow-wrap: anywhere; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 10px 0; font-weight: 600; }
+input[type="checkbox"] { width: 38px; height: 22px; accent-color: AccentColor; }
+.status { min-height: 20px; margin: 4px 0 12px; color: GrayText; }
+.status.error { color: #d93025; }
+dl { margin: 0 0 14px; }
+dl div { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; }
+dt { color: GrayText; }
+dd { margin: 0; font-variant-numeric: tabular-nums; }
+button { width: 100%; min-height: 34px; border: 1px solid ButtonBorder; border-radius: 6px; background: ButtonFace; color: ButtonText; cursor: pointer; }
+button:focus-visible, input:focus-visible { outline: 2px solid Highlight; outline-offset: 2px; }
+button:disabled, input:disabled { opacity: .55; cursor: not-allowed; }
+@media (prefers-color-scheme: dark) { .status.error { color: #ff8a80; } }

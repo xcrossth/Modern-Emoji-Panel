@@ -1,0 +1,25 @@
+{
+  "chromeVersion": "152.0.7977.64",
+  "extensionBase": "chrome-extension://nladomhekcdgdnikjiilhmcekbfphdmp",
+  "optionsState": {
+    "enabled": true,
+    "mode": "allowlist",
+    "sites": [
+      "instagram.com",
+      "tiktok.com"
+    ],
+    "debug": false,
+    "rendererMode": "noto-colrv1",
+    "version": "0.0.1",
+    "labeledControls": true,
+    "language": "th"
+  },
+  "popupState": {
+    "language": "th",
+    "toggleLabel": "เปิดใช้บนเว็บไซต์นี้",
+    "optionsText": "การตั้งค่าทั้งหมด",
+    "liveRegion": "polite",
+    "restricted": "หน้านี้ไม่รองรับ"
+  },
+  "saveResetPassed": true
+}

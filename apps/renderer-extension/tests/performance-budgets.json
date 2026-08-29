@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "initialMessages": 2000,
+  "initialMilliseconds": 1000,
+  "burstMessages": 1000,
+  "burstMilliseconds": 750,
+  "maxBatchMilliseconds": 50,
+  "navigationCycles": 50,
+  "messagesPerNavigation": 100,
+  "navigationProcessingMilliseconds": 1500,
+  "retainedHeapBytes": 33554432
+}

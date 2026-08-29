@@ -5,6 +5,7 @@ export interface RendererMetrics {
   wrappersCreated: number;
   batches: number;
   processingMilliseconds: number;
+  maxBatchMilliseconds: number;
   skippedEditableNodes: number;
 }
 
@@ -43,6 +44,7 @@ export class IncrementalRenderer {
     wrappersCreated: 0,
     batches: 0,
     processingMilliseconds: 0,
+    maxBatchMilliseconds: 0,
     skippedEditableNodes: 0,
   };
   private readonly cursors: ScanCursor[] = [];
@@ -52,6 +54,7 @@ export class IncrementalRenderer {
   private readonly cancelIdle: CancelIdle;
   private readonly now: () => number;
   private observer: MutationObserver | null = null;
+  private observedRoot: Node | null = null;
   private idleHandle: number | null = null;
 
   constructor(private readonly document: Document, private readonly options: IncrementalRendererOptions = {}) {
@@ -64,13 +67,15 @@ export class IncrementalRenderer {
   start(root: Node = this.document.documentElement): void {
     if (this.observer) return;
     this.observer = new MutationObserver(records => this.handleMutations(records));
-    this.observer.observe(root, { childList: true, subtree: true, characterData: true });
+    this.observedRoot = root;
+    this.observe();
     this.enqueue(root);
   }
 
   stop(): void {
     this.observer?.disconnect();
     this.observer = null;
+    this.observedRoot = null;
     if (this.idleHandle !== null) this.cancelIdle(this.idleHandle);
     this.idleHandle = null;
     this.cursors.length = 0;
@@ -97,6 +102,12 @@ export class IncrementalRenderer {
     }
   }
 
+  private observe(): void {
+    if (this.observer && this.observedRoot) {
+      this.observer.observe(this.observedRoot, { childList: true, subtree: true, characterData: true });
+    }
+  }
+
   private schedule(): void {
     if (this.idleHandle !== null) return;
     this.idleHandle = this.scheduleIdle(deadline => {
@@ -110,33 +121,40 @@ export class IncrementalRenderer {
     const started = this.now();
     let processed = 0;
     this.metrics.batches += 1;
-    while (this.cursors.length > 0 && processed < this.maxNodesPerBatch) {
-      if (!deadline.didTimeout && deadline.timeRemaining() <= 1) break;
-      const cursor = this.cursors[0]!;
-      const node = cursor.stack.pop() ?? null;
-      if (!node) {
-        this.cursors.shift();
-        this.queuedRoots.delete(cursor.root);
-        continue;
-      }
-      if (node.nodeType !== node.TEXT_NODE) {
-        const children = Array.from(node.childNodes);
-        for (let index = children.length - 1; index >= 0; index -= 1) {
-          const child = children[index];
-          if (child) cursor.stack.push(child);
+    this.observer?.disconnect();
+    try {
+      while (this.cursors.length > 0 && processed < this.maxNodesPerBatch) {
+        if (!deadline.didTimeout && deadline.timeRemaining() <= 1) break;
+        const cursor = this.cursors[0]!;
+        const node = cursor.stack.pop() ?? null;
+        if (!node) {
+          this.cursors.shift();
+          this.queuedRoots.delete(cursor.root);
+          continue;
         }
-        continue;
+        if (node.nodeType !== node.TEXT_NODE) {
+          const children = Array.from(node.childNodes);
+          for (let index = children.length - 1; index >= 0; index -= 1) {
+            const child = children[index];
+            if (child) cursor.stack.push(child);
+          }
+          continue;
+        }
+        processed += 1;
+        this.metrics.nodesVisited += 1;
+        const textNode = node as Text;
+        const classification = classifyTextNode(textNode);
+        if (classification === "skip-editable") this.metrics.skippedEditableNodes += 1;
+        if (classification !== "render") continue;
+        const result = renderTextNode(textNode);
+        this.metrics.wrappersCreated += result.wrappersCreated;
       }
-      processed += 1;
-      this.metrics.nodesVisited += 1;
-      const textNode = node as Text;
-      const classification = classifyTextNode(textNode);
-      if (classification === "skip-editable") this.metrics.skippedEditableNodes += 1;
-      if (classification !== "render") continue;
-      const result = renderTextNode(textNode);
-      this.metrics.wrappersCreated += result.wrappersCreated;
+    } finally {
+      this.observe();
     }
-    this.metrics.processingMilliseconds += this.now() - started;
+    const elapsed = this.now() - started;
+    this.metrics.processingMilliseconds += elapsed;
+    this.metrics.maxBatchMilliseconds = Math.max(this.metrics.maxBatchMilliseconds, elapsed);
     if (this.options.debug) console.debug("[Modern Emoji Renderer]", { ...this.metrics });
   }
 }

@@ -1,0 +1,84 @@
+import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { arch, release, version } from "node:os";
+import { join, resolve } from "node:path";
+
+const root = resolve(import.meta.dirname, "../../..");
+const artifacts = join(root, "artifacts", "renderer-extension");
+const output = join(artifacts, "qualification");
+const readJson = path => readFile(join(artifacts, path), "utf8").then(JSON.parse);
+const performance = await readJson("evidence/ticket-09/performance-report.json");
+const dom = await readJson("evidence/tickets-03-04/report.json");
+const ui = await readJson("evidence/tickets-07-08/report.json");
+const rendering = await readJson("evidence/ticket-02/report.json");
+const vitest = await readJson("evidence/ticket-09/vitest-report.json");
+const report = {
+  schemaVersion: 1,
+  status: "automated-passed-manual-pending",
+  generatedAtUtc: new Date().toISOString(),
+  environment: {
+    osVersion: version(),
+    osRelease: release(),
+    architecture: arch(),
+    chromeForTesting: performance.chromeVersion,
+  },
+  automated: {
+    testsPassed: vitest.numPassedTests,
+    testSuitesPassed: vitest.numPassedTestSuites,
+    testsFailed: vitest.numFailedTests,
+    rendering,
+    dom,
+    ui,
+    performance,
+    outboundRuntimeNetwork: "passed-static-no-network-api-or-remote-code-path",
+    allSitesFixtures: ["Instagram feed/comments", "Google", "GitHub", "Reddit", "Facebook", "Discord Web"],
+  },
+  manual: {
+    status: "pending",
+    matrix: "docs/qualification/renderer-primary-sites.md",
+    requiredSites: ["Instagram Web DM", "TikTok Web Chat"],
+  },
+};
+if (report.automated.testsFailed !== 0 || !Object.values(performance.assertions).every(Boolean)) {
+  throw new Error("Cannot write a passing qualification report from failed evidence");
+}
+await mkdir(output, { recursive: true });
+await writeFile(join(output, "qualification-report.json"), `${JSON.stringify(report, null, 2)}\n`);
+const markdown = `# รายงาน Qualification ของ Modern Emoji Renderer
+
+สถานะ: **ส่วนอัตโนมัติผ่าน — รอ manual E2E บนบัญชีจริง**
+
+สร้างเมื่อ: ${report.generatedAtUtc}
+
+## Environment
+
+- OS: ${report.environment.osVersion} (${report.environment.osRelease}, ${report.environment.architecture})
+- Chrome for Testing: ${report.environment.chromeForTesting}
+- Automated tests: ${report.automated.testsPassed} tests / ${report.automated.testSuitesPassed} suites ผ่าน, ${report.automated.testsFailed} ล้มเหลว
+
+## Performance
+
+| Scenario | ผล | Budget |
+|---|---:|---:|
+| Initial ${performance.budgets.initialMessages.toLocaleString()} ข้อความ | ${performance.initial.milliseconds.toFixed(1)} ms | ≤ ${performance.budgets.initialMilliseconds} ms |
+| Mutation burst ${performance.budgets.burstMessages.toLocaleString()} ข้อความ | ${performance.burst.milliseconds.toFixed(1)} ms | ≤ ${performance.budgets.burstMilliseconds} ms |
+| Batch ที่ช้าที่สุด | ${Math.max(performance.initial.metrics.maxBatchMilliseconds, performance.burst.metrics.maxBatchMilliseconds, performance.navigation.metrics.maxBatchMilliseconds).toFixed(1)} ms | ≤ ${performance.budgets.maxBatchMilliseconds} ms |
+| สลับห้อง ${performance.budgets.navigationCycles} รอบ (processing time) | ${performance.navigation.metrics.processingMilliseconds.toFixed(1)} ms | ≤ ${performance.budgets.navigationProcessingMilliseconds} ms |
+| Heap หลัง GC เพิ่ม | ${performance.retainedHeapBytes.toLocaleString()} bytes | ≤ ${performance.budgets.retainedHeapBytes.toLocaleString()} bytes |
+
+wrapper ไม่โตจาก scrolling, repeated start ไม่สร้าง observer/wrapper ซ้ำ และ Editable Content คงเดิม
+
+## Integrity, Accessibility และ Privacy
+
+- Text, DOM extraction, Selection, Copy ที่มี user gesture และ Browser Find ผ่าน
+- Thai/English typography และ Unicode sequence คงเดิม
+- Wrapper ใช้ text semantic เดิม ไม่มี role/aria-label ซ้ำ
+- Composer/caret/selection/composition events ไม่ถูกแก้ DOM; หลัง submit จึง render เฉพาะ display content
+- all-sites fixtures ผ่านสำหรับ Instagram feed/comments, Google, GitHub, Reddit, Facebook และ Discord Web
+- production bundles ไม่มี Fetch/XHR/WebSocket/EventSource/importScripts/remote import/eval และ font/style/script มาจาก package เท่านั้น
+
+## งานที่ยังรอผู้ใช้
+
+Manual E2E บน Instagram Web DM และ TikTok Web Chat ตาม [matrix](../../../docs/qualification/renderer-primary-sites.md) ยังไม่ถูกนับว่าผ่าน
+`;
+await writeFile(join(output, "qualification-report.md"), markdown);
+process.stdout.write(`Qualification reports written: ${output}\n`);

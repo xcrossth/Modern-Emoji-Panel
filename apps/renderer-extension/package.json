@@ -12,6 +12,7 @@
     "verify:rendering": "node ./scripts/verify-rendering.mjs",
     "verify:dom": "node ./scripts/verify-dom-renderer.mjs",
     "verify:ui": "node ./scripts/verify-ui.mjs",
+    "verify:performance": "node ./scripts/verify-performance.mjs",
     "verify": "npm run check:data && npm run typecheck && npm run build && npm run test"
   },
   "devDependencies": {

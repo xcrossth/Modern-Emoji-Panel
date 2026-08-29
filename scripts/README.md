@@ -152,6 +152,18 @@ pwsh scripts/measure-global-hotkey.ps1 -OutputPath artifacts/ticket-13/global-ho
 
 คำสั่งนี้ต้องไม่มี Modern Emoji Picker instance อื่นทำงานอยู่ จากนั้นจะติดตั้ง low-level hook แบบ isolated, ส่ง `Win + .` ด้วย `SendInput` 20 ครั้ง, ตรวจ target/focused control/caret, การ activate Picker, category-cache semantics และ P95 ≤ 100 ms โดยไม่เลือก Emoji หรือแตะ Clipboard หากต้องการผูกหลักฐานนี้กับ qualification report ให้ส่ง path ผ่าน `verify-qualification.ps1 -GlobalHotkeyReportPath <path>`
 
+เมื่อมีผู้ทดสอบอยู่หน้าเครื่อง ให้เริ่ม manual qualification แบบ 7 stage ผ่าน Git Bash:
+
+```bash
+bash scripts/manual-qualification-wizard.sh
+```
+
+ตัวช่วยบันทึกผลที่มนุษย์เลือกพร้อม environment/evidence เป็น JSON และ Markdown ใต้ `artifacts/ticket-13/manual/` โดยไม่แก้ manual matrix หรือรับรองผลอัตโนมัติ ตรวจโครงสร้างและ report writer แยกต่างหากได้ด้วย:
+
+```powershell
+pwsh scripts/verify-manual-qualification-wizard.ps1
+```
+
 ## สร้าง product icon
 
 ```powershell

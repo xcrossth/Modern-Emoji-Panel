@@ -85,3 +85,11 @@ qualification เต็มรอบเดียวกันผ่าน automate
 7. สรุป: เขียน JSON กับ Markdown ลง `artifacts/ticket-13/manual/` พร้อมผล `ผ่าน`/`ไม่ผ่าน`/`ทำไม่ได้ใน environment`, หมายเหตุ และ path หลักฐาน เพื่อให้ agent review ก่อนนำเข้าตารางหลัก
 
 คำถามที่ต้องการคำตอบจาก maintainer: ยืนยัน 7 stage ตามลำดับนี้หรือระบุ stage ที่ต้องเพิ่ม/ตัด/สลับ และยืนยันว่าจะเป็นผู้สังเกตผลด้วยตนเองระหว่างรัน wizard หนึ่ง session เมื่อพร้อม หลังยืนยัน agent จึงจะเขียน/ตรวจ static wizard ตามกติกา skill โดยไม่รันแทนมนุษย์
+
+### 29 สิงหาคม 2026 — maintainer ยืนยันและสร้าง manual qualification wizard
+
+Maintainer ยืนยัน 7 stage และพร้อมเป็นผู้สังเกตผลแล้ว จึงเพิ่ม `scripts/manual-qualification-wizard.sh` จาก library ของ skill แบบ line-for-line พร้อม resume ภายในวันเดียวกันและผลสี่สถานะ `ผ่าน`/`ไม่ผ่าน`/`ทำไม่ได้ใน environment`/`ยังไม่ทดสอบ` ตัวช่วยเปิด test targets ที่มีในเครื่อง, แสดง workflow ทีละกรณี, เก็บหลักฐาน stage-level และไม่ตัดสินผลแทนมนุษย์
+
+เพิ่ม `write-manual-qualification-report.ps1` เพื่อสร้าง JSON/Markdown ที่ผูก commit, executable SHA-256, OS/build, app versions, DPI/จอ, input/insertion mode และกำหนด `acceptedAutomatically: false` เสมอ เพิ่ม `observe-manual-runtime-network.ps1` สำหรับ socket observation 15 นาทีโดยระบุชัดว่าไม่ใช่ packet capture และเพิ่ม `verify-manual-qualification-wizard.ps1` ตรวจ library เทียบ template, 7 stages, Bash/PowerShell syntax, result vocabulary, artifact path และ report smoke ภาษาไทย
+
+verifier ผ่านบน Windows 10 build 19045; การรัน wizard จริงยังต้องให้ maintainerตอบ prompt และสังเกต desktop จึงยังไม่เปลี่ยน manual matrix หรือสถานะ Ticket 13 ใน checkpoint นี้

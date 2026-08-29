@@ -17,12 +17,14 @@ UI หน่วงการกรอง 120 ms หลังการพิมพ
 
 ## Hover Preview
 
-- ชี้ tile ค้าง 400 ms เพื่อเปิด preview โดย popup ไม่รับ focus
+- ชี้ tile แล้วเปิด preview ทันทีโดย popup ไม่รับ focus เพื่อให้ผู้ใช้ใหม่ค้นพบความสามารถนี้ได้โดยไม่ต้องเดาว่าต้องชี้ค้าง
+- เมื่อเลื่อนไป tile ข้างเคียง การ์ดเดิมยังเปิดอยู่และเปลี่ยนตำแหน่ง ภาพ ชื่อ และเวอร์ชันตามรายการใหม่ จึงไม่เกิดการหาย–ปรากฏซ้ำ
 - กด `F1` เพื่อเปิดข้อมูลของ tile ที่เลือกหรือมี keyboard focus
 - ภาพมีขนาด 160 DIP และอ่าน path บทบาท `png512` จาก manifest โดยตรง
 - region flag ใช้ high-resolution source ร่วมตามที่ generator ระบุด้วย `sharedSourceForSizes` ไม่อนุมานชื่อไฟล์จาก sequence
 - แสดงชื่อตามภาษา UI, แสดงชื่ออังกฤษบรรทัดรองเฉพาะเมื่อไม่ซ้ำ และแสดงรุ่น Emoji
-- preview ปิดเมื่อ pointer ออกจาก tile, กด `Esc`, เปลี่ยนรายการ/ผลค้นหา, เริ่มเลือก Emoji หรือ dismiss Picker
+- เมื่อ pointer ออกจาก tile preview รอ 150 ms ก่อนปิด หาก pointer เข้า tile อื่นในช่วงนี้จะยกเลิกการปิดและใช้การ์ดเดิมต่อ
+- preview ปิดทันทีเมื่อกด `Esc`, เปลี่ยนรายการ/ผลค้นหา, เริ่มเลือก Emoji หรือ dismiss Picker
 
 ตัวโหลดภาพยังคง decode ตาม DPI, ทำงานเบื้องหลัง, freeze bitmap และใช้ bounded cache เดียวกับ grid หากภาพรายการเดียวเสีย preview แสดง placeholder แต่ Emoji Entry และ Unicode sequence ยังใช้งานได้
 
@@ -34,4 +36,4 @@ UI หน่วงการกรอง 120 ms หลังการพิมพ
 .\scripts\verify-search-preview.ps1
 ```
 
-สคริปต์ตรวจ Emoji Entry 3,944 รายการและ asset preview ครบทุก path, การค้นชื่อ/keyword ไทย–อังกฤษ, match tiers และ CLDR tie-break แบบ deterministic, accessible name, focus ของ popup, รายละเอียด preview, PNG 512 และ guardrail การตอบสนองของดัชนี 100 ครั้ง สคริปต์นี้ทำงาน offline
+สคริปต์ตรวจ Emoji Entry 3,944 รายการและ asset preview ครบทุก path, การค้นชื่อ/keyword ไทย–อังกฤษ, match tiers และ CLDR tie-break แบบ deterministic, accessible name, focus ของ popup, การเปิดทันที, close grace 150 ms, การ reuse popup เมื่อย้าย tile, รายละเอียด preview, PNG 512 และ guardrail การตอบสนองของดัชนี 100 ครั้ง สคริปต์นี้ทำงาน offline

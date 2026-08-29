@@ -100,7 +100,7 @@ Git remote ไม่ได้ติดไปกับ clone ใหม่ ให�
 .\scripts\verify-search-preview.ps1
 ```
 
-คำสั่งนี้ตรวจชื่อและ keyword ไทย–อังกฤษ, match tiers สี่ระดับ, CLDR tie-break, accessible name, การคง keyboard focus, delay 400 ms, รายละเอียด preview และ coverage ของ Noto PNG 512 ทั้ง 3,944 รายการ พร้อมวัด guardrail ของการค้นหา 100 ครั้งโดยไม่ใช้เครือข่าย รายละเอียดอยู่ที่ [การค้นหาสองภาษาและ Hover Preview](../docs/bilingual-search-hover-preview.md)
+คำสั่งนี้ตรวจชื่อและ keyword ไทย–อังกฤษ, match tiers สี่ระดับ, CLDR tie-break, accessible name, การคง keyboard focus, การเปิด preview ทันที, close grace 150 ms, การ reuse popup เมื่อย้าย tile, รายละเอียด preview และ coverage ของ Noto PNG 512 ทั้ง 3,944 รายการ พร้อมวัด guardrail ของการค้นหา 100 ครั้งโดยไม่ใช้เครือข่าย รายละเอียดอยู่ที่ [การค้นหาสองภาษาและ Hover Preview](../docs/bilingual-search-hover-preview.md)
 
 ## ตรวจสีผิวและ Variant Override
 

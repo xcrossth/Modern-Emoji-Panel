@@ -1,0 +1,34 @@
+{
+  "name": "modern-emoji-renderer",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node ./scripts/build.mjs",
+    "build:production": "node ./scripts/build.mjs --production",
+    "release": "node ./scripts/build-release.mjs",
+    "verify:release": "node ./scripts/verify-release.mjs",
+    "generate:data": "node ./scripts/generate-emoji-data.mjs",
+    "check:data": "node ./scripts/generate-emoji-data.mjs --check",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "verify:rendering": "node ./scripts/verify-rendering.mjs",
+    "verify:extension-font": "node ./scripts/verify-extension-font.mjs",
+    "verify:dom": "node ./scripts/verify-dom-renderer.mjs",
+    "verify:ui": "node ./scripts/verify-ui.mjs",
+    "verify:performance": "node ./scripts/verify-performance.mjs",
+    "verify": "npm run check:data && npm run typecheck && npm run build && npm run test"
+  },
+  "devDependencies": {
+    "@types/chrome": "0.2.7",
+    "@types/node": "26.4.0",
+    "esbuild": "0.28.2",
+    "happy-dom": "20.12.0",
+    "typescript": "7.0.2",
+    "vitest": "4.1.11"
+  },
+  "engines": {
+    "node": ">=24.0.0",
+    "npm": ">=11.0.0"
+  }
+}

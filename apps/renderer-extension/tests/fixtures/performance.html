@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Modern Emoji Renderer — Performance Fixture</title>
+  <style>
+    @font-face { font-family: ModernEmojiNoto; src: url("../assets/fonts/Noto-COLRv1.ttf"); }
+    body { font: 14px/1.4 "Segoe UI", sans-serif; }
+    .modern-emoji-renderer__emoji { font-family: ModernEmojiNoto, "Segoe UI Emoji", sans-serif; }
+    .transcript { max-height: 400px; overflow: auto; }
+  </style>
+</head>
+<body>
+  <h1>Performance fixture</h1>
+  <div id="composer" contenteditable="true">กำลังพิมพ์ 🫯</div>
+  <section id="initial" class="transcript"></section>
+  <section id="burst" class="transcript"></section>
+  <section id="navigation" class="transcript"></section>
+  <script type="module" src="./performance.js"></script>
+</body>
+</html>

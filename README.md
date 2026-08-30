@@ -7,6 +7,12 @@ Modern Emoji Panel ช่วยให้ Windows 10/11 ใช้ Unicode Emoji �
 
 ทั้งสองผลิตภัณฑ์ทำงานในเครื่อง ไม่มี telemetry และไม่ต้องเชื่อมบัญชีหรือ backend ของโครงการ
 
+## ภาพตัวอย่าง
+
+![Modern Emoji Picker แสดงหมวด Recent และ Hover Preview บน Windows](./docs/screenshot/screenshot.png)
+
+Modern Emoji Picker แสดง Noto artwork, skin tone และ Hover Preview ขณะใช้งานร่วมกับ Notepad
+
 ## ดาวน์โหลด
 
 ดาวน์โหลดจาก [GitHub Release v0.1.9](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.9)

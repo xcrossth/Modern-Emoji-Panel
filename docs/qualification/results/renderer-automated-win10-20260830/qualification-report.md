@@ -8,7 +8,7 @@
 
 - OS: Windows 10 Enterprise N (10.0.19045, x64)
 - Chrome for Testing: 152.0.7977.64
-- Automated tests: 62 tests / 26 suites ผ่าน, 0 ล้มเหลว
+- Automated tests: 65 tests / 26 suites ผ่าน, 0 ล้มเหลว
 
 ## Performance
 
@@ -30,6 +30,7 @@ wrapper ไม่โตจาก scrolling, repeated start ไม่สร้า
 - Composer/caret/selection/composition events ไม่ถูกแก้ DOM; หลัง submit จึง render เฉพาะ display content
 - all-sites fixtures ผ่านสำหรับ Instagram feed/comments, Google, GitHub, Reddit, Facebook และ Discord Web
 - Extension E2E fixture ยืนยันว่า glyph ใช้ bundled Noto Color Emoji จริงและโหลดด้วย `chrome-extension://` ดู [หลักฐานฟอนต์](../renderer-font-runtime-win10-20260830.md)
+- Instagram image-Emoji E2E ผ่านทั้ง static/dynamic, restore, Editable Content boundary และยืนยันด้วยบัญชีจริงว่า bubble/reaction ใช้ Noto โดยไม่กระทบรูป story/profile
 - production bundles ไม่มี Fetch/XHR/WebSocket/EventSource/importScripts/remote import/eval และ font/style/script มาจาก package เท่านั้น
 
 ## Manual E2E บนเว็บไซต์หลัก
@@ -38,3 +39,4 @@ wrapper ไม่โตจาก scrolling, repeated start ไม่สร้า
 - TikTok Web Chat: ข้อความเดิม/ใหม่, การสลับห้อง และ Copy/Paste ผ่าน
 - Composer คง renderer เดิมตาม Editable Content boundary ที่ตั้งใจไว้ และยังใช้งานได้
 - ดู [matrix](../../renderer-primary-sites.md) และ [manual evidence](../renderer-manual-primary-sites-win10-20260830.md)
+- ดู [หลักฐาน Instagram image-Emoji hotfix](../renderer-instagram-emoji-images-win10-20260830.md)

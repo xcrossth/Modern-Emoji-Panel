@@ -12,7 +12,10 @@ MVP ไม่มี framework-dependent, lite หรือ MSI package
 
 Renderer เผยแพร่แยกเป็น `modern-emoji-renderer-<version>.zip` พร้อมไฟล์ `.sha256` ต้องแตก ZIP แล้วโหลดผ่าน `chrome://extensions` แบบ **Load unpacked** ดูขั้นตอนเต็มใน [README หลัก](../../README.md#ติดตั้ง-modern-emoji-renderer-บน-chrome)
 
-Release notes ปัจจุบัน: [Picker 0.1.9 + Renderer 0.0.2](./v0.1.9.md)
+Release notes ปัจจุบัน:
+
+- [Modern Emoji Renderer 0.0.3](./renderer-v0.0.3.md)
+- [Modern Emoji Picker 0.1.9 + Renderer 0.0.2](./v0.1.9.md) — release เดิมของ Picker
 
 ## Windows และ .NET 10
 

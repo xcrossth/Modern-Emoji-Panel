@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "pending",
+  "status": "passed",
   "environment": "Windows 10 Enterprise N 22H2 build 19045, Chrome",
   "sites": {
     "facebookMessages": {
@@ -14,7 +14,7 @@
       ]
     },
     "messengerCom": {
-      "status": "pending",
+      "status": "passed",
       "scenarios": [
         "Emoji เดี่ยวที่เดิมเป็นรูปภาพแสดงด้วย Noto ที่มากับส่วนขยาย",
         "Emoji ใน bubble ที่เดิมเป็นรูปภาพแสดงด้วย Noto ที่มากับส่วนขยาย",
@@ -22,5 +22,5 @@
       ]
     }
   },
-  "notes": "Facebook Messages ผ่านการทดสอบด้วยบัญชีจริงแล้ว ทั้ง Emoji เดี่ยว, bubble, reaction, รูปทั่วไปและ composer รวมถึงตรวจขนาด Quick Emoji ตาม lifecycle ของ Facebook; Messenger.com ยังรอทดสอบด้วยบัญชีจริงก่อนเผยแพร่รุ่น 0.0.3 เป็น release"
+  "notes": "Facebook.com ผ่านเฉพาะ Messages/Inbox และไม่ได้รับรอง post หรือ comment; Messenger.com ผ่าน workflow เดียวกัน ทั้ง Emoji เดี่ยว, bubble, reaction, ข้อความใหม่, การสลับห้อง, รูปทั่วไปและ composer รวมถึงขนาด Quick Emoji ตาม lifecycle ของ Meta"
 }

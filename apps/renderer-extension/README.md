@@ -14,7 +14,7 @@ Chrome ไม่รับ ZIP ที่ไม่ได้เผยแพร่�
 4. เปิด **Developer mode**
 5. กด **Load unpacked** แล้วเลือกโฟลเดอร์ที่แตก ZIP
 
-Release รุ่น `0.0.2` ผ่านชุดทดสอบอัตโนมัติและการทดสอบบัญชีจริงบน Instagram DM กับ TikTok Chat แล้ว แพ็กเกจ Release มี `release-metadata.json` และ verification report สำหรับตรวจสถานะของไฟล์ที่ดาวน์โหลด ส่วน source รุ่น `0.0.3` เพิ่ม Facebook/Messenger และอยู่ระหว่าง manual qualification ก่อนออก Release ถัดไป
+Release รุ่น `0.0.3` ผ่านชุดทดสอบอัตโนมัติและการทดสอบบัญชีจริงบน Instagram DM, TikTok Chat, Facebook Messages/Inbox และ Messenger.com Inbox แล้ว โดย Facebook ไม่ครอบคลุม post/comment แพ็กเกจ Release มี `release-metadata.json` และ verification report สำหรับตรวจสถานะของไฟล์ที่ดาวน์โหลด
 
 ## อัปเดต
 

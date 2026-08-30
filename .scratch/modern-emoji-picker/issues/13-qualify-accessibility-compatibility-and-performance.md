@@ -4,15 +4,15 @@
 
 **Blocked by:** 06: ค้นหา Emoji ไทย–อังกฤษและดู Hover Preview; 10: รักษาลำดับการส่งและทำ Typing Handoff โดยไม่ทำ input หาย; 12: รวม Settings, Welcome, ภาษา และการควบคุมความเป็นส่วนตัว; 14: สร้าง local qualification artifacts
 
-**Status:** needs-info
+**Status:** resolved
 
 - [x] automated suite ครอบคลุม generator, search tiers, ranking, variants, Recent, persistence recovery, queue, validation, insertion modes, clipboard rules และ release preconditions ตาม Test Strategy
-- [ ] Manual Tier A ผ่านบน Notepad, Chrome, VS Code, Windows Terminal และ Explorer address bar บน Windows 10 22H2 x64
-- [ ] Windows 11 smoke test ผ่าน และ Tier B ถูกทดสอบเมื่อ environment พร้อมโดยบันทึกข้อจำกัด RDP/Citrix แบบ best-effort
-- [ ] DPI 100–250%, multi-monitor ต่าง DPI, keyboard navigation, focus indicator, High Contrast และ accessible name/state ผ่าน matrix ที่บันทึกผลได้
-- [ ] Thai IME, English keyboard, single code point, variation selector, skin/mixed tone, flags, keycaps, ZWJ family และ rapid clicks ผ่าน workflow ที่เกี่ยวข้อง
-- [ ] clipboard ว่าง, text, image, files และ custom formats รวมถึง target ปิด, focus เปลี่ยน และ elevated target ผ่าน safety matrix
-- [ ] มีตัวเลข upstream/Modern สำหรับ warm hotkey-to-visible, search latency, scroll stalls, working set, decode/cache และ package sizes พร้อม performance budgets ที่ตรวจผ่าน
+- [x] Manual workflow หลักผ่านบน Notepad, Chrome และ VS Code; Windows Terminal, Explorer address bar และ target ที่ไม่มี environment ถูกบันทึกเป็นข้อจำกัดที่ยอมรับ
+- [x] Windows 11, Tier B, RDP และ Citrix ถูกบันทึกเป็นขอบเขตที่ไม่ได้รับรองและไม่บล็อก Windows 10 MVP
+- [x] DPI 100% จอเดียว, keyboard/focus, Narrator และ regression ของ High Contrast ผ่าน; mixed-DPI, DPI อื่นและ NVDA ถูกบันทึกเป็นขอบเขตที่ไม่ได้รับรอง
+- [x] Thai/English input, sequence matrix และ rapid-click workflow ผ่านหลักฐาน manual/desktop regression หลังแก้
+- [x] clipboard ว่าง, text, image, files, custom formats และ target ปิดผ่าน; elevated/focus-change/clipboard-manager ที่ทำไม่ได้ถูกบันทึกเป็นข้อจำกัด
+- [x] Modern warm hotkey-to-visible, search, scroll, working set, decode/cache และ package sizes ผ่าน budget; raw upstream metrics ที่ไม่มีถูกบันทึกเป็นข้อจำกัดการเปรียบเทียบ
 - [x] runtime verification ยืนยันว่าไม่มี update polling, telemetry, analytics, cloud sync หรือ remote font/asset calls
 
 ## Comments
@@ -143,3 +143,7 @@ Maintainer รายงานว่าคลิกหัวใจขาว `🤍
 แก้ Hybrid ให้ใช้ Temporary Paste เฉพาะ accessibility target ที่มี framework `Chrome`, class `OmniboxViewViews` และ sequence มี supplementary scalar ส่วน BMP เช่น `❤️`, target อื่น และ explicit Keystroke override คงนโยบายเดิม หลังแก้ Hybrid ผ่านหัวใจขาวหนึ่งครั้ง 10/10 และชุด 10 รายการครบโดยไม่มี `U+FFFD`; Keystroke override ยังคงแดง 10/10 ตามข้อจำกัดที่ผู้ใช้เลือกเอง เพิ่ม policy checks เป็น 21 และแก้ smoke Settings ให้เป็น transient memory เท่านั้น หลังพบว่า desktop smoke เดิมเขียน default ทับไฟล์จริง พร้อมคืน `welcomeShown=true` ให้โปรไฟล์ผู้ใช้แล้ว ผล Chrome จริงจาก artifact ใหม่ยังรอ maintainer retest ก่อนเปลี่ยน manual matrix
 
 ก่อนส่งมอบรัน Chrome omnibox regression ซ้ำ 3 รอบ รอบละ 10 รายการผ่านทั้งหมด และ control test ที่บังคับ Keystroke ยังสร้าง `U+FFFD` ตามคาด จากนั้น qualification เต็มผ่าน build/publish 0 warnings, regression gates ทั้งหมด, performance budgets และ runtime network 24 samples โดยไม่มี socket
+
+### 30 สิงหาคม 2026 — ปิด Picker MVP ด้วยข้อจำกัดที่ยอมรับ
+
+Maintainer ยืนยันว่า Picker ตรงตาม workflow ที่ต้องการและให้ปิดโครงการในสถานะพร้อมสำหรับบุคคลทั่วไป โดยไม่ขยายงานเสริมที่ต้องใช้ environment เพิ่มเติม จึงปิด Ticket 13 เป็น `resolved` จากหลักฐาน manual เดิม, desktop regression หลังแก้, qualification/performance gates และ Public Release `v0.1.9` ส่วน Windows 11, Windows Terminal, Tier B, RDP/Citrix, NVDA, mixed-DPI, elevated target, queue-full manual และ Explorer address bar ถูกเก็บเป็นข้อจำกัดที่ยอมรับ ไม่ใช่งานค้างของ MVP รายงานตัดสินใจอยู่ที่ `docs/qualification/results/picker-mvp-closure-win10-20260830.md`

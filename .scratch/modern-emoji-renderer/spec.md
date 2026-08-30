@@ -2,4 +2,4 @@
 
 สเปกหลักของ effort นี้อยู่ที่ [`docs/specs/02-chrome-emoji-renderer-extension.md`](../../docs/specs/02-chrome-emoji-renderer-extension.md)
 
-ขอบเขต v1 คือ Renderer Extension สำหรับ Chrome บน Windows 10 โดยมี Instagram Web DM และ TikTok Web Chat เป็นเป้าหมาย P0 ส่วน Editable Content ระหว่างพิมพ์และ Chromium browser อื่นเป็นงาน Phase 2 ซึ่งไม่ใช่เงื่อนไขปิด tickets ชุดนี้
+ขอบเขต release สุดท้ายคือ Renderer Extension สำหรับ Chrome บน Windows 10 โดยมี Instagram Web DM, TikTok Web Chat, Facebook Messages/Inbox และ Messenger.com Inbox เป็นเว็บไซต์หลัก Facebook ไม่รับรอง post/comment ส่วน Editable Content ระหว่างพิมพ์และ Chromium browser อื่นเคยถูกวางไว้เป็น Phase 2 แต่ maintainer ปิดโครงการโดยไม่ดำเนินงานเสริมเหล่านี้

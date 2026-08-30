@@ -71,3 +71,5 @@ pwsh scripts/verify-manual-qualification-wizard.ps1
 ผู้ทดสอบรัน manual wizard เมื่อ 29 สิงหาคม 2026 และ Agent review เทียบกับข้อความ/ภาพต้นทางแล้ว ผลรอบแรกคือผ่าน 31, ไม่ผ่าน 3, ทำไม่ได้ใน environment 7 และยังไม่ทดสอบ 2 รายการ ดูรายละเอียดที่ [`results/manual-win10-19045-20260829.md`](./results/manual-win10-19045-20260829.md) หลังจากนั้นมี regression และการแก้ rapid-click/focus, Chrome omnibox และ High Contrast เพิ่มเติม แต่ matrix เดิมยังคงผลตามเวลาที่ทดสอบเพื่อไม่แก้หลักฐานย้อนหลัง
 
 Maintainer อนุมัติและเผยแพร่ Public MVP `v0.1.9` เมื่อ 30 สิงหาคม 2026 โดยยอมรับขอบเขตที่ยังไม่ครอบคลุม การเผยแพร่จึงไม่ใช่คำรับรอง Windows 11, mixed-DPI, NVDA, RDP, Citrix หรือทุกแอปเป้าหมาย
+
+ผลปิด MVP หลังแก้ regression และรับรองขอบเขตสุดท้ายอยู่ที่ [`results/picker-mvp-closure-win10-20260830.md`](./results/picker-mvp-closure-win10-20260830.md) Ticket 13 ปิดเป็น `resolved` โดยรักษา matrix รอบแรกไว้เป็นหลักฐานประวัติ และจัดรายการที่เครื่องนี้ทดสอบไม่ได้หรือผู้ดูแลไม่ต้องการขยายผลเป็น known limitations ที่ไม่บล็อก release

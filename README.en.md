@@ -5,7 +5,7 @@
 Modern Emoji Panel brings current Unicode Emoji support to Windows 10 and Windows 11 for both selecting Emoji and displaying them on the web. It consists of two products that can be installed together or used independently.
 
 - **Modern Emoji Picker 0.1.9** — A resident WPF tray application invoked with `Win + .`. It supports Thai and English search, displays Noto artwork, and inserts Unicode sequences into the target application.
-- **Modern Emoji Renderer 0.0.2** — A Chrome extension that renders Emoji with Noto Color Emoji in Instagram Web DMs and TikTok Web Chat, including message bubbles, story and note replies, and reactions.
+- **Modern Emoji Renderer 0.0.3** — A Chrome extension that renders Emoji with Noto Color Emoji in Instagram Web DMs, TikTok Web Chat, Facebook Messages/Inbox, and Messenger.com Inbox, including message bubbles, story and note replies, and reactions.
 
 Both products run locally, contain no telemetry, and require no project account or backend service.
 
@@ -17,15 +17,15 @@ Modern Emoji Picker displaying Noto artwork, skin tones, and Hover Preview while
 
 ## Downloads
 
-Download the current packages from [GitHub Release v0.1.9](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.9).
+Download the Picker from [GitHub Release v0.1.9](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.9) and the Renderer from [GitHub Release renderer-v0.0.3](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/renderer-v0.0.3).
 
 | Product | File | Recommended use |
 |---|---|---|
 | Picker — Installer | [Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe) | Recommended for most users. Installs for the current account and can start with Windows. |
 | Picker — Portable | [Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip) | Extract and run without installation. |
-| Chrome Renderer | [modern-emoji-renderer-0.0.2.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/modern-emoji-renderer-0.0.2.zip) | Load as an unpacked extension in Chrome. |
+| Chrome Renderer | [modern-emoji-renderer-0.0.3.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.3/modern-emoji-renderer-0.0.3.zip) | Load as an unpacked extension in Chrome. |
 
-Verification files: [SHA256SUMS.txt](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/SHA256SUMS.txt) for the Picker and [modern-emoji-renderer-0.0.2.zip.sha256](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/modern-emoji-renderer-0.0.2.zip.sha256) for the Renderer.
+Verification files: [SHA256SUMS.txt](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/SHA256SUMS.txt) for the Picker and [modern-emoji-renderer-0.0.3.zip.sha256](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.3/modern-emoji-renderer-0.0.3.zip.sha256) for the Renderer.
 
 ## Install Modern Emoji Picker
 
@@ -52,12 +52,12 @@ Both the Installer and Portable packages are self-contained `win-x64` builds. A 
 
 Chrome cannot install a ZIP file from outside the Chrome Web Store directly, so the extension must be extracted and loaded as unpacked.
 
-1. Download `modern-emoji-renderer-0.0.2.zip` and its `.sha256` file.
+1. Download `modern-emoji-renderer-0.0.3.zip` and its `.sha256` file.
 2. Verify the SHA-256 value, then extract the ZIP to a permanent folder.
 3. Open `chrome://extensions`.
 4. Enable **Developer mode**.
 5. Select **Load unpacked**, then choose the extracted folder containing `manifest.json`.
-6. Refresh any open Instagram or TikTok pages.
+6. Refresh any open Instagram, TikTok, Facebook Messages, or Messenger.com pages.
 
 When updating to a newer version, replace the files in the existing folder and select **Reload** on the Extensions page, or extract the new version to a separate folder and load it again.
 
@@ -67,7 +67,7 @@ The Renderer intentionally leaves Emoji inside editable fields unchanged to pres
 
 ```powershell
 (Get-FileHash .\Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe -Algorithm SHA256).Hash.ToLower()
-(Get-FileHash .\modern-emoji-renderer-0.0.2.zip -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\modern-emoji-renderer-0.0.3.zip -Algorithm SHA256).Hash.ToLower()
 ```
 
 SHA-256 values for the current release:
@@ -76,7 +76,7 @@ SHA-256 values for the current release:
 |---|---|
 | Picker Installer | `f62e881d9a143bbe74486f4b82c75a902ee53b7083eb998893fdf76b43146582` |
 | Picker Portable | `1fe2a0226bea343b3817c40c3c28d48fea1c401af47e73a153a3986ecbaba110` |
-| Renderer ZIP | `27751c509e78b93c1e450321edf91a644481874bf030e5b7309d440969ea6ba7` |
+| Renderer ZIP | [See the Renderer 0.0.3 `.sha256` file](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.3/modern-emoji-renderer-0.0.3.zip.sha256) |
 
 ## Key features
 
@@ -85,7 +85,7 @@ SHA-256 values for the current release:
 - Displays Noto artwork in the Picker with Hover Preview.
 - Supports skin tones, multi-person variants, Recent, and locally learned ranking.
 - Inserts Emoji through an ordered queue with focus and clipboard safety.
-- Renderer supports new messages, room switching on Instagram and TikTok, and Instagram image-Emoji and reactions.
+- Renderer supports new messages and room switching on Instagram, TikTok, Facebook Messages, and Messenger.com, including Meta image-Emoji and reactions. Facebook qualification covers Messages/Inbox only, not posts or comments.
 - Operates offline with no analytics or telemetry.
 
 ## Platform and data

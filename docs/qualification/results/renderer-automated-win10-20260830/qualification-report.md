@@ -1,6 +1,6 @@
 # รายงาน Qualification ของ Modern Emoji Renderer
 
-สถานะ: **ส่วนอัตโนมัติผ่าน — รอ manual E2E บนบัญชีจริง**
+สถานะ: **ผ่านทั้ง automated และ manual E2E**
 
 สร้างเมื่อ: 2026-08-29T21:40:36.287Z
 
@@ -32,6 +32,9 @@ wrapper ไม่โตจาก scrolling, repeated start ไม่สร้า
 - Extension E2E fixture ยืนยันว่า glyph ใช้ bundled Noto Color Emoji จริงและโหลดด้วย `chrome-extension://` ดู [หลักฐานฟอนต์](../renderer-font-runtime-win10-20260830.md)
 - production bundles ไม่มี Fetch/XHR/WebSocket/EventSource/importScripts/remote import/eval และ font/style/script มาจาก package เท่านั้น
 
-## งานที่ยังรอผู้ใช้
+## Manual E2E บนเว็บไซต์หลัก
 
-Manual E2E บน Instagram Web DM และ TikTok Web Chat ตาม [matrix](../../renderer-primary-sites.md) ยังไม่ถูกนับว่าผ่าน
+- Instagram Web DM: ข้อความเดิม/ใหม่, การสลับห้อง และ Copy/Paste ผ่าน
+- TikTok Web Chat: ข้อความเดิม/ใหม่, การสลับห้อง และ Copy/Paste ผ่าน
+- Composer คง renderer เดิมตาม Editable Content boundary ที่ตั้งใจไว้ และยังใช้งานได้
+- ดู [matrix](../../renderer-primary-sites.md) และ [manual evidence](../renderer-manual-primary-sites-win10-20260830.md)

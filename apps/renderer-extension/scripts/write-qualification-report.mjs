@@ -12,9 +12,20 @@ const ui = await readJson("evidence/tickets-07-08/report.json");
 const rendering = await readJson("evidence/ticket-02/report.json");
 const extensionFont = await readJson("evidence/extension-font/report.json");
 const vitest = await readJson("evidence/ticket-09/vitest-report.json");
+const manualEvidencePath = join(
+  root,
+  "docs",
+  "qualification",
+  "results",
+  "renderer-manual-primary-sites-win10-20260830.json",
+);
+const manualEvidence = JSON.parse(await readFile(manualEvidencePath, "utf8"));
+const manualPassed = manualEvidence.status === "passed"
+  && manualEvidence.sites?.instagramWebDm?.status === "passed"
+  && manualEvidence.sites?.tiktokWebChat?.status === "passed";
 const report = {
   schemaVersion: 1,
-  status: "automated-passed-manual-pending",
+  status: manualPassed ? "passed" : "automated-passed-manual-pending",
   generatedAtUtc: new Date().toISOString(),
   environment: {
     osVersion: version(),
@@ -35,8 +46,9 @@ const report = {
     allSitesFixtures: ["Instagram feed/comments", "Google", "GitHub", "Reddit", "Facebook", "Discord Web"],
   },
   manual: {
-    status: "pending",
+    status: manualPassed ? "passed" : "pending",
     matrix: "docs/qualification/renderer-primary-sites.md",
+    evidence: "docs/qualification/results/renderer-manual-primary-sites-win10-20260830.json",
     requiredSites: ["Instagram Web DM", "TikTok Web Chat"],
   },
 };
@@ -58,7 +70,7 @@ await mkdir(output, { recursive: true });
 await writeFile(join(output, "qualification-report.json"), `${JSON.stringify(report, null, 2)}\n`);
 const markdown = `# รายงาน Qualification ของ Modern Emoji Renderer
 
-สถานะ: **ส่วนอัตโนมัติผ่าน — รอ manual E2E บนบัญชีจริง**
+สถานะ: **ผ่านทั้ง automated และ manual E2E**
 
 สร้างเมื่อ: ${report.generatedAtUtc}
 
@@ -90,9 +102,12 @@ wrapper ไม่โตจาก scrolling, repeated start ไม่สร้า
 - Extension E2E fixture ยืนยันผ่าน Chrome ว่า glyph ใช้ bundled Noto Color Emoji จริง และโหลดจาก chrome-extension URL ไม่ใช่ origin ของเว็บไซต์
 - production bundles ไม่มี Fetch/XHR/WebSocket/EventSource/importScripts/remote import/eval และ font/style/script มาจาก package เท่านั้น
 
-## งานที่ยังรอผู้ใช้
+## Manual E2E บนเว็บไซต์หลัก
 
-Manual E2E บน Instagram Web DM และ TikTok Web Chat ตาม [matrix](../../../docs/qualification/renderer-primary-sites.md) ยังไม่ถูกนับว่าผ่าน
+- Instagram Web DM: ข้อความเดิม/ใหม่, การสลับห้อง และ Copy/Paste ผ่าน
+- TikTok Web Chat: ข้อความเดิม/ใหม่, การสลับห้อง และ Copy/Paste ผ่าน
+- Composer คง renderer เดิมตาม Editable Content boundary ที่ตั้งใจไว้ และยังใช้งานได้
+- รายละเอียดอยู่ใน [manual evidence](../../../docs/qualification/results/renderer-manual-primary-sites-win10-20260830.md)
 `;
 await writeFile(join(output, "qualification-report.md"), markdown);
 process.stdout.write(`Qualification reports written: ${output}\n`);

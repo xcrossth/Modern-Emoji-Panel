@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "automated-passed-manual-pending",
+  "status": "passed",
   "generatedAtUtc": "2026-08-29T21:40:36.287Z",
   "environment": {
     "osVersion": "Windows 10 Enterprise N",
@@ -194,8 +194,9 @@
     ]
   },
   "manual": {
-    "status": "pending",
+    "status": "passed",
     "matrix": "docs/qualification/renderer-primary-sites.md",
+    "evidence": "docs/qualification/results/renderer-manual-primary-sites-win10-20260830.json",
     "requiredSites": [
       "Instagram Web DM",
       "TikTok Web Chat"

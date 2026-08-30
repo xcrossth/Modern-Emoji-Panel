@@ -4,14 +4,14 @@
 
 **Blocked by:** 05: Render Instagram DM แบบ End-to-End; 06: Render TikTok Web Chat แบบ End-to-End; 08: จัดการ Site Policy และ Options
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] กำหนดและบันทึก performance budgets ที่วัดซ้ำได้สำหรับ initial scan, mutation batch, long transcript และ repeated navigation ก่อนสรุปผล qualification
 - [x] Stress fixture ยืนยันว่า long transcript, mutation burst, scrolling และ conversation switching ไม่สร้าง long freeze หรือ memory/observer growth ต่อเนื่อง
 - [x] Text-integrity suite ยืนยัน `textContent`, Copy, selection, Browser Find และ DOM extraction สำหรับ Thai/English/Emoji sequences
 - [x] Accessibility checks ครอบคลุม wrapper semantics, keyboard UI, accessible names และไม่อ่านข้อความซ้ำโดยไม่จำเป็น
 - [x] Editable Content suite ครอบคลุม caret, selection, Thai IME composition และการส่งข้อความโดย Renderer ไม่แก้ DOM ภายใน editor
-- [ ] Manual matrix ผ่านบน Chrome stable/Windows 10 สำหรับ Instagram DM และ TikTok Web Chat รวมข้อความส่งเอง/ได้รับ, dynamic messages, history และ navigation
+- [x] Manual matrix ผ่านบน Chrome stable/Windows 10 สำหรับ Instagram DM และ TikTok Web Chat รวมข้อความส่งเอง/ได้รับ, dynamic messages, history และ navigation
 - [x] All-sites regression fixture หรือ smoke coverage ครอบคลุม Instagram feed/comments, Google, GitHub, Reddit, Facebook และ Discord โดยไม่เปลี่ยน typography หรือ editable behavior
 - [x] ไม่มี outbound runtime network จาก Extension นอกจาก traffic ปกติของเว็บไซต์ และไม่มี remote code path
 
@@ -21,4 +21,4 @@
 - ผลรอบ Windows 10: initial 2,000 ข้อความ 62.3 ms, burst 1,000 ข้อความ 29.7 ms, batch สูงสุด 9.1 ms, navigation processing 134.6 ms, retained heap 296,536 bytes ทุกค่าอยู่ใน budget
 - production bundle ไม่มี outbound network API หรือ remote-code path จาก static audit; details อยู่ที่ `docs/qualification/results/renderer-automated-win10-20260830/`
 - เพิ่ม Extension E2E font gate หลังพบว่า computed `font-family` อย่างเดียวให้ผลบวกลวง ตัว gate ตรวจผ่าน CDP ว่า glyph ใช้ `Noto Color Emoji`, `isCustomFont=true` และ request มาจาก `chrome-extension://` จริง
-- เหลือ checkbox manual matrix บน Instagram/TikTok บัญชีจริงเท่านั้น จึงตั้ง `ready-for-human` และไม่ใช้ผลอัตโนมัติแทน E2E จริง
+- Manual matrix บน Instagram/TikTok บัญชีจริงผ่านแล้ว และบันทึกแยกจาก automated evidence ที่ `docs/qualification/results/renderer-manual-primary-sites-win10-20260830.md`

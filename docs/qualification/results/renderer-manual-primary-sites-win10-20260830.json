@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "testedAtLocalDate": "2026-08-30",
+  "environment": {
+    "os": "Windows 10 Enterprise N 22H2 build 19045",
+    "chromeStable": "151.0.7922.174",
+    "extensionVersion": "0.0.1",
+    "rendererCodeCommit": "f005e79"
+  },
+  "reportedBy": "ผู้ใช้ทดสอบบนบัญชีจริงและรายงานผลใน Codex session เดียวกัน",
+  "sites": {
+    "instagramWebDm": {
+      "status": "passed",
+      "displayedMessages": "Emoji แสดงด้วย Noto ถูกต้องหลังแก้ extension font URL",
+      "dynamicAndNavigation": "ข้อความใหม่และการสลับห้องยังแสดงผลถูกต้อง",
+      "copyAndPaste": "Copy ข้อความเดิมและ Paste Emoji ยังคง Unicode และทำงานถูกต้อง",
+      "editableContent": "ช่องพิมพ์คง renderer เดิมตามสเปก v1 และยังใช้งานได้"
+    },
+    "tiktokWebChat": {
+      "status": "passed",
+      "displayedMessages": "Emoji แสดงด้วย Noto ถูกต้องหลัง reload หน้าให้ใช้ content script รุ่นล่าสุด",
+      "dynamicAndNavigation": "ข้อความใหม่และการสลับห้องยังแสดงผลถูกต้อง",
+      "copyAndPaste": "Copy ข้อความเดิมและ Paste Emoji ยังคง Unicode และทำงานถูกต้อง",
+      "editableContent": "ช่องพิมพ์คง renderer เดิมตามสเปก v1 และยังใช้งานได้"
+    }
+  },
+  "expectedLimitation": "Renderer v1 ไม่แก้ Editable Content; Emoji ใน composer จึงใช้การแสดงผลเดิมจนกว่าจะส่งและกลายเป็น Display Content",
+  "evidence": [
+    "ภาพหน้าจอ Instagram DM แสดง Noto พร้อม wrapper ใน Elements panel",
+    "ภาพหน้าจอ TikTok Web Chat แสดง Noto พร้อม wrapper ใน Elements panel",
+    "คำยืนยันผู้ใช้ว่าข้อความใหม่, การสลับห้อง, Copy และ Paste ทำงานถูกต้องทั้งสองเว็บไซต์"
+  ]
+}

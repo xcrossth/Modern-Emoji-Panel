@@ -19,6 +19,14 @@ export function rendererStyleText(fontUrl: string): string {
   font-style: normal !important;
   font-variant: normal !important;
 }
+.${RENDERER_CLASS}[${RENDERER_ATTRIBUTE}="emoji-image"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex: 0 0 auto !important;
+  line-height: 1 !important;
+  overflow: visible !important;
+}
 `.trim();
 }
 

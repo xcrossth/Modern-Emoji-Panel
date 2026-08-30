@@ -1,4 +1,9 @@
-import { classifyTextNode, renderImageElement, renderTextNode } from "./dom-renderer";
+import {
+  classifyTextNode,
+  renderImageElement,
+  renderTextNode,
+  syncRenderedImageSize,
+} from "./dom-renderer";
 
 export interface RendererMetrics {
   nodesVisited: number;
@@ -97,6 +102,10 @@ export class IncrementalRenderer {
 
   private handleMutations(records: readonly MutationRecord[]): void {
     for (const record of records) {
+      if (record.type === "attributes") {
+        syncRenderedImageSize(record.target as Element);
+        continue;
+      }
       if (record.type === "characterData") this.enqueue(record.target);
       for (const node of record.addedNodes) this.enqueue(node);
     }
@@ -104,7 +113,13 @@ export class IncrementalRenderer {
 
   private observe(): void {
     if (this.observer && this.observedRoot) {
-      this.observer.observe(this.observedRoot, { childList: true, subtree: true, characterData: true });
+      this.observer.observe(this.observedRoot, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ["width", "height"],
+      });
     }
   }
 

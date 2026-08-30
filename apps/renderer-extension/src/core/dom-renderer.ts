@@ -51,7 +51,59 @@ function hasSingleSupportedEmoji(value: string): boolean {
   return segments.length === 1 && segments[0]?.isEmoji === true && segments[0].text === value;
 }
 
-export function isInstagramEmojiImage(element: Element): element is HTMLImageElement {
+function sourceBoxDimension(
+  computedValue: string | null | undefined,
+  declaredValue: string | null,
+  layout: number,
+  rendered: number,
+): number | null {
+  const computed = Number.parseFloat(computedValue ?? "");
+  const declared = Number.parseFloat(declaredValue ?? "");
+  let dimension = declared > 0
+    ? declared
+    : computed > 0
+      ? computed
+      : layout > 0
+        ? layout
+        : rendered;
+  if (!Number.isFinite(dimension) || dimension <= 0) return null;
+  const rounded = Math.round(dimension);
+  return Math.abs(dimension - rounded) <= 0.05 ? rounded : dimension;
+}
+
+function applySourceImageSize(wrapper: HTMLElement, image: HTMLImageElement): void {
+  const document = image.ownerDocument;
+  const sourceStyle = document.defaultView?.getComputedStyle(image);
+  const sourceRect = image.getBoundingClientRect();
+  const sourceWidth = sourceBoxDimension(
+    sourceStyle?.width,
+    image.getAttribute("width"),
+    image.offsetWidth,
+    sourceRect.width,
+  );
+  const sourceHeight = sourceBoxDimension(
+    sourceStyle?.height,
+    image.getAttribute("height"),
+    image.offsetHeight,
+    sourceRect.height,
+  );
+  if (sourceWidth !== null) wrapper.style.width = `${sourceWidth}px`;
+  if (sourceHeight !== null) {
+    wrapper.style.height = `${sourceHeight}px`;
+    wrapper.style.fontSize = `${sourceHeight}px`;
+  }
+}
+
+export function syncRenderedImageSize(element: Element): boolean {
+  if (element.tagName !== "IMG" || !element.hasAttribute(SOURCE_IMAGE_ATTRIBUTE)) return false;
+  const image = element as HTMLImageElement;
+  const wrapper = image.parentElement;
+  if (wrapper?.getAttribute(RENDERER_ATTRIBUTE) !== "emoji-image") return false;
+  applySourceImageSize(wrapper, image);
+  return true;
+}
+
+export function isMetaEmojiImage(element: Element): element is HTMLImageElement {
   if (element.tagName !== "IMG" || element.hasAttribute(SOURCE_IMAGE_ATTRIBUTE)) return false;
   const image = element as HTMLImageElement;
   const source = image.getAttribute("src");
@@ -59,15 +111,18 @@ export function isInstagramEmojiImage(element: Element): element is HTMLImageEle
   if (!source || !alt || image.hidden || !hasSingleSupportedEmoji(alt)) return false;
   try {
     const url = new URL(source, image.ownerDocument.baseURI);
-    const isInstagramCdn = url.hostname === "cdninstagram.com" || url.hostname.endsWith(".cdninstagram.com");
-    return isInstagramCdn && /^\/images\/emoji\.php(?:\/|$)/u.test(url.pathname);
+    const isMetaEmojiCdn = url.hostname === "cdninstagram.com"
+      || url.hostname.endsWith(".cdninstagram.com")
+      || url.hostname === "fbcdn.net"
+      || url.hostname.endsWith(".fbcdn.net");
+    return isMetaEmojiCdn && /^\/images\/emoji\.php(?:\/|$)/u.test(url.pathname);
   } catch {
     return false;
   }
 }
 
 export function renderImageElement(element: Element): RenderResult {
-  if (!isInstagramEmojiImage(element)) return { wrappersCreated: 0, skippedEditableNodes: 0 };
+  if (!isMetaEmojiImage(element)) return { wrappersCreated: 0, skippedEditableNodes: 0 };
   const classification = classifyElement(element);
   if (classification !== "render") {
     return { wrappersCreated: 0, skippedEditableNodes: classification === "skip-editable" ? 1 : 0 };
@@ -78,12 +133,13 @@ export function renderImageElement(element: Element): RenderResult {
   const wrapper = document.createElement("span");
   wrapper.className = RENDERER_CLASS;
   wrapper.setAttribute(RENDERER_ATTRIBUTE, "emoji-image");
+  applySourceImageSize(wrapper, image);
   const originalAriaHidden = image.getAttribute("aria-hidden");
   image.setAttribute(
     ORIGINAL_ARIA_HIDDEN_ATTRIBUTE,
     originalAriaHidden === null ? MISSING_ATTRIBUTE_VALUE : originalAriaHidden,
   );
-  image.setAttribute(SOURCE_IMAGE_ATTRIBUTE, "instagram-emoji");
+  image.setAttribute(SOURCE_IMAGE_ATTRIBUTE, "meta-emoji");
   image.setAttribute("aria-hidden", "true");
   image.hidden = true;
   image.replaceWith(wrapper);

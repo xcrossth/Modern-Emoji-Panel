@@ -126,7 +126,9 @@ try {
   }))()`);
   if (!optionsState.enabled || optionsState.mode !== "allowlist" || optionsState.debug ||
       optionsState.rendererMode !== "noto-colrv1" || optionsState.language !== "th" || !optionsState.labeledControls ||
-      JSON.stringify(optionsState.sites) !== JSON.stringify(["instagram.com", "tiktok.com"])) {
+      JSON.stringify(optionsState.sites) !== JSON.stringify([
+        "instagram.com", "tiktok.com", "facebook.com", "messenger.com",
+      ])) {
     throw new Error(`Options defaults/accessibility failed: ${JSON.stringify(optionsState)}`);
   }
   await evaluate(options.send, `(() => {

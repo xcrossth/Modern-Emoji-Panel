@@ -11,11 +11,22 @@ describe("primary site context", () => {
     });
   });
 
-  it("recognizes TikTok messages and keeps both sites in the default policy", () => {
+  it("recognizes TikTok messages and keeps all primary sites in the default policy", () => {
     expect(identifyPrimarySite(new URL("https://www.tiktok.com/messages?lang=th"))).toEqual({
       id: "tiktok.com", isPrimaryChatRoute: true,
     });
-    expect(DEFAULT_PRIMARY_SITES).toEqual(["instagram.com", "tiktok.com"]);
+    expect(identifyPrimarySite(new URL("https://www.facebook.com/messages/e2ee/t/123"))).toEqual({
+      id: "facebook.com", isPrimaryChatRoute: true,
+    });
+    expect(identifyPrimarySite(new URL("https://www.facebook.com/"))).toEqual({
+      id: "facebook.com", isPrimaryChatRoute: false,
+    });
+    expect(identifyPrimarySite(new URL("https://www.messenger.com/e2ee/t/123"))).toEqual({
+      id: "messenger.com", isPrimaryChatRoute: true,
+    });
+    expect(DEFAULT_PRIMARY_SITES).toEqual([
+      "instagram.com", "tiktok.com", "facebook.com", "messenger.com",
+    ]);
     expect(identifyPrimarySite(new URL("https://example.com/messages"))).toBeNull();
   });
 });

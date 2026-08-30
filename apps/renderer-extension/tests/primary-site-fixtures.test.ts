@@ -125,3 +125,101 @@ describe("Instagram image Emoji regression", () => {
     expect(document.querySelector(`[${RENDERER_ATTRIBUTE}]`)).toBeNull();
   });
 });
+
+describe("Facebook and Messenger image Emoji regression", () => {
+  it("renders Meta CDN Emoji images in bubble text and reactions without touching photos or the composer", async () => {
+    await loadFixture("facebook-messenger.html");
+    const emojiOnlySource = document.querySelector<HTMLImageElement>('[data-message-id="emoji-only"] img');
+    Object.defineProperty(emojiOnlySource, "offsetWidth", { value: 32 });
+    Object.defineProperty(emojiOnlySource, "offsetHeight", { value: 32 });
+    Object.defineProperty(emojiOnlySource, "getBoundingClientRect", {
+      value: () => ({
+        x: 0, y: 0, top: 0, right: 31.9965, bottom: 31.9965,
+        left: 0, width: 31.9965, height: 31.9965, toJSON: () => ({}),
+      }),
+    });
+
+    const result = renderSubtree(document.body);
+    const bubble = document.querySelector('[data-message-id="bubble"]');
+    const reaction = document.querySelector('[data-message-id="reaction"]');
+    const sourceEmojiImages = [...document.querySelectorAll<HTMLImageElement>('img[src*="/images/emoji.php/"]')];
+
+    expect(result.wrappersCreated).toBe(3);
+    expect(bubble?.querySelector(`[${RENDERER_ATTRIBUTE}]`)?.textContent).toBe("😆");
+    expect(reaction?.querySelector(`[${RENDERER_ATTRIBUTE}]`)?.textContent).toBe("🥰");
+    expect(document.querySelector('[data-message-id="emoji-only"]')
+      ?.querySelector(`[${RENDERER_ATTRIBUTE}]`)?.textContent).toBe("🥰");
+    const emojiOnlyWrapper = document.querySelector<HTMLElement>(
+      '[data-message-id="emoji-only"] [data-modern-emoji-renderer]',
+    );
+    expect(emojiOnlyWrapper?.style.fontSize).toBe("32px");
+    expect(emojiOnlyWrapper?.style.width).toBe("32px");
+    expect(emojiOnlyWrapper?.style.height).toBe("32px");
+    expect(sourceEmojiImages.filter(image => image.hidden)).toHaveLength(3);
+    expect(document.querySelector<HTMLImageElement>("[data-profile-photo]")?.hidden).toBe(false);
+    expect(document.querySelector<HTMLImageElement>("#composer-emoji")?.hidden).toBe(false);
+  });
+
+  it("preserves the pre-transform layout box instead of applying an ancestor scale twice", () => {
+    document.body.innerHTML = `<div style="transform: scale(0.357)">
+      <img id="scaled-emoji" height="56" width="56" style="width: 20px; height: 20px" alt="🦛"
+        src="https://static.xx.fbcdn.net/images/emoji.php/v9/t1/1/56/1f99b.png">
+    </div>`;
+    const source = document.querySelector<HTMLImageElement>("#scaled-emoji")!;
+    Object.defineProperty(source, "offsetWidth", { value: 20 });
+    Object.defineProperty(source, "offsetHeight", { value: 20 });
+    Object.defineProperty(source, "getBoundingClientRect", {
+      value: () => ({
+        x: 0, y: 0, top: 0, right: 20, bottom: 20,
+        left: 0, width: 20, height: 20, toJSON: () => ({}),
+      }),
+    });
+
+    renderSubtree(document.body);
+    const wrapper = document.querySelector<HTMLElement>(`[${RENDERER_ATTRIBUTE}="emoji-image"]`)!;
+
+    expect(wrapper.style.width).toBe("56px");
+    expect(wrapper.style.height).toBe("56px");
+    expect(wrapper.style.fontSize).toBe("56px");
+  });
+
+  it("keeps the wrapper in sync when Meta updates the image size after the initial render", async () => {
+    document.body.innerHTML = `<div style="transform: scale(0.357)">
+      <img id="growing-emoji" height="20" width="20" style="width: 20px; height: 20px" alt="🦛"
+        src="https://static.xx.fbcdn.net/images/emoji.php/v9/t1/1/56/1f99b.png">
+    </div>`;
+    const renderer = new IncrementalRenderer(document);
+    renderer.start(document.body);
+    renderer.flushSynchronously();
+    const source = document.querySelector<HTMLImageElement>(`#growing-emoji[${SOURCE_IMAGE_ATTRIBUTE}]`)!;
+    const wrapper = source.parentElement!;
+
+    expect(wrapper.style.width).toBe("20px");
+    source.setAttribute("width", "56");
+    source.setAttribute("height", "56");
+    await new Promise<void>(resolve => queueMicrotask(resolve));
+
+    expect(wrapper.style.width).toBe("56px");
+    expect(wrapper.style.height).toBe("56px");
+    expect(wrapper.style.fontSize).toBe("56px");
+    renderer.stop();
+  });
+
+  it("renders a Facebook reaction added after the initial scan", async () => {
+    document.body.innerHTML = '<main aria-label="ห้องสนทนา"></main>';
+    const renderer = new IncrementalRenderer(document, { maxNodesPerBatch: 2 });
+    renderer.start(document.body);
+    renderer.flushSynchronously();
+
+    const reaction = document.createElement("div");
+    reaction.setAttribute("aria-label", "1 reaction with 🥰");
+    reaction.innerHTML = '<img height="16" width="16" alt="🥰" src="https://static.xx.fbcdn.net/images/emoji.php/v9/t91/1/16/1f970.png">';
+    document.querySelector("main")?.append(reaction);
+    await new Promise<void>(resolve => queueMicrotask(resolve));
+    renderer.flushSynchronously();
+
+    expect(reaction.querySelector(`[${RENDERER_ATTRIBUTE}]`)?.textContent).toBe("🥰");
+    expect(reaction.querySelector<HTMLImageElement>('img[src*="/images/emoji.php/"]')?.hidden).toBe(true);
+    renderer.stop();
+  });
+});

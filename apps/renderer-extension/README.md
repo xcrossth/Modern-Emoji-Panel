@@ -2,7 +2,7 @@
 
 ส่วนขยาย Chrome แบบ Manifest V3 สำหรับแสดง Emoji รุ่นใหม่ด้วยฟอนต์ Noto Color Emoji บน Windows 10 โดยไม่เปลี่ยนข้อความต้นฉบับ ไม่เปลี่ยนฟอนต์ของระบบ และทำงานแยกจาก Modern Emoji Picker
 
-เว็บไซต์หลักของรุ่นแรกคือ Instagram Web DM และ TikTok Web Chat ส่วนเว็บไซต์อื่นเปิดเพิ่มได้จาก Options
+เว็บไซต์หลักของ source รุ่น `0.0.3` คือ Instagram Web DM, TikTok Web Chat, Facebook Messages และ Messenger.com ส่วนเว็บไซต์อื่นเปิดเพิ่มได้จาก Options
 
 ## ติดตั้งจาก ZIP
 
@@ -14,7 +14,7 @@ Chrome ไม่รับ ZIP ที่ไม่ได้เผยแพร่�
 4. เปิด **Developer mode**
 5. กด **Load unpacked** แล้วเลือกโฟลเดอร์ที่แตก ZIP
 
-รุ่น `0.0.2` ผ่านชุดทดสอบอัตโนมัติและการทดสอบบัญชีจริงบน Instagram DM กับ TikTok Chat แล้ว แพ็กเกจ Release มี `release-metadata.json` และ verification report สำหรับตรวจสถานะของไฟล์ที่ดาวน์โหลด
+Release รุ่น `0.0.2` ผ่านชุดทดสอบอัตโนมัติและการทดสอบบัญชีจริงบน Instagram DM กับ TikTok Chat แล้ว แพ็กเกจ Release มี `release-metadata.json` และ verification report สำหรับตรวจสถานะของไฟล์ที่ดาวน์โหลด ส่วน source รุ่น `0.0.3` เพิ่ม Facebook/Messenger และอยู่ระหว่าง manual qualification ก่อนออก Release ถัดไป
 
 ## อัปเดต
 
@@ -28,7 +28,7 @@ Chrome ไม่รับ ZIP ที่ไม่ได้เผยแพร่�
 ## เปิดหรือปิดต่อเว็บไซต์
 
 - กดไอคอนส่วนขยายขณะอยู่บนหน้าเว็บ แล้วใช้สวิตช์ **เปิดใช้บนเว็บไซต์นี้**
-- Instagram และ TikTok เปิดเป็นค่าเริ่มต้น
+- Instagram, TikTok, Facebook และ Messenger เปิดเป็นค่าเริ่มต้นตั้งแต่ source รุ่น `0.0.3`
 - หน้า `chrome://`, Chrome Web Store และหน้าภายในของเบราว์เซอร์ไม่อนุญาตให้ส่วนขยายแก้เนื้อหา
 
 ## Options
@@ -49,7 +49,7 @@ Chrome ไม่รับ ZIP ที่ไม่ได้เผยแพร่�
 - เก็บเฉพาะการตั้งค่า site policy และตัวเลือก Renderer ใน Chrome Extension Storage
 - Popup อ่านเฉพาะ hostname ของแท็บปัจจุบันและตัวนับเชิงตัวเลข ไม่ส่งเนื้อหาข้อความกลับไปยัง Popup หรือ service worker
 
-สิทธิ์ที่ใช้คือ `storage`, `activeTab`, `scripting`, Instagram/TikTok และสิทธิ์เว็บไซต์เพิ่มเติมที่ผู้ใช้อนุมัติเอง
+สิทธิ์ที่ใช้คือ `storage`, `activeTab`, `scripting`, Instagram/TikTok/Facebook/Messenger และสิทธิ์เว็บไซต์เพิ่มเติมที่ผู้ใช้อนุมัติเอง
 
 ## แก้ปัญหาเบื้องต้น
 
@@ -71,7 +71,7 @@ Chrome ไม่รับ ZIP ที่ไม่ได้เผยแพร่�
 
 - **Editable Content:** ไม่ render ภายใน `input`, `textarea`, `contenteditable` และ composer เพื่อไม่รบกวน caret, selection, keyboard layout และ IME
 - **Server normalization:** เว็บไซต์อาจแปลง ลบ หรือ normalize code points ก่อนแสดงผล Renderer ไม่สามารถคืนข้อมูลที่เซิร์ฟเวอร์เปลี่ยนไปแล้ว
-- **Canvas, image และ video:** Renderer ไม่แก้ Emoji ที่วาดบน canvas หรือฝังอยู่ในรูป/วิดีโอทั่วไป แต่รองรับกรณี Instagram แปลง Unicode Emoji เป็นรูปจาก `/images/emoji.php/` โดยอ่าน sequence จาก `alt` และแสดงด้วย Noto แทน
+- **Canvas, image และ video:** Renderer ไม่แก้ Emoji ที่วาดบน canvas หรือฝังอยู่ในรูป/วิดีโอทั่วไป แต่รองรับกรณีเว็บไซต์ของ Meta แปลง Unicode Emoji เป็นรูปจาก `/images/emoji.php/` บน CDN ของ Instagram/Facebook โดยอ่าน sequence จาก `alt` และแสดงด้วย Noto แทน ทั้ง Emoji เดี่ยว, Emoji ใน bubble และ reaction
 - **Closed Shadow DOM:** Chrome ไม่เปิดให้เข้าถึง text node ภายใน closed shadow root
 - เว็บไซต์เปลี่ยน DOM ได้ตลอด จึงยังต้องทดสอบบัญชีจริงหลังเว็บไซต์อัปเดต
 

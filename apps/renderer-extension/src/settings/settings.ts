@@ -1,13 +1,13 @@
 import { DEFAULT_PRIMARY_SITES } from "../sites/site-context";
 
-export const SETTINGS_SCHEMA_VERSION = 1;
+export const SETTINGS_SCHEMA_VERSION = 2;
 export const SETTINGS_STORAGE_KEY = "rendererSettings";
 
 export type SitePolicyMode = "allowlist" | "denylist" | "all";
 export type RendererMode = "noto-colrv1";
 
 export interface RendererSettings {
-  readonly schemaVersion: 1;
+  readonly schemaVersion: 2;
   readonly enabled: boolean;
   readonly mode: SitePolicyMode;
   readonly sites: readonly string[];
@@ -42,21 +42,38 @@ export function normalizeSite(input: string): string | null {
 
 function normalizeSites(value: unknown): string[] {
   if (!Array.isArray(value)) return [...DEFAULT_SETTINGS.sites];
-  return [...new Set(value.flatMap(item => {
+  const sites = new Set(value.flatMap(item => {
     const normalized = typeof item === "string" ? normalizeSite(item) : null;
     return normalized ? [normalized] : [];
-  }))].sort();
+  }));
+  return [
+    ...DEFAULT_PRIMARY_SITES.filter(site => sites.delete(site)),
+    ...[...sites].sort(),
+  ];
+}
+
+const VERSION_1_DEFAULT_SITES = ["instagram.com", "tiktok.com"] as const;
+
+function isVersion1DefaultAllowlist(legacy: Record<string, unknown>, sites: readonly string[]): boolean {
+  if (legacy.schemaVersion === SETTINGS_SCHEMA_VERSION || legacy.mode === "denylist" || legacy.mode === "all") {
+    return false;
+  }
+  return sites.length === VERSION_1_DEFAULT_SITES.length
+    && VERSION_1_DEFAULT_SITES.every(site => sites.includes(site));
 }
 
 export function migrateSettings(value: unknown): RendererSettings {
   if (!value || typeof value !== "object") return { ...DEFAULT_SETTINGS, sites: [...DEFAULT_SETTINGS.sites] };
   const legacy = value as Record<string, unknown>;
   const mode: SitePolicyMode = legacy.mode === "denylist" || legacy.mode === "all" ? legacy.mode : "allowlist";
+  const normalizedSites = normalizeSites(legacy.sites);
   return {
     schemaVersion: SETTINGS_SCHEMA_VERSION,
     enabled: typeof legacy.enabled === "boolean" ? legacy.enabled : DEFAULT_SETTINGS.enabled,
     mode,
-    sites: normalizeSites(legacy.sites),
+    sites: isVersion1DefaultAllowlist(legacy, normalizedSites)
+      ? [...DEFAULT_PRIMARY_SITES]
+      : normalizedSites,
     rendererMode: "noto-colrv1",
     processDynamicContent: typeof legacy.processDynamicContent === "boolean"
       ? legacy.processDynamicContent : DEFAULT_SETTINGS.processDynamicContent,

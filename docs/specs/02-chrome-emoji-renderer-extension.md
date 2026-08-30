@@ -29,6 +29,12 @@ Picker มีหน้าที่ "ส่ง Unicode"
 
 โปรเจกต์นี้มีหน้าที่ "ทำให้ Chrome render Unicode ใหม่ได้ถูก"
 
+## 1.1 ส่วนขยายหลัง MVP
+
+ตั้งแต่ source รุ่น `0.0.3` ขอบเขตเว็บไซต์หลักเพิ่ม Facebook Messages และ Messenger.com โดยต้องรองรับกรณีที่ Meta แปลง Unicode Emoji เป็น `<img>` จาก CDN ของตนเอง ทั้ง Emoji เดี่ยว, Emoji ในข้อความ bubble และ reaction ตัว Renderer ต้องอ่าน Emoji จาก `alt`, แสดงด้วย Noto, รักษาขนาดเดิม และไม่แก้รูปโปรไฟล์ รูปทั่วไป หรือ Editable Content
+
+ขอบเขต Instagram/TikTok ด้านล่างยังเป็น baseline ของ MVP เดิม ส่วน Facebook/Messenger เป็นข้อกำหนดเพิ่มเติมหลัง MVP
+
 ---
 
 # 2. Recommended Solution

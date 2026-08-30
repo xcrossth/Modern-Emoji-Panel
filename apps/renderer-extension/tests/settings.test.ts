@@ -11,8 +11,24 @@ import {
 import { buildRegistrationPolicy, requiredOptionalOrigins } from "../src/settings/permissions";
 
 describe("renderer settings", () => {
-  it("defaults to only Instagram and TikTok with diagnostics off", () => {
+  it("defaults to the four supported chat sites with diagnostics off", () => {
     expect(DEFAULT_SETTINGS).toEqual({
+      schemaVersion: 2,
+      enabled: true,
+      mode: "allowlist",
+      sites: ["instagram.com", "tiktok.com", "facebook.com", "messenger.com"],
+      rendererMode: "noto-colrv1",
+      processDynamicContent: true,
+      debug: false,
+    });
+    expect(isSiteEnabled(DEFAULT_SETTINGS, "www.instagram.com")).toBe(true);
+    expect(isSiteEnabled(DEFAULT_SETTINGS, "www.facebook.com")).toBe(true);
+    expect(isSiteEnabled(DEFAULT_SETTINGS, "www.messenger.com")).toBe(true);
+    expect(isSiteEnabled(DEFAULT_SETTINGS, "example.com")).toBe(false);
+  });
+
+  it("adds Facebook and Messenger when migrating untouched version 1 defaults", () => {
+    const migrated = migrateSettings({
       schemaVersion: 1,
       enabled: true,
       mode: "allowlist",
@@ -21,11 +37,13 @@ describe("renderer settings", () => {
       processDynamicContent: true,
       debug: false,
     });
-    expect(isSiteEnabled(DEFAULT_SETTINGS, "www.instagram.com")).toBe(true);
-    expect(isSiteEnabled(DEFAULT_SETTINGS, "example.com")).toBe(false);
+
+    expect(migrated.sites).toEqual([
+      "instagram.com", "tiktok.com", "facebook.com", "messenger.com",
+    ]);
   });
 
-  it("migrates legacy and malformed values into schema 1 deterministically", () => {
+  it("migrates legacy and malformed values into the current schema deterministically", () => {
     const migrated = migrateSettings({
       enabled: false,
       mode: "allowlist",
@@ -34,7 +52,9 @@ describe("renderer settings", () => {
       debug: true,
     });
     expect(migrated.schemaVersion).toBe(SETTINGS_SCHEMA_VERSION);
-    expect(migrated.sites).toEqual(["instagram.com", "tiktok.com"]);
+    expect(migrated.sites).toEqual([
+      "instagram.com", "tiktok.com", "facebook.com", "messenger.com",
+    ]);
     expect(migrated.rendererMode).toBe("noto-colrv1");
     expect(migrated.enabled).toBe(false);
     expect(migrated.debug).toBe(true);
@@ -80,7 +100,12 @@ describe("renderer settings", () => {
     expect(requiredOptionalOrigins(all)).toEqual(["<all_urls>"]);
     expect(buildRegistrationPolicy(all)).toEqual({
       matches: ["<all_urls>"],
-      excludeMatches: ["https://www.instagram.com/*", "https://www.tiktok.com/*"],
+      excludeMatches: [
+        "https://www.instagram.com/*",
+        "https://www.tiktok.com/*",
+        "https://www.facebook.com/*",
+        "https://www.messenger.com/*",
+      ],
     });
     const denied = { ...DEFAULT_SETTINGS, mode: "denylist" as const, sites: ["example.com"] };
     expect(buildRegistrationPolicy(denied)?.excludeMatches).toContain("*://*.example.com/*");

@@ -1,5 +1,6 @@
 import {
   DEFAULT_SETTINGS,
+  SETTINGS_SCHEMA_VERSION,
   migrateSettings,
   normalizeSite,
   type RendererSettings,
@@ -46,7 +47,7 @@ function readSites(): string[] {
 
 function readForm(): RendererSettings {
   return {
-    schemaVersion: 1,
+    schemaVersion: SETTINGS_SCHEMA_VERSION,
     enabled: enabled.checked,
     mode: mode.value as SitePolicyMode,
     sites: mode.value === "all" ? [] : readSites(),

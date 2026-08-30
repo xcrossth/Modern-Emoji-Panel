@@ -1,8 +1,8 @@
 # Matrix ทดสอบ Renderer บนเว็บไซต์หลัก
 
-ไฟล์นี้เป็นจุดบันทึก manual qualification บนบัญชีจริงสำหรับ Instagram Web DM และ TikTok Web Chat หลังโหลด unpacked extension จาก branch Renderer
+ไฟล์นี้เป็นจุดบันทึก manual qualification บนบัญชีจริงสำหรับ Instagram Web DM, TikTok Web Chat, Facebook Messages และ Messenger.com หลังโหลด unpacked extension
 
-สถานะปัจจุบัน: **ผ่าน** — automated fixtures, actual-font gate และ manual E2E บนบัญชีจริงผ่านแล้ว รายละเอียดอยู่ที่ `docs/qualification/results/renderer-manual-primary-sites-win10-20260830.md`
+สถานะปัจจุบัน: **Instagram/TikTok/Facebook ผ่าน; Messenger.com รอ manual qualification ของรุ่น 0.0.3** — automated fixtures ของทั้งสี่เว็บไซต์ผ่านแล้ว ส่วนผล manual เดิมอยู่ที่ `docs/qualification/results/renderer-manual-primary-sites-win10-20260830.md`
 
 | เว็บไซต์ | Scenario | สถานะ | หลักฐาน/หมายเหตุ |
 |---|---|---|---|
@@ -14,6 +14,9 @@
 | TikTok Chat | ข้อความใหม่, preview, เปลี่ยนห้อง, ประวัติย้อนหลัง | ผ่าน | ข้อความใหม่และสลับห้องไปมายังแสดงถูกต้อง |
 | TikTok Chat | selection, Copy, layout, typography | ผ่าน | Copy/Paste คง Unicode และหน้าข้อความแสดงปกติ |
 | TikTok Chat | composer, caret, selection, Thai IME, composition, ส่งข้อความ | ผ่าน | ช่องพิมพ์ยังใช้ renderer เดิมตาม Editable Content design และไม่กระทบการใช้งาน |
+| Facebook Messages | Emoji เดี่ยว, Emoji ใน bubble, reaction และ Quick Emoji แบบ image | ผ่าน | ทดสอบด้วยบัญชีจริงแล้ว; ใช้ Noto และคงขนาด 16/32px รวมถึงขนาดฐาน 56px ที่ Facebook ใช้ย่อ/ขยาย Quick Emoji |
+| Facebook Messages | รูปโปรไฟล์/รูปทั่วไป และ composer | ผ่าน | ทดสอบหน้าเว็บจริงแล้ว; รูปทั่วไปและพื้นที่แก้ไขข้อความไม่ถูกเปลี่ยนแปลง |
+| Messenger.com | Emoji เดี่ยว, Emoji ใน bubble และ reaction แบบ image | รอทดสอบ | ใช้ pipeline เดียวกับ Facebook; ต้องมีหน้าแชทจริงเพื่อยืนยัน DOM ปัจจุบัน |
 
 ชุด Emoji ที่ต้องครอบคลุม: เฉพาะ Emoji, ไทย + Emoji, English + Emoji, Emoji ใหม่ที่ Windows 10 เดิมไม่รองรับ, ZWJ, skin tone, keycap, regional flag และ tag sequence
 
@@ -21,6 +24,7 @@
 
 - `apps/renderer-extension/tests/fixtures/instagram-dm.html`
 - `apps/renderer-extension/tests/fixtures/tiktok-chat.html`
+- `apps/renderer-extension/tests/fixtures/facebook-messenger.html`
 - `apps/renderer-extension/tests/primary-site-fixtures.test.ts`
 - `docs/research/renderer-dom-pipeline/results/report.json`
 - `docs/qualification/results/renderer-instagram-emoji-images-win10-20260830.md`

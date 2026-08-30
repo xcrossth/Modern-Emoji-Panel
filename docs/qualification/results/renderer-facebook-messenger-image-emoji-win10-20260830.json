@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "status": "pending",
+  "environment": "Windows 10 Enterprise N 22H2 build 19045, Chrome",
+  "sites": {
+    "facebookMessages": {
+      "status": "passed",
+      "scenarios": [
+        "Emoji เดี่ยวที่เดิมเป็นรูปภาพแสดงด้วย Noto ที่มากับส่วนขยาย",
+        "Emoji ใน bubble ที่เดิมเป็นรูปภาพแสดงด้วย Noto ที่มากับส่วนขยาย",
+        "Emoji ใน reaction ที่เดิมเป็นรูปภาพแสดงด้วย Noto ที่มากับส่วนขยาย",
+        "รูปโปรไฟล์และรูปทั่วไปไม่ถูกเปลี่ยนแปลง",
+        "composer ซึ่งแก้ไขข้อความได้ไม่ถูกเปลี่ยนแปลง"
+      ]
+    },
+    "messengerCom": {
+      "status": "pending",
+      "scenarios": [
+        "Emoji เดี่ยวที่เดิมเป็นรูปภาพแสดงด้วย Noto ที่มากับส่วนขยาย",
+        "Emoji ใน bubble ที่เดิมเป็นรูปภาพแสดงด้วย Noto ที่มากับส่วนขยาย",
+        "Emoji ใน reaction ที่เดิมเป็นรูปภาพแสดงด้วย Noto ที่มากับส่วนขยาย"
+      ]
+    }
+  },
+  "notes": "Facebook Messages ผ่านการทดสอบด้วยบัญชีจริงแล้ว ทั้ง Emoji เดี่ยว, bubble, reaction, รูปทั่วไปและ composer รวมถึงตรวจขนาด Quick Emoji ตาม lifecycle ของ Facebook; Messenger.com ยังรอทดสอบด้วยบัญชีจริงก่อนเผยแพร่รุ่น 0.0.3 เป็น release"
+}

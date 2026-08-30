@@ -11,7 +11,7 @@ const outputRoot = join(repositoryRoot, "artifacts", "renderer-extension", "unpa
 const readOutput = (path: string) => readFile(join(outputRoot, path), "utf8");
 
 describe("Renderer Extension foundation", () => {
-  it("builds a minimal Manifest V3 package for only the two primary chat sites", async () => {
+  it("builds a minimal Manifest V3 package for the four primary chat sites", async () => {
     const manifest = JSON.parse(await readOutput("manifest.json"));
 
     expect(manifest.manifest_version).toBe(3);
@@ -20,6 +20,8 @@ describe("Renderer Extension foundation", () => {
     expect(manifest.host_permissions).toEqual([
       "https://www.instagram.com/*",
       "https://www.tiktok.com/*",
+      "https://www.facebook.com/*",
+      "https://www.messenger.com/*",
     ]);
     expect(manifest.host_permissions).not.toContain("<all_urls>");
     expect(manifest.content_scripts).toHaveLength(1);

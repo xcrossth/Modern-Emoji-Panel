@@ -66,6 +66,14 @@ const instagramImageEvidencePath = join(
   "renderer-instagram-emoji-images-win10-20260830.json",
 );
 const instagramImageEvidence = await readJson(instagramImageEvidencePath);
+const facebookMessengerEvidencePath = join(
+  repositoryRoot,
+  "docs",
+  "qualification",
+  "results",
+  "renderer-facebook-messenger-image-emoji-win10-20260830.json",
+);
+const facebookMessengerEvidence = await readJson(facebookMessengerEvidencePath);
 const sourceCommit = git("rev-parse", "HEAD");
 const sourceTreeClean = git("status", "--porcelain").length === 0;
 const sourceDateEpoch = Number(process.env.SOURCE_DATE_EPOCH ?? git("log", "-1", "--format=%ct"));
@@ -93,12 +101,15 @@ await cp(
 const fontPath = join(packageRoot, "assets", "fonts", "Noto-COLRv1.ttf");
 const fontHash = sha256(await readFile(fontPath));
 const qualificationHash = sha256(await readFile(qualificationPath));
+const allPrimarySitesPassed = qualification.manual?.status === "passed"
+  && facebookMessengerEvidence.status === "passed"
+  && Object.values(facebookMessengerEvidence.sites ?? {}).every(site => site.status === "passed");
 const metadata = {
   schemaVersion: 1,
   product: manifest.name,
   extensionVersion: manifest.version,
   manifestVersion: manifest.manifest_version,
-  releaseKind: qualification.manual?.status === "passed" ? "release" : "release-candidate",
+  releaseKind: allPrimarySitesPassed ? "release" : "release-candidate",
   unicodeVersion: baseline.baseline.unicode,
   unicodeEmojiVersion: baseline.baseline.emoji,
   cldrVersion: baseline.baseline.cldr,
@@ -126,6 +137,11 @@ const metadata = {
       report: "docs/qualification/results/renderer-instagram-emoji-images-win10-20260830.json",
       reportSha256: sha256(await readFile(instagramImageEvidencePath)),
     },
+    facebookMessengerImageEmoji: {
+      status: facebookMessengerEvidence.status,
+      report: "docs/qualification/results/renderer-facebook-messenger-image-emoji-win10-20260830.json",
+      reportSha256: sha256(await readFile(facebookMessengerEvidencePath)),
+    },
     extensionFont: {
       status: extensionFontEvidence.status,
       report: "docs/qualification/results/renderer-font-runtime-win10-20260830.json",
@@ -138,7 +154,7 @@ const metadata = {
   defaults: {
     debug: false,
     mode: "allowlist",
-    primarySites: ["instagram.com", "tiktok.com"],
+    primarySites: ["instagram.com", "tiktok.com", "facebook.com", "messenger.com"],
   },
 };
 await writeFile(join(packageRoot, "release-metadata.json"), `${JSON.stringify(metadata, null, 2)}\n`, "utf8");
@@ -164,5 +180,7 @@ console.log(JSON.stringify({
   sha256: zipHash,
   files: packageFiles.length,
   sourceTreeClean,
+  releaseKind: metadata.releaseKind,
   qualificationStatus: qualification.status,
+  facebookMessengerQualificationStatus: facebookMessengerEvidence.status,
 }, null, 2));

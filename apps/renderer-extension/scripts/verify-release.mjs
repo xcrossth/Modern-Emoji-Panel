@@ -80,6 +80,14 @@ const instagramImageEvidencePath = join(
   "renderer-instagram-emoji-images-win10-20260830.json",
 );
 const instagramImageEvidence = await readJson(instagramImageEvidencePath);
+const facebookMessengerEvidencePath = join(
+  repositoryRoot,
+  "docs",
+  "qualification",
+  "results",
+  "renderer-facebook-messenger-image-emoji-win10-20260830.json",
+);
+const facebookMessengerEvidence = await readJson(facebookMessengerEvidencePath);
 const packageFiles = await listFiles(packageRoot);
 const zipName = `modern-emoji-renderer-${manifest.version}.zip`;
 const zipPath = join(releaseRoot, zipName);
@@ -151,7 +159,16 @@ for (const file of executableFiles) {
 const font = await readFile(join(packageRoot, "assets", "fonts", "Noto-COLRv1.ttf"));
 const sidecar = (await readFile(join(releaseRoot, `${zipName}.sha256`), "utf8")).trim();
 const expectedPermissions = ["storage", "activeTab", "scripting"];
-const expectedHosts = ["https://www.instagram.com/*", "https://www.tiktok.com/*"];
+const expectedHosts = [
+  "https://www.instagram.com/*",
+  "https://www.tiktok.com/*",
+  "https://www.facebook.com/*",
+  "https://www.messenger.com/*",
+];
+const allPrimarySitesPassed = qualification.manual?.status === "passed"
+  && facebookMessengerEvidence.status === "passed"
+  && Object.values(facebookMessengerEvidence.sites ?? {}).every(site => site.status === "passed");
+const expectedReleaseKind = allPrimarySitesPassed ? "release" : "release-candidate";
 const checks = [
   check("มีไฟล์ production ที่จำเป็นครบ", missingRequired.length === 0, missingRequired),
   check("ไม่มี fixture, test, source map, data dump หรือ secret", forbiddenPaths.length === 0, forbiddenPaths),
@@ -163,6 +180,10 @@ const checks = [
   check("Font hash ตรง asset", metadata.fontSha256 === sha256(font), metadata.fontSha256),
   check("สิทธิ์หลักมีเท่าที่กำหนด", JSON.stringify(manifest.permissions) === JSON.stringify(expectedPermissions) && JSON.stringify(manifest.host_permissions) === JSON.stringify(expectedHosts) && JSON.stringify(manifest.optional_host_permissions) === JSON.stringify(["<all_urls>"]), { permissions: manifest.permissions, hostPermissions: manifest.host_permissions, optionalHostPermissions: manifest.optional_host_permissions }),
   check("Debug ปิดเป็นค่าเริ่มต้น", metadata.defaults?.debug === false, metadata.defaults),
+  check("ชนิดแพ็กเกจตรงกับสถานะ manual ของทุกเว็บไซต์หลัก", metadata.releaseKind === expectedReleaseKind, {
+    expected: expectedReleaseKind,
+    actual: metadata.releaseKind,
+  }),
   check("มี source, Noto และ Unicode licenses", ["LICENSE", "assets/fonts/OFL.txt", "licenses/UNICODE-LICENSE-V3.txt", "THIRD-PARTY-NOTICES.md"].every(file => packageFiles.includes(file)), null),
   check("ไม่มี Apple Emoji ในแพ็กเกจ", !packageFiles.some(file => /apple/iu.test(file)), packageFiles.filter(file => /apple/iu.test(file))),
   check("ไม่มี runtime network API หรือ remote code", remoteCodeHits.length === 0, remoteCodeHits),
@@ -171,13 +192,19 @@ const checks = [
     "Manual E2E ผ่าน Instagram และ TikTok พร้อมหลักฐานตรงไฟล์จริง",
     qualification.status === "passed"
       && qualification.manual?.status === "passed"
-      && metadata.releaseKind === "release"
       && manualEvidence.status === "passed"
       && manualEvidence.sites?.instagramWebDm?.status === "passed"
       && manualEvidence.sites?.tiktokWebChat?.status === "passed"
       && metadata.qualification?.manualEvidence?.status === "passed"
       && metadata.qualification?.manualEvidence?.reportSha256 === sha256(await readFile(manualEvidencePath)),
     metadata.qualification?.manualEvidence,
+  ),
+  check(
+    "สถานะ Facebook/Messenger ตรงกับหลักฐาน manual ล่าสุด",
+    metadata.qualification?.facebookMessengerImageEmoji?.status === facebookMessengerEvidence.status
+      && metadata.qualification?.facebookMessengerImageEmoji?.reportSha256
+        === sha256(await readFile(facebookMessengerEvidencePath)),
+    metadata.qualification?.facebookMessengerImageEmoji,
   ),
   check(
     "Instagram image-Emoji และ reaction ผ่าน manual E2E พร้อมหลักฐานตรงไฟล์จริง",
@@ -218,7 +245,9 @@ const markdown = [
   "",
   `ชนิดแพ็กเกจ: **${metadata.releaseKind}**`,
   "",
-  `Qualification: **${qualification.status}**${qualification.manual?.status === "pending" ? " — ยังรอ manual E2E บนบัญชีจริง" : ""}`,
+  `Qualification อัตโนมัติ: **${qualification.status}**`,
+  "",
+  `Facebook/Messenger manual: **${facebookMessengerEvidence.status}**${facebookMessengerEvidence.status === "pending" ? " — ยังรอทดสอบบนบัญชีจริง" : ""}`,
   "",
   `ZIP: \`${zipName}\``,
   "",

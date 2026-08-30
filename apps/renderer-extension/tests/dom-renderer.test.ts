@@ -60,11 +60,22 @@ describe("static display renderer", () => {
   });
 
   it("injects one scoped font style without changing surrounding typography", () => {
+    const hostStyle = document.createElement("style");
+    hostStyle.textContent = "span { display: block; line-height: 0; }";
+    document.head.append(hostStyle);
     const first = ensureRendererStyles(document, "chrome-extension://example/assets/fonts/Noto-COLRv1.ttf");
     const second = ensureRendererStyles(document, "ignored.ttf");
     expect(first).toBe(second);
     expect(first.textContent).toContain(`.${RENDERER_CLASS}`);
     expect(first.textContent).not.toMatch(/(^|\n)\s*\*\s*\{/u);
-    expect(document.querySelectorAll("style")).toHaveLength(1);
+    document.body.innerHTML = `
+      <span><img height="16" width="16" alt="😆"
+        src="https://static.xx.fbcdn.net/images/emoji.php/v9/t4/1/16/1f606.png"></span>`;
+    renderSubtree(document.body);
+    const imageWrapper = document.querySelector<HTMLElement>(`[${RENDERER_ATTRIBUTE}="emoji-image"]`)!;
+    const computed = getComputedStyle(imageWrapper);
+    expect(computed.display).toBe("inline-flex");
+    expect(computed.lineHeight).toBe("1");
+    expect(document.querySelectorAll("style")).toHaveLength(2);
   });
 });

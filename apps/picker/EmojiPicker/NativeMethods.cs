@@ -56,6 +56,21 @@ namespace EmojiPicker
         [DllImport("user32.dll")]
         internal static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
 
+        internal const uint SwpNoSize = 0x0001;
+        internal const uint SwpNoZOrder = 0x0004;
+        internal const uint SwpNoActivate = 0x0010;
+        internal const uint SwpNoOwnerZOrder = 0x0200;
+
+        [DllImport("user32.dll", SetLastError = true)]
+        internal static extern bool SetWindowPos(
+            IntPtr hWnd,
+            IntPtr hWndInsertAfter,
+            int x,
+            int y,
+            int width,
+            int height,
+            uint flags);
+
         [DllImport("oleacc.dll")]
         internal static extern int AccessibleObjectFromWindow(
             IntPtr hwnd,

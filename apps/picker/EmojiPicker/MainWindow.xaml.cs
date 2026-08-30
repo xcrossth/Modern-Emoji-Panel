@@ -50,6 +50,7 @@ namespace EmojiPicker
         private readonly DispatcherTimer previewCloseTimer;
         private readonly bool persistUserActivity;
         private readonly ActivityDataStore activityData;
+        private System.Windows.Point? previewTargetScreenOrigin;
         private EmojiSearchIndex searchIndex;
         private List<Emoji> baselineEmojis = new List<Emoji>();
         private List<Emoji> allEmojis = new List<Emoji>();
@@ -139,6 +140,10 @@ namespace EmojiPicker
         internal string PreviewEnglishNameText => PreviewEnglishName.Text;
         internal string PreviewVersionText => PreviewEmojiVersion.Text;
         internal string PreviewAssetPath => PreviewArtwork.AssetPath;
+        internal System.Windows.Point? PreviewScreenOriginForSmoke =>
+            EmojiPreviewPopup.IsOpen && EmojiPreviewPopup.Child is UIElement child
+                ? child.PointToScreen(new System.Windows.Point(0, 0))
+                : null;
         internal PickerInputMode InputMode => sessionState.Mode;
         internal bool IsPickerSessionOpen => IsVisible;
         internal string AccessibilityStatus => AutomationStatusText.Text;
@@ -1203,6 +1208,10 @@ namespace EmojiPicker
             previewOrigin = origin;
 
             var wasOpen = EmojiPreviewPopup.IsOpen;
+            var previousTarget = EmojiPreviewPopup.PlacementTarget;
+            System.Windows.Point? targetScreenOrigin = PresentationSource.FromVisual(target) != null
+                ? target.PointToScreen(new System.Windows.Point(0, 0))
+                : null;
             EmojiPreviewPopup.PlacementTarget = target;
             PreviewArtwork.AssetPath = emoji.PreviewAssetPath;
             PreviewLocalizedName.Text = emoji.Name;
@@ -1221,6 +1230,45 @@ namespace EmojiPicker
             {
                 EmojiPreviewPopup.IsOpen = true;
             }
+            else if (!ReferenceEquals(previousTarget, target) &&
+                previewTargetScreenOrigin is { } previousScreenOrigin &&
+                targetScreenOrigin is { } currentScreenOrigin)
+            {
+                MoveOpenPreviewWithTarget(previousScreenOrigin, currentScreenOrigin);
+            }
+
+            previewTargetScreenOrigin = targetScreenOrigin;
+        }
+
+        private void MoveOpenPreviewWithTarget(
+            System.Windows.Point previousTargetOrigin,
+            System.Windows.Point currentTargetOrigin)
+        {
+            // WPF updates PlacementTarget while Popup is open, but its native window
+            // keeps the previous screen position. Move that same non-activating window
+            // by the target delta so content and position change without close/open
+            // flicker. PointToScreen and GetWindowRect both use physical pixels.
+            if (EmojiPreviewPopup.Child is not UIElement child ||
+                PresentationSource.FromVisual(child) is not HwndSource popupSource ||
+                popupSource.Handle == IntPtr.Zero ||
+                !NativeMethods.GetWindowRect(popupSource.Handle, out var popupRect))
+            {
+                return;
+            }
+
+            var deltaX = (int)Math.Round(currentTargetOrigin.X - previousTargetOrigin.X);
+            var deltaY = (int)Math.Round(currentTargetOrigin.Y - previousTargetOrigin.Y);
+            NativeMethods.SetWindowPos(
+                popupSource.Handle,
+                IntPtr.Zero,
+                popupRect.Left + deltaX,
+                popupRect.Top + deltaY,
+                0,
+                0,
+                NativeMethods.SwpNoSize |
+                NativeMethods.SwpNoZOrder |
+                NativeMethods.SwpNoActivate |
+                NativeMethods.SwpNoOwnerZOrder);
         }
 
         private void HidePreview()
@@ -1231,6 +1279,8 @@ namespace EmojiPicker
             {
                 EmojiPreviewPopup.IsOpen = false;
             }
+
+            previewTargetScreenOrigin = null;
         }
 
         internal bool OpenSelectedPreviewForSmoke()

@@ -537,10 +537,10 @@ namespace EmojiPicker
                     var previewDismissed = !smokeWindow.IsPreviewOpen;
 
                     var firstPointerEmoji = smokeWindow.EmojiGrid.Items.Count > 1
-                        ? smokeWindow.EmojiGrid.Items[0] as Emoji
+                        ? smokeWindow.EmojiGrid.Items[1] as Emoji
                         : null;
                     var secondPointerEmoji = smokeWindow.EmojiGrid.Items.Count > 1
-                        ? smokeWindow.EmojiGrid.Items[1] as Emoji
+                        ? smokeWindow.EmojiGrid.Items[0] as Emoji
                         : null;
                     var firstPointerTarget = firstPointerEmoji == null
                         ? null
@@ -553,10 +553,32 @@ namespace EmojiPicker
                     smokeWindow.EmojiPreviewPopup.Opened += pointerOpenedHandler;
                     var firstPointerPreviewOpened = firstPointerEmoji != null && firstPointerTarget != null &&
                         smokeWindow.OpenPointerPreviewForSmoke(firstPointerEmoji, firstPointerTarget);
+                    await smokeWindow.Dispatcher.InvokeAsync(
+                        () => { },
+                        DispatcherPriority.ApplicationIdle);
+                    var firstPointerPopupOrigin = smokeWindow.PreviewScreenOriginForSmoke;
+                    var firstPointerTargetOrigin = firstPointerTarget?.PointToScreen(new System.Windows.Point(0, 0));
                     smokeWindow.SchedulePointerPreviewCloseForSmoke();
                     var secondPointerPreviewOpened = secondPointerEmoji != null && secondPointerTarget != null &&
                         smokeWindow.OpenPointerPreviewForSmoke(secondPointerEmoji, secondPointerTarget);
-                    await Task.Delay(200);
+                    await smokeWindow.Dispatcher.InvokeAsync(
+                        () => { },
+                        DispatcherPriority.ApplicationIdle);
+                    var secondPointerPopupOrigin = smokeWindow.PreviewScreenOriginForSmoke;
+                    var secondPointerTargetOrigin = secondPointerTarget?.PointToScreen(new System.Windows.Point(0, 0));
+                    double? pointerPopupHorizontalShift =
+                        firstPointerPopupOrigin is { } firstPopupOrigin &&
+                        secondPointerPopupOrigin is { } secondPopupOrigin
+                            ? secondPopupOrigin.X - firstPopupOrigin.X
+                            : null;
+                    double? pointerTargetHorizontalShift =
+                        firstPointerTargetOrigin is { } firstTargetOrigin &&
+                        secondPointerTargetOrigin is { } secondTargetOrigin
+                            ? secondTargetOrigin.X - firstTargetOrigin.X
+                            : null;
+                    var pointerMoveRepositionedPopup = pointerPopupHorizontalShift.HasValue &&
+                        pointerTargetHorizontalShift.HasValue &&
+                        Math.Abs(pointerPopupHorizontalShift.Value - pointerTargetHorizontalShift.Value) <= 1;
                     var pointerMoveReusedPopup = firstPointerPreviewOpened && secondPointerPreviewOpened &&
                         smokeWindow.IsPreviewOpen &&
                         pointerOpenTransitions == 1 &&
@@ -585,6 +607,9 @@ namespace EmojiPicker
                         hoverOpenDelayMilliseconds = global::EmojiPicker.MainWindow.HoverPreviewOpenDelay.TotalMilliseconds,
                         hoverCloseDelayMilliseconds = global::EmojiPicker.MainWindow.HoverPreviewCloseDelay.TotalMilliseconds,
                         pointerMoveReusedPopup,
+                        pointerMoveRepositionedPopup,
+                        pointerPopupHorizontalShift,
+                        pointerTargetHorizontalShift,
                         previewStayedOpenDuringCloseGrace,
                         previewClosedAfterGrace,
                         accessibleNamePassed,
@@ -612,6 +637,7 @@ namespace EmojiPicker
                             report.hoverOpenDelayMilliseconds == 0 &&
                             report.hoverCloseDelayMilliseconds == 150 &&
                             report.pointerMoveReusedPopup &&
+                            report.pointerMoveRepositionedPopup &&
                             report.previewStayedOpenDuringCloseGrace &&
                             report.previewClosedAfterGrace &&
                             report.accessibleNamePassed &&

@@ -88,7 +88,6 @@ try {
         -Wait `
         -PassThru `
         -WindowStyle Hidden
-    Assert-Condition ($smoke.ExitCode -eq 0) "Bilingual search and preview smoke failed with exit code $($smoke.ExitCode)"
     Assert-Condition (Test-Path -LiteralPath $smokeReportPath -PathType Leaf) "Search/preview smoke report is missing"
 
     $report = Get-Content -Raw -LiteralPath $smokeReportPath | ConvertFrom-Json
@@ -110,11 +109,13 @@ try {
     Assert-Condition ($report.hoverOpenDelayMilliseconds -eq 0) "Hover preview does not open immediately"
     Assert-Condition ($report.hoverCloseDelayMilliseconds -eq 150) "Hover preview close grace is not 150 ms"
     Assert-Condition ($report.pointerMoveReusedPopup -eq $true) "Moving between tiles reopened the Hover Preview popup"
+    Assert-Condition ($report.pointerMoveRepositionedPopup -eq $true) "Hover Preview content moved to the left tile but its visible position did not (target shift: $($report.pointerTargetHorizontalShift), popup shift: $($report.pointerPopupHorizontalShift))"
     Assert-Condition ($report.previewStayedOpenDuringCloseGrace -eq $true) "Hover Preview closed before its grace period"
     Assert-Condition ($report.previewClosedAfterGrace -eq $true) "Hover Preview did not close after its grace period"
     Assert-Condition ($report.previewDecodedPixelWidth -eq 160) "Preview did not decode the 512 role to 160 physical pixels at 100% DPI"
     Assert-Condition ($report.searchIterations -eq 100) "Search responsiveness sample is incomplete"
     Assert-Condition ($report.searchElapsedMilliseconds -lt 5000) "100 bilingual searches exceeded the 5000 ms non-blocking guardrail"
+    Assert-Condition ($smoke.ExitCode -eq 0) "Bilingual search and preview smoke failed with exit code $($smoke.ExitCode)"
 
     Write-Host "Bilingual search/preview verification passed: 3944 entries, four deterministic tiers, 100 searches in $($report.searchElapsedMilliseconds) ms, 3944 preview assets" -ForegroundColor Green
 }

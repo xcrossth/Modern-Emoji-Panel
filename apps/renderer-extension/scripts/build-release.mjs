@@ -86,6 +86,12 @@ assertChildPath(artifactRoot, productionRoot, "production");
 assertChildPath(artifactRoot, releaseRoot, "release");
 assertChildPath(releaseRoot, packageRoot, "package");
 
+execFileSync(
+  process.execPath,
+  [join(extensionRoot, "scripts", "build.mjs"), "--production"],
+  { cwd: extensionRoot, stdio: "inherit" },
+);
+
 await rm(releaseRoot, { recursive: true, force: true });
 await mkdir(packageRoot, { recursive: true });
 await cp(productionRoot, packageRoot, { recursive: true });

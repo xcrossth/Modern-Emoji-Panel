@@ -4,9 +4,9 @@
     "net10.0-windows7.0": {
       "VirtualizingWrapPanel": {
         "type": "Direct",
-        "requested": "[2.5.2, )",
-        "resolved": "2.5.2",
-        "contentHash": "532Uu1Q64+bSQQugZMz2GzNCOIL0NFUcEbpop0kIGVK4TG2ccuUr3vm2GH9XJwa+m26YVkEugeEjg9SLVB9kJQ=="
+        "requested": "[2.5.4, )",
+        "resolved": "2.5.4",
+        "contentHash": "9XUKPLWVmtss3VvAm4/dn/3mmQQkZAl7og4onB8qD0LwozjC9mpYgNwhY9l4I9mWpJYYdMn/ZKD+k7i3jmeWPA=="
       }
     },
     "net10.0-windows7.0/win-x64": {}

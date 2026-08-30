@@ -9,7 +9,7 @@
     "chromeForTesting": "152.0.7977.64"
   },
   "automated": {
-    "testsPassed": 62,
+    "testsPassed": 65,
     "testSuitesPassed": 26,
     "testsFailed": 0,
     "rendering": {
@@ -66,6 +66,12 @@
       "postScriptName": "NotoColorEmoji",
       "isCustomFont": true,
       "requestScheme": "chrome-extension",
+      "instagramImageEmoji": {
+        "wrapperCount": 1,
+        "wrapperText": "🥺",
+        "sourceImageHidden": true,
+        "ordinaryImageHidden": false
+      },
       "evidence": "docs/qualification/results/renderer-font-runtime-win10-20260830.json"
     },
     "dom": {
@@ -197,6 +203,7 @@
     "status": "passed",
     "matrix": "docs/qualification/renderer-primary-sites.md",
     "evidence": "docs/qualification/results/renderer-manual-primary-sites-win10-20260830.json",
+    "additionalEvidence": "docs/qualification/results/renderer-instagram-emoji-images-win10-20260830.json",
     "requiredSites": [
       "Instagram Web DM",
       "TikTok Web Chat"

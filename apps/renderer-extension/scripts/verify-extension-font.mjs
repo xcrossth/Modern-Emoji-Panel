@@ -24,6 +24,10 @@ const fixtureHtml = `<!doctype html>
 <html lang="th"><head><meta charset="utf-8"><title>Instagram font fixture</title></head>
 <body style="font: 48px/1.5 'Segoe UI Emoji', sans-serif">
   <main id="transcript">ทดสอบ 🫩 🫯 🤍 ❤️ 👩🏽‍💻 👨‍👩‍👧‍👦 1️⃣ 🇹🇭</main>
+  <section id="story-reply">ตอบสตอรี่
+    <img id="instagram-emoji" height="16" width="16" alt="🥺" src="https://static.cdninstagram.com/images/emoji.php/v9/t73/1/16/1f979.png">
+    <img id="ordinary-image" alt="🥺" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
+  </section>
 </body></html>`;
 
 await rm(evidenceRoot, { recursive: true, force: true });
@@ -88,6 +92,13 @@ try {
           responseHeaders: [{ name: "Content-Type", value: "text/html; charset=utf-8" }],
           body: Buffer.from(fixtureHtml).toString("base64"),
         });
+      } else if (resourceType === "Image" && /cdninstagram\.com\/images\/emoji\.php\//iu.test(request.url)) {
+        void send("Fetch.fulfillRequest", {
+          requestId,
+          responseCode: 200,
+          responseHeaders: [{ name: "Content-Type", value: "image/png" }],
+          body: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
+        });
       } else {
         void send("Fetch.failRequest", { requestId, errorReason: "BlockedByClient" });
       }
@@ -110,7 +121,10 @@ try {
   await send("DOM.enable");
   await send("CSS.enable");
   await send("Fetch.enable", {
-    patterns: [{ urlPattern: "https://www.instagram.com/*", requestStage: "Request" }],
+    patterns: [
+      { urlPattern: "https://www.instagram.com/*", requestStage: "Request" },
+      { urlPattern: "https://*.cdninstagram.com/images/emoji.php/*", requestStage: "Request" },
+    ],
   });
   await send("Page.navigate", { url: "https://www.instagram.com/direct/t/renderer-font-fixture" });
 
@@ -118,10 +132,15 @@ try {
   for (let attempt = 0; attempt < 100; attempt += 1) {
     const evaluation = await send("Runtime.evaluate", {
       expression: `(() => {
-        const wrapper = document.querySelector('[data-modern-emoji-renderer="emoji"]');
+        const wrapper = document.querySelector('[data-modern-emoji-renderer="emoji-image"]');
         return {
           url: location.href,
-          wrapperCount: document.querySelectorAll('[data-modern-emoji-renderer="emoji"]').length,
+          wrapperCount: document.querySelectorAll('[data-modern-emoji-renderer]').length,
+          textWrapperCount: document.querySelectorAll('[data-modern-emoji-renderer="emoji"]').length,
+          imageWrapperCount: document.querySelectorAll('[data-modern-emoji-renderer="emoji-image"]').length,
+          imageWrapperText: wrapper?.textContent ?? null,
+          sourceImageHidden: document.querySelector('#instagram-emoji')?.hidden ?? null,
+          ordinaryImageHidden: document.querySelector('#ordinary-image')?.hidden ?? null,
           computedFontFamily: wrapper ? getComputedStyle(wrapper).fontFamily : null,
           fontFaces: [...document.fonts].map(face => ({ family: face.family, status: face.status })),
         };
@@ -129,7 +148,7 @@ try {
       returnByValue: true,
     });
     state = evaluation.result.value;
-    if (state.wrapperCount > 0) break;
+    if (state.textWrapperCount > 0 && state.imageWrapperCount === 1) break;
     await new Promise(resolveWait => setTimeout(resolveWait, 100));
   }
   if (!state || state.wrapperCount === 0) throw new Error("Extension did not create Emoji wrappers");
@@ -137,7 +156,7 @@ try {
     expression: `(async () => {
       await document.fonts.ready;
       await new Promise(resolveFrame => requestAnimationFrame(() => requestAnimationFrame(resolveFrame)));
-      document.querySelector('[data-modern-emoji-renderer="emoji"]').getBoundingClientRect();
+      document.querySelector('[data-modern-emoji-renderer="emoji-image"]').getBoundingClientRect();
     })()`,
     awaitPromise: true,
   });
@@ -145,14 +164,19 @@ try {
   const documentNode = await send("DOM.getDocument", { depth: 1 });
   const wrapperNode = await send("DOM.querySelector", {
     nodeId: documentNode.root.nodeId,
-    selector: '[data-modern-emoji-renderer="emoji"]',
+    selector: '[data-modern-emoji-renderer="emoji-image"]',
   });
   if (!wrapperNode.nodeId) throw new Error("Wrapped Emoji node was not found through CDP DOM");
   const platformFonts = await send("CSS.getPlatformFontsForNode", { nodeId: wrapperNode.nodeId });
   const finalState = await send("Runtime.evaluate", {
     expression: `(() => ({
-      wrapperCount: document.querySelectorAll('[data-modern-emoji-renderer="emoji"]').length,
-      computedFontFamily: getComputedStyle(document.querySelector('[data-modern-emoji-renderer="emoji"]')).fontFamily,
+      wrapperCount: document.querySelectorAll('[data-modern-emoji-renderer]').length,
+      textWrapperCount: document.querySelectorAll('[data-modern-emoji-renderer="emoji"]').length,
+      imageWrapperCount: document.querySelectorAll('[data-modern-emoji-renderer="emoji-image"]').length,
+      imageWrapperText: document.querySelector('[data-modern-emoji-renderer="emoji-image"]')?.textContent ?? null,
+      sourceImageHidden: document.querySelector('#instagram-emoji')?.hidden ?? null,
+      ordinaryImageHidden: document.querySelector('#ordinary-image')?.hidden ?? null,
+      computedFontFamily: getComputedStyle(document.querySelector('[data-modern-emoji-renderer="emoji-image"]')).fontFamily,
       fontFaces: [...document.fonts].map(face => ({ family: face.family, status: face.status })),
     }))()`,
     returnByValue: true,
@@ -175,6 +199,14 @@ try {
   ));
   if (!usesBundledNoto) {
     throw new Error(`Wrapped Emoji did not render with bundled Noto: ${JSON.stringify(report.platformFonts)}`);
+  }
+  if (
+    report.imageWrapperCount !== 1
+    || report.imageWrapperText !== "🥺"
+    || report.sourceImageHidden !== true
+    || report.ordinaryImageHidden !== false
+  ) {
+    throw new Error(`Instagram image Emoji boundary failed: ${JSON.stringify(report)}`);
   }
   const pageOriginFontRequest = report.fontNetworkEvents.find(event => (
     typeof event.url === "string" && event.url.startsWith("https://www.instagram.com/")

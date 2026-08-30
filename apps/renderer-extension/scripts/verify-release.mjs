@@ -72,6 +72,14 @@ const manualEvidencePath = join(
   "renderer-manual-primary-sites-win10-20260830.json",
 );
 const manualEvidence = await readJson(manualEvidencePath);
+const instagramImageEvidencePath = join(
+  repositoryRoot,
+  "docs",
+  "qualification",
+  "results",
+  "renderer-instagram-emoji-images-win10-20260830.json",
+);
+const instagramImageEvidence = await readJson(instagramImageEvidencePath);
 const packageFiles = await listFiles(packageRoot);
 const zipName = `modern-emoji-renderer-${manifest.version}.zip`;
 const zipPath = join(releaseRoot, zipName);
@@ -170,6 +178,14 @@ const checks = [
       && metadata.qualification?.manualEvidence?.status === "passed"
       && metadata.qualification?.manualEvidence?.reportSha256 === sha256(await readFile(manualEvidencePath)),
     metadata.qualification?.manualEvidence,
+  ),
+  check(
+    "Instagram image-Emoji และ reaction ผ่าน manual E2E พร้อมหลักฐานตรงไฟล์จริง",
+    instagramImageEvidence.status === "passed"
+      && Object.values(instagramImageEvidence.results ?? {}).every(result => result === "passed")
+      && metadata.qualification?.instagramImageEmoji?.status === "passed"
+      && metadata.qualification?.instagramImageEmoji?.reportSha256 === sha256(await readFile(instagramImageEvidencePath)),
+    metadata.qualification?.instagramImageEmoji,
   ),
   check(
     "หลักฐานยืนยันว่า glyph ใช้ bundled Noto จริง",

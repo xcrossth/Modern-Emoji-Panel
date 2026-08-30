@@ -20,9 +20,18 @@ const manualEvidencePath = join(
   "renderer-manual-primary-sites-win10-20260830.json",
 );
 const manualEvidence = JSON.parse(await readFile(manualEvidencePath, "utf8"));
+const instagramImageEvidencePath = join(
+  root,
+  "docs",
+  "qualification",
+  "results",
+  "renderer-instagram-emoji-images-win10-20260830.json",
+);
+const instagramImageEvidence = JSON.parse(await readFile(instagramImageEvidencePath, "utf8"));
 const manualPassed = manualEvidence.status === "passed"
   && manualEvidence.sites?.instagramWebDm?.status === "passed"
-  && manualEvidence.sites?.tiktokWebChat?.status === "passed";
+  && manualEvidence.sites?.tiktokWebChat?.status === "passed"
+  && instagramImageEvidence.status === "passed";
 const report = {
   schemaVersion: 1,
   status: manualPassed ? "passed" : "automated-passed-manual-pending",
@@ -49,6 +58,7 @@ const report = {
     status: manualPassed ? "passed" : "pending",
     matrix: "docs/qualification/renderer-primary-sites.md",
     evidence: "docs/qualification/results/renderer-manual-primary-sites-win10-20260830.json",
+    additionalEvidence: "docs/qualification/results/renderer-instagram-emoji-images-win10-20260830.json",
     requiredSites: ["Instagram Web DM", "TikTok Web Chat"],
   },
 };
@@ -106,6 +116,7 @@ wrapper ไม่โตจาก scrolling, repeated start ไม่สร้า
 
 - Instagram Web DM: ข้อความเดิม/ใหม่, การสลับห้อง และ Copy/Paste ผ่าน
 - TikTok Web Chat: ข้อความเดิม/ใหม่, การสลับห้อง และ Copy/Paste ผ่าน
+- Instagram image-Emoji: bubble แบบ reply story/note, reaction picker และ reaction ที่แสดงบนข้อความผ่าน โดยรูป story/profile ไม่ได้รับผลกระทบ
 - Composer คง renderer เดิมตาม Editable Content boundary ที่ตั้งใจไว้ และยังใช้งานได้
 - รายละเอียดอยู่ใน [manual evidence](../../../docs/qualification/results/renderer-manual-primary-sites-win10-20260830.md)
 `;

@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "testedAtLocalDate": "2026-08-30",
+  "environment": {
+    "os": "Windows 10 Enterprise N 22H2 build 19045",
+    "chromeStable": "151.0.7922.174",
+    "testedManifestVersion": "0.0.1",
+    "releaseVersion": "0.0.2",
+    "sourceCommit": "f9d4f1f"
+  },
+  "reportedBy": "ผู้ใช้ทดสอบ test build บนบัญชี Instagram จริงและรายงานผลใน Codex session เดียวกัน",
+  "results": {
+    "messageBubbleEmoji": "passed",
+    "reactionPicker": "passed",
+    "displayedReactions": "passed",
+    "storyAndProfileImagesUnaffected": "passed",
+    "conversationNavigation": "passed"
+  },
+  "notes": [
+    "Emoji ใน bubble แบบ reply story/note หรือมีข้อความผสมแสดงด้วย Noto",
+    "Emoji ใน reaction picker และ reaction ที่แสดงบนข้อความใช้ Noto ถูกต้อง",
+    "รูป story และ profile ไม่ถูกเปลี่ยนหรือซ่อน",
+    "สลับห้องสนทนาแล้วยังทำงานปกติ"
+  ]
+}

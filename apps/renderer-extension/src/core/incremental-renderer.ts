@@ -1,4 +1,4 @@
-import { classifyTextNode, renderTextNode } from "./dom-renderer";
+import { classifyTextNode, renderImageElement, renderTextNode } from "./dom-renderer";
 
 export interface RendererMetrics {
   nodesVisited: number;
@@ -130,6 +130,14 @@ export class IncrementalRenderer {
         if (!node) {
           this.cursors.shift();
           this.queuedRoots.delete(cursor.root);
+          continue;
+        }
+        if (node.nodeType === node.ELEMENT_NODE && (node as Element).tagName === "IMG") {
+          processed += 1;
+          this.metrics.nodesVisited += 1;
+          const result = renderImageElement(node as Element);
+          this.metrics.wrappersCreated += result.wrappersCreated;
+          this.metrics.skippedEditableNodes += result.skippedEditableNodes;
           continue;
         }
         if (node.nodeType !== node.TEXT_NODE) {

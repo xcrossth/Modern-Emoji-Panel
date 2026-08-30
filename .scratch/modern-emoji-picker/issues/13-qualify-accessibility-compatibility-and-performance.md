@@ -54,13 +54,13 @@ Maintainer อนุมัติให้แยก Ticket 14 เดิมเป�
 
 ### 29 สิงหาคม 2026 — รับหลักฐาน local artifact จาก Ticket 14A
 
-Ticket 14A ผ่านครบสายจาก clean commit `181cfe09a69e59285bece176c86a36333bab04bc` แล้ว จึงปิดเกณฑ์ automated suite/release preconditions และเติม package metrics จริงได้: raw Noto 127,309,639 bytes, self-contained publish 313,238,522 bytes (ผ่าน budget 350 MiB), portable ZIP 202,376,122 bytes และ installer 174,151,850 bytes พร้อม checksum ที่ verifier ตรวจผ่าน
+Ticket 14A ผ่านครบสายจาก clean commit `3dc39c679d7faef0a9431188369f2eec76555ca8` แล้ว จึงปิดเกณฑ์ automated suite/release preconditions และเติม package metrics จริงได้: raw Noto 127,309,639 bytes, self-contained publish 313,238,522 bytes (ผ่าน budget 350 MiB), portable ZIP 202,376,122 bytes และ installer 174,151,850 bytes พร้อม checksum ที่ verifier ตรวจผ่าน
 
 หลักฐานล่าสุดอยู่ที่ `docs/qualification/results/automated-win10-19045.json` และ `docs/qualification/results/local-artifacts-v0.1.9-win10-19045.json` อย่างไรก็ตามเกณฑ์ performance โดยรวมยังไม่ปิด เพราะ warm hotkey-to-visible จริงและ upstream search/scroll/decode/package ที่ทำซ้ำได้ยังไม่มี ส่วน manual matrices ทุกชุดยังต้องให้มนุษย์ทดสอบ จึงคงสถานะ `needs-info` และไม่ปลด Ticket 15 (14B)
 
 ### 29 สิงหาคม 2026 — วัด global hotkey จริงและทำ performance gate ให้เสถียร
 
-เพิ่ม qualification path ที่ติดตั้ง low-level hook จริง เปิด Notepad ทดสอบ จับ foreground/focused control/caret และส่ง `Win + .` ด้วย `SendInput` 20 รอบ โดยไม่เลือก Emoji ไม่แตะ Clipboard/tray/Activity Data ผลจาก clean commit `2f5410ea72d8855d59dbb1c58d8f5196155d8e6e` ผ่าน warm global hotkey-to-visible ที่ median 18.2008 ms, P95 21.4390 ms และ maximum 37.6641 ms จาก budget 100 ms พร้อมยืนยันว่า Picker visible/foreground และ category cache reuse/invalidation ถูกต้อง หลักฐานแยกอยู่ที่ `docs/qualification/results/global-hotkey-win10-19045.json`
+เพิ่ม qualification path ที่ติดตั้ง low-level hook จริง เปิด Notepad ทดสอบ จับ foreground/focused control/caret และส่ง `Win + .` ด้วย `SendInput` 20 รอบ โดยไม่เลือก Emoji ไม่แตะ Clipboard/tray/Activity Data ผลจาก clean commit `e47f86f9a489c40d11fb514f6a68372087ba703d` ผ่าน warm global hotkey-to-visible ที่ median 18.2008 ms, P95 21.4390 ms และ maximum 37.6641 ms จาก budget 100 ms พร้อมยืนยันว่า Picker visible/foreground และ category cache reuse/invalidation ถูกต้อง หลักฐานแยกอยู่ที่ `docs/qualification/results/global-hotkey-win10-19045.json`
 
 ก่อนแก้ เส้นทางจริงวัด P95 ประมาณ 172–187 ms โดย boundary ชี้ว่า `LoadCategory` ใช้เวลาประมาณ 147.5 ms จึง cache `ItemsSource` ตาม category/data generation และ invalidate เมื่อ search/data เปลี่ยน หลังแก้ hotkey ผ่านซ้ำในช่วง P95 ประมาณ 21–27 ms โดยไม่ได้ลด budget
 
@@ -112,7 +112,7 @@ automated regression ผ่าน Picker Session 14 checks, Insertion Queue/Typi
 
 ### 29 สิงหาคม 2026 — review ผล manual qualification รอบ `830f53e`
 
-Maintainer รัน wizard ครบ 7 stage จาก commit `9953a9a242db190b9ed0c9a470369d5f8367e4d3` บน Windows 10 build 19045 แล้ว Agent เก็บไฟล์ผลดิบไว้โดยไม่แก้ย้อนหลังและเทียบกับข้อความ/ภาพใน Codex session ก่อนนำผลเข้า `docs/qualification/manual-matrices.md` ผล reviewed รวมเป็น ผ่าน 31, ไม่ผ่าน 3, ทำไม่ได้ใน environment 7 และยังไม่ทดสอบ 2 รายการ รายละเอียดและ correction mapping อยู่ที่ `docs/qualification/results/manual-win10-19045-20260829.md`
+Maintainer รัน wizard ครบ 7 stage จาก commit `a63dd51d76d4ad949dcead5682dc9bd9c69b02e2` บน Windows 10 build 19045 แล้ว Agent เก็บไฟล์ผลดิบไว้โดยไม่แก้ย้อนหลังและเทียบกับข้อความ/ภาพใน Codex session ก่อนนำผลเข้า `docs/qualification/manual-matrices.md` ผล reviewed รวมเป็น ผ่าน 31, ไม่ผ่าน 3, ทำไม่ได้ใน environment 7 และยังไม่ทดสอบ 2 รายการ รายละเอียดและ correction mapping อยู่ที่ `docs/qualification/results/manual-win10-19045-20260829.md`
 
 รายการไม่ผ่านที่ยืนยันได้มีสามกลุ่ม: Explorer address bar กลับเป็น breadcrumb เมื่อเสีย focus, High Contrast ใช้ Enter/Shift+Enter ใน Search ไม่ได้และ System theme เลือก Light ผิด, และ rapid clicks ทำให้เกิด isolated surrogate `U+D83D`/replacement character `�` พร้อมแถบสถานะสีแดงกะพริบ บางครั้ง Picker ค้างจน control ทั้งหมดและ outside-click ใช้ไม่ได้ ต้องปิดแล้วเปิด process ใหม่จึงฟื้น
 

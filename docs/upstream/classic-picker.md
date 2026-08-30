@@ -11,7 +11,7 @@ Modern Emoji Picker ใช้ Classic Emoji Picker เป็นรากฐา�
 - Tree hash ต้นฉบับ: `9944b2a441ff1dd207ceb733ab30b7b0f42b8623`
 - Prefix: `apps/picker`
 - วิธี import: Git subtree แบบไม่ squash เพื่อเก็บ ancestry ของ upstream ไว้ในประวัติ Git
-- Commit ที่ import เข้าสู่ monorepo: `9b9df626de6d355dc63a4f9c5124b91bb0668c06`
+- Commit ที่ import เข้าสู่ monorepo: `a3ffd70007c46ed0e769db907e0fe87fe91d7384`
 
 ไฟล์ `apps/picker/LICENSE` และ `apps/picker/THIRD-PARTY-NOTICES.md` เป็น notice ที่มากับ upstream และต้องคงอยู่ การแก้ภายใต้ subtree หลัง import แรกเป็น migration ของโครงการนี้ ไม่ได้แก้ source repository ของ Platima
 

@@ -24,7 +24,7 @@
 
 ### 29 สิงหาคม 2026 — local artifacts ผ่านการตรวจครบสาย
 
-รัน `scripts/release.ps1 -Version 0.1.9` จาก clean commit `181cfe09a69e59285bece176c86a36333bab04bc` บน Windows 10 Enterprise N build 19045 และ .NET SDK 10.0.400 สำเร็จ โดยสคริปต์รัน baseline/generator/regression/performance gates ก่อน publish และยืนยันตอนจบว่าไม่ได้สร้าง tag, upload หรือ GitHub Release
+รัน `scripts/release.ps1 -Version 0.1.9` จาก clean commit `3dc39c679d7faef0a9431188369f2eec76555ca8` บน Windows 10 Enterprise N build 19045 และ .NET SDK 10.0.400 สำเร็จ โดยสคริปต์รัน baseline/generator/regression/performance gates ก่อน publish และยืนยันตอนจบว่าไม่ได้สร้าง tag, upload หรือ GitHub Release
 
 - Inno per-user installer 174,151,850 bytes, SHA-256 `f62e881d9a143bbe74486f4b82c75a902ee53b7083eb998893fdf76b43146582`
 - portable self-contained win-x64 ZIP 202,376,122 bytes, SHA-256 `1fe2a0226bea343b3817c40c3c28d48fea1c401af47e73a153a3986ecbaba110`

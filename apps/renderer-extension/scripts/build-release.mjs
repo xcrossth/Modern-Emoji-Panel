@@ -58,6 +58,14 @@ const manualEvidencePath = join(
   "renderer-manual-primary-sites-win10-20260830.json",
 );
 const manualEvidence = await readJson(manualEvidencePath);
+const instagramImageEvidencePath = join(
+  repositoryRoot,
+  "docs",
+  "qualification",
+  "results",
+  "renderer-instagram-emoji-images-win10-20260830.json",
+);
+const instagramImageEvidence = await readJson(instagramImageEvidencePath);
 const sourceCommit = git("rev-parse", "HEAD");
 const sourceTreeClean = git("status", "--porcelain").length === 0;
 const sourceDateEpoch = Number(process.env.SOURCE_DATE_EPOCH ?? git("log", "-1", "--format=%ct"));
@@ -112,6 +120,11 @@ const metadata = {
       status: manualEvidence.status,
       report: "docs/qualification/results/renderer-manual-primary-sites-win10-20260830.json",
       reportSha256: sha256(await readFile(manualEvidencePath)),
+    },
+    instagramImageEmoji: {
+      status: instagramImageEvidence.status,
+      report: "docs/qualification/results/renderer-instagram-emoji-images-win10-20260830.json",
+      reportSha256: sha256(await readFile(instagramImageEvidencePath)),
     },
     extensionFont: {
       status: extensionFontEvidence.status,

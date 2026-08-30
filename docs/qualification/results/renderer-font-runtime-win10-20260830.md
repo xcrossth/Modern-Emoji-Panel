@@ -16,7 +16,8 @@ Content controller ใช้ `chrome.runtime.getURL("assets/fonts/Noto-COLRv1.tt
 
 ## หลักฐานหลังแก้
 
-- Wrapper ถูกสร้างครบ 8 ตัวในชุด Emoji ใหม่, VS16, skin tone, ZWJ, family, keycap และ regional flag
+- Text wrapper ถูกสร้างครบ 8 ตัวในชุด Emoji ใหม่, VS16, skin tone, ZWJ, family, keycap และ regional flag
+- Instagram image-Emoji wrapper ถูกสร้างเพิ่ม 1 ตัวจาก `/images/emoji.php/`, source image ถูกซ่อน และรูปทั่วไปไม่ถูกแตะ
 - FontFace `ModernEmojiNoto` มีสถานะ `loaded`
 - Chrome DevTools Protocol รายงาน glyph font เป็น `Noto Color Emoji` / `NotoColorEmoji`
 - `isCustomFont` เป็น `true`

@@ -1,9 +1,20 @@
-import { RENDERER_ATTRIBUTE, RENDERER_CLASS } from "./dom-renderer";
+import {
+  RENDERER_ATTRIBUTE,
+  RENDERER_CLASS,
+  TIKTOK_VIRTUALIZED_CONVERSATION_ITEM_SELECTORS,
+} from "./dom-renderer";
 
 export const STYLE_ELEMENT_ID = "modern-emoji-renderer-styles";
 export const FONT_FAMILY = "ModernEmojiNoto";
+export const RENDERER_ACTIVE_ATTRIBUTE = "data-modern-emoji-renderer-active";
 
 export function rendererStyleText(fontUrl: string): string {
+  const tiktokConversationSelectors = TIKTOK_VIRTUALIZED_CONVERSATION_ITEM_SELECTORS
+    .flatMap(selector => [
+      `:root[${RENDERER_ACTIVE_ATTRIBUTE}] ${selector}`,
+      `:root[${RENDERER_ACTIVE_ATTRIBUTE}] ${selector} *`,
+    ])
+    .join(",\n");
   return `
 @font-face {
   font-family: "${FONT_FAMILY}";
@@ -26,6 +37,9 @@ export function rendererStyleText(fontUrl: string): string {
   flex: 0 0 auto !important;
   line-height: 1 !important;
   overflow: visible !important;
+}
+${tiktokConversationSelectors} {
+  font-family: "${FONT_FAMILY}", "TikTokFont", Arial, Tahoma, sans-serif !important;
 }
 `.trim();
 }

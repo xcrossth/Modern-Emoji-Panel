@@ -3,6 +3,10 @@ import { segmentText } from "./emoji-segmenter";
 export const RENDERER_ATTRIBUTE = "data-modern-emoji-renderer";
 export const RENDERER_CLASS = "modern-emoji-renderer__emoji";
 export const SOURCE_IMAGE_ATTRIBUTE = "data-modern-emoji-renderer-source-image";
+export const TIKTOK_VIRTUALIZED_CONVERSATION_ITEM_SELECTORS = [
+  '[data-e2e="dm-new-conversation-item"]',
+  '[data-e2e="chat-list-item"]',
+] as const;
 
 const ORIGINAL_ARIA_HIDDEN_ATTRIBUTE = "data-modern-emoji-renderer-original-aria-hidden";
 const MISSING_ATTRIBUTE_VALUE = "__missing__";
@@ -29,6 +33,9 @@ function classifyAncestors(start: Node | null): NodeClassification {
     if (current.nodeType === current.ELEMENT_NODE) {
       const element = current as Element;
       if (element.hasAttribute(RENDERER_ATTRIBUTE)) return "skip";
+      if (TIKTOK_VIRTUALIZED_CONVERSATION_ITEM_SELECTORS.some(selector => element.matches(selector))) {
+        return "skip";
+      }
       if (SKIPPED_TAGS.has(element.tagName)) return "skip";
       if (hasEditableState(element) || (element as HTMLElement).isContentEditable) return "skip-editable";
     }

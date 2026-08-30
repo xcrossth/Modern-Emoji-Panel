@@ -1,6 +1,6 @@
 import { IncrementalRenderer } from "../core/incremental-renderer";
 import { RENDERER_ATTRIBUTE, renderSubtree, unwrapRenderedEmoji } from "../core/dom-renderer";
-import { ensureRendererStyles } from "../core/renderer-styles";
+import { ensureRendererStyles, RENDERER_ACTIVE_ATTRIBUTE } from "../core/renderer-styles";
 import { SETTINGS_STORAGE_KEY, isSiteEnabled, migrateSettings, type RendererSettings } from "../settings/settings";
 import { loadSettings } from "../settings/storage";
 
@@ -37,6 +37,7 @@ export class ContentRendererController {
     this.renderer?.stop();
     this.renderer = null;
     this.activeSignature = null;
+    this.document.documentElement.removeAttribute(RENDERER_ACTIVE_ATTRIBUTE);
   }
 
   async apply(settings: RendererSettings): Promise<void> {
@@ -47,9 +48,11 @@ export class ContentRendererController {
       this.renderer = null;
       this.activeSignature = null;
       this.staticMetrics = null;
+      this.document.documentElement.removeAttribute(RENDERER_ACTIVE_ATTRIBUTE);
       unwrapRenderedEmoji(this.document);
       return;
     }
+    this.document.documentElement.setAttribute(RENDERER_ACTIVE_ATTRIBUTE, "");
     const signature = `${settings.debug}:${settings.processDynamicContent}`;
     if (this.activeSignature === signature) return;
     this.renderer?.stop();

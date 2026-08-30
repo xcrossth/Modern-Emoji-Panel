@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ContentRendererController } from "../src/content/controller";
 import { DEFAULT_SETTINGS, SETTINGS_STORAGE_KEY } from "../src/settings/settings";
 import { RENDERER_ATTRIBUTE } from "../src/core/dom-renderer";
+import { RENDERER_ACTIVE_ATTRIBUTE } from "../src/core/renderer-styles";
 
 describe("content renderer settings synchronization", () => {
   type StorageListener = (changes: Record<string, chrome.storage.StorageChange>, area: string) => void;
@@ -37,6 +38,7 @@ describe("content renderer settings synchronization", () => {
     const controller = new ContentRendererController(document, "instagram.com");
     await controller.start();
     await vi.runAllTimersAsync();
+    expect(document.documentElement.hasAttribute(RENDERER_ACTIVE_ATTRIBUTE)).toBe(true);
     expect(document.querySelectorAll(`[${RENDERER_ATTRIBUTE}]`)).toHaveLength(1);
     expect(document.querySelector("#modern-emoji-renderer-styles")?.textContent).toContain(
       'url("chrome-extension://renderer-test/assets/fonts/Noto-COLRv1.ttf")',
@@ -49,6 +51,7 @@ describe("content renderer settings synchronization", () => {
     }
     await Promise.resolve();
     expect(document.querySelectorAll(`[${RENDERER_ATTRIBUTE}]`)).toHaveLength(0);
+    expect(document.documentElement.hasAttribute(RENDERER_ACTIVE_ATTRIBUTE)).toBe(false);
     expect(document.body.textContent).toBe("ข้อความ 🫯composer 🫯");
 
     const disabledStatus = controller.status();
@@ -61,6 +64,7 @@ describe("content renderer settings synchronization", () => {
     }
     await Promise.resolve();
     await vi.runAllTimersAsync();
+    expect(document.documentElement.hasAttribute(RENDERER_ACTIVE_ATTRIBUTE)).toBe(true);
     const live = document.createElement("p");
     live.textContent = "ข้อความใหม่ 🫯";
     document.body.append(live);
@@ -69,6 +73,7 @@ describe("content renderer settings synchronization", () => {
     expect(controller.status().wrappers).toBe(2);
     expect(JSON.stringify(controller.status())).not.toContain("ข้อความใหม่");
     controller.stop();
+    expect(document.documentElement.hasAttribute(RENDERER_ACTIVE_ATTRIBUTE)).toBe(false);
     expect(listeners.size).toBe(0);
   });
 });

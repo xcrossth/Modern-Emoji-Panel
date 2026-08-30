@@ -22,17 +22,26 @@ async function loadFixture(name: string): Promise<void> {
 }
 
 describe.each([
-  ["Instagram DM", "instagram-dm.html", "[data-preview]", "[data-history]"],
-  ["TikTok Chat", "tiktok-chat.html", "[data-e2e=chat-preview]", "[data-e2e=chat-history]"],
-])("%s regression fixture", (_site, file, previewSelector, historySelector) => {
+  ["Instagram DM", "instagram-dm.html", "[data-preview]", "[data-history]", 9, true, 11],
+  ["TikTok Chat", "tiktok-chat.html", "[data-e2e=chat-preview]", "[data-e2e=chat-history]", 8, false, 10],
+])("%s regression fixture", (
+  _site,
+  file,
+  previewSelector,
+  historySelector,
+  initialWrapperCount,
+  wrapsPreview,
+  finalWrapperCount,
+) => {
   it("renders sent, received and preview display content but not the composer", async () => {
     await loadFixture(file);
     const original = document.body.textContent;
     const result = renderSubtree(document.body);
 
-    expect(result.wrappersCreated).toBe(9);
+    expect(result.wrappersCreated).toBe(initialWrapperCount);
     expect(document.body.textContent).toBe(original);
-    expect(document.querySelector(previewSelector)?.querySelector(`[${RENDERER_ATTRIBUTE}]`)).not.toBeNull();
+    expect(document.querySelector(previewSelector)?.querySelector(`[${RENDERER_ATTRIBUTE}]`) !== null)
+      .toBe(wrapsPreview);
     expect(document.querySelector('[contenteditable="true"]')?.querySelector(`[${RENDERER_ATTRIBUTE}]`)).toBeNull();
     expect(document.querySelector('[contenteditable="true"]')?.textContent).toBe("กำลังพิมพ์ภาษาไทย 🫯");
   });
@@ -53,8 +62,22 @@ describe.each([
 
     expect(live.querySelectorAll(`[${RENDERER_ATTRIBUTE}]`)).toHaveLength(1);
     expect(old.querySelectorAll(`[${RENDERER_ATTRIBUTE}]`)).toHaveLength(1);
-    expect(document.querySelectorAll(`[${RENDERER_ATTRIBUTE}]`)).toHaveLength(11);
+    expect(document.querySelectorAll(`[${RENDERER_ATTRIBUTE}]`)).toHaveLength(finalWrapperCount);
     renderer.stop();
+  });
+});
+
+describe("TikTok virtualized conversation list safety", () => {
+  it("does not detach framework-owned text while keeping the card eligible for CSS rendering", async () => {
+    await loadFixture("tiktok-chat.html");
+    const card = document.querySelector<HTMLElement>('[data-e2e="dm-new-conversation-item"]')!;
+    const preview = card.querySelector<HTMLElement>('[data-e2e="chat-preview"]')!;
+    const frameworkOwnedText = preview.firstChild!;
+
+    renderSubtree(document.body);
+
+    expect(card.querySelector(`[${RENDERER_ATTRIBUTE}]`)).toBeNull();
+    expect(() => preview.removeChild(frameworkOwnedText)).not.toThrow();
   });
 });
 

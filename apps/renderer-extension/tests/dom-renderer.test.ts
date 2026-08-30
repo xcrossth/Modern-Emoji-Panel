@@ -6,7 +6,10 @@ import {
   RENDERER_CLASS,
   renderSubtree,
 } from "../src/core/dom-renderer";
-import { ensureRendererStyles } from "../src/core/renderer-styles";
+import {
+  ensureRendererStyles,
+  RENDERER_ACTIVE_ATTRIBUTE,
+} from "../src/core/renderer-styles";
 
 describe("static display renderer", () => {
   beforeEach(() => { document.body.replaceChildren(); document.head.replaceChildren(); });
@@ -67,6 +70,8 @@ describe("static display renderer", () => {
     const second = ensureRendererStyles(document, "ignored.ttf");
     expect(first).toBe(second);
     expect(first.textContent).toContain(`.${RENDERER_CLASS}`);
+    expect(first.textContent).toContain(`:root[${RENDERER_ACTIVE_ATTRIBUTE}] [data-e2e="dm-new-conversation-item"]`);
+    expect(first.textContent).toContain('"ModernEmojiNoto", "TikTokFont"');
     expect(first.textContent).not.toMatch(/(^|\n)\s*\*\s*\{/u);
     document.body.innerHTML = `
       <span><img height="16" width="16" alt="😆"

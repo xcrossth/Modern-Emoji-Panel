@@ -76,7 +76,7 @@ SHA-256 values for the current release:
 |---|---|
 | Picker Installer | `f62e881d9a143bbe74486f4b82c75a902ee53b7083eb998893fdf76b43146582` |
 | Picker Portable | `1fe2a0226bea343b3817c40c3c28d48fea1c401af47e73a153a3986ecbaba110` |
-| Renderer ZIP | [See the Renderer 0.0.3 `.sha256` file](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.3/modern-emoji-renderer-0.0.3.zip.sha256) |
+| Renderer ZIP | `fec74ace1470992228b887b1a8cbbabc9f9b4c16089d8e0ba453acde666f9eed` |
 
 ## Key features
 

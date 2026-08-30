@@ -2,6 +2,10 @@
 
 Release นี้อัปเดต Chrome Extension โดยไม่เปลี่ยน Modern Emoji Picker 0.1.9 และ build/ตรวจแพ็กเกจจากเครื่อง local โดยไม่ใช้ GitHub Actions
 
+- GitHub Release: [`renderer-v0.0.3`](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/renderer-v0.0.3)
+- Source commit: `01f6614086dae4d296cba17c164e908f9b0bcc18`
+- ZIP SHA-256: `fec74ace1470992228b887b1a8cbbabc9f9b4c16089d8e0ba453acde666f9eed`
+
 ## ไฟล์ดาวน์โหลด
 
 - `modern-emoji-renderer-0.0.3.zip` — แตก ZIP แล้ว Load unpacked ใน Chrome

@@ -2,7 +2,7 @@
 
 ส่วนขยาย Chrome แบบ Manifest V3 สำหรับแสดง Emoji รุ่นใหม่ด้วยฟอนต์ Noto Color Emoji บน Windows 10 โดยไม่เปลี่ยนข้อความต้นฉบับ ไม่เปลี่ยนฟอนต์ของระบบ และทำงานแยกจาก Modern Emoji Picker
 
-เว็บไซต์หลักของ source รุ่น `0.0.3` คือ Instagram Web DM, TikTok Web Chat, Facebook Messages และ Messenger.com ส่วนเว็บไซต์อื่นเปิดเพิ่มได้จาก Options
+เว็บไซต์หลักของรุ่น `0.0.3` คือ Instagram Web DM, TikTok Web Chat, Facebook Messages/Inbox และ Messenger.com Inbox ส่วนเว็บไซต์อื่นเปิดเพิ่มได้จาก Options
 
 ## ติดตั้งจาก ZIP
 
@@ -28,7 +28,7 @@ Release รุ่น `0.0.3` ผ่านชุดทดสอบอัตโน
 ## เปิดหรือปิดต่อเว็บไซต์
 
 - กดไอคอนส่วนขยายขณะอยู่บนหน้าเว็บ แล้วใช้สวิตช์ **เปิดใช้บนเว็บไซต์นี้**
-- Instagram, TikTok, Facebook และ Messenger เปิดเป็นค่าเริ่มต้นตั้งแต่ source รุ่น `0.0.3`
+- Instagram, TikTok, Facebook และ Messenger เปิดเป็นค่าเริ่มต้นตั้งแต่รุ่น `0.0.3`
 - หน้า `chrome://`, Chrome Web Store และหน้าภายในของเบราว์เซอร์ไม่อนุญาตให้ส่วนขยายแก้เนื้อหา
 
 ## Options

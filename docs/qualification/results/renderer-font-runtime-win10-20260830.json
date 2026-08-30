@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "status": "passed",
+  "environment": {
+    "os": "Windows 10 Enterprise N 22H2 build 19045",
+    "chromeForTesting": "152.0.7977.64"
+  },
+  "scenario": {
+    "siteContext": "Instagram Web DM URL fixture",
+    "emojiMatrix": "Emoji ใหม่, VS16, skin tone, ZWJ, family, keycap และ regional flag",
+    "network": "หน้า fixture ถูกตอบจาก CDP ภายในเครื่อง ไม่มี request ไป Instagram จริง"
+  },
+  "failureBeforeFix": {
+    "wrapperCreated": true,
+    "computedFontFamily": "ModernEmojiNoto, Segoe UI Emoji, sans-serif",
+    "fontFaceStatus": "error",
+    "actualGlyphFont": "Segoe UI Emoji",
+    "incorrectFontUrl": "https://www.instagram.com/direct/fonts/Noto-COLRv1.ttf"
+  },
+  "rootCause": "URL แบบ relative ใน CSS ที่ inject ผ่าน manifest ถูก resolve จาก URL ของเอกสาร ไม่ใช่ root ของส่วนขยาย",
+  "fix": "Content controller สร้าง URL ด้วย chrome.runtime.getURL และ inject @font-face พร้อม wrapper styles จาก code path เดียว",
+  "afterFix": {
+    "wrapperCount": 8,
+    "fontFaceStatus": "loaded",
+    "computedFontFamily": "ModernEmojiNoto, Segoe UI Emoji, sans-serif",
+    "actualGlyphFont": {
+      "familyName": "Noto Color Emoji",
+      "postScriptName": "NotoColorEmoji",
+      "isCustomFont": true
+    },
+    "fontRequestScheme": "chrome-extension"
+  },
+  "verificationCommand": "npm --prefix apps/renderer-extension run verify:extension-font"
+}

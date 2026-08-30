@@ -1,5 +1,7 @@
 # Modern Emoji Picker และ Renderer
 
+[English](./README.en.md)
+
 Modern Emoji Panel ช่วยให้ Windows 10/11 ใช้ Unicode Emoji รุ่นใหม่ได้ครบทั้งการเลือกส่งและการแสดงผลบนเว็บ โดยแยกเป็นสองผลิตภัณฑ์ซึ่งติดตั้งร่วมกันหรือแยกกันได้
 
 - **Modern Emoji Picker 0.1.9** — แอป WPF แบบ resident tray เรียกด้วย `Win + .` ค้นหาไทย/อังกฤษ แสดง Noto artwork และส่ง Unicode sequence ไปยังแอปเป้าหมาย

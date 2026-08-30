@@ -71,7 +71,7 @@ Chrome ไม่รับ ZIP ที่ไม่ได้เผยแพร่�
 
 - **Editable Content:** ไม่ render ภายใน `input`, `textarea`, `contenteditable` และ composer เพื่อไม่รบกวน caret, selection, keyboard layout และ IME
 - **Server normalization:** เว็บไซต์อาจแปลง ลบ หรือ normalize code points ก่อนแสดงผล Renderer ไม่สามารถคืนข้อมูลที่เซิร์ฟเวอร์เปลี่ยนไปแล้ว
-- **Canvas, image และ video:** Renderer ทำงานกับ text node ใน DOM เท่านั้น จึงไม่แก้ Emoji ที่วาดบน canvas หรือฝังอยู่ในรูป/วิดีโอ
+- **Canvas, image และ video:** Renderer ไม่แก้ Emoji ที่วาดบน canvas หรือฝังอยู่ในรูป/วิดีโอทั่วไป แต่รองรับกรณี Instagram แปลง Unicode Emoji เป็นรูปจาก `/images/emoji.php/` โดยอ่าน sequence จาก `alt` และแสดงด้วย Noto แทน
 - **Closed Shadow DOM:** Chrome ไม่เปิดให้เข้าถึง text node ภายใน closed shadow root
 - เว็บไซต์เปลี่ยน DOM ได้ตลอด จึงยังต้องทดสอบบัญชีจริงหลังเว็บไซต์อัปเดต
 

@@ -84,7 +84,7 @@ export class ContentRendererController {
       available: true,
       enabled: this.settings ? isSiteEnabled(this.settings, this.hostname) : false,
       hostname: this.hostname,
-      wrappers: this.document.querySelectorAll(`[${RENDERER_ATTRIBUTE}="emoji"]`).length,
+      wrappers: this.document.querySelectorAll(`[${RENDERER_ATTRIBUTE}]`).length,
       metrics: this.renderer ? { ...this.renderer.metrics } : this.staticMetrics ? { ...this.staticMetrics } : null,
     };
   }

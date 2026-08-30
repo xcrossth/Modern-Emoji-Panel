@@ -1,6 +1,6 @@
 # คู่มือ artifact ของ Modern Emoji Picker MVP
 
-ชุดไฟล์นี้สร้างจากเครื่อง local ด้วย `scripts/release.ps1` และยังไม่ใช่ public release
+ชุดไฟล์สร้างและตรวจสอบจากเครื่อง local โดยไม่ใช้ GitHub Actions minutes จากนั้นเผยแพร่ผ่าน [GitHub Releases](https://github.com/xcrossth/Modern-Emoji-Panel/releases)
 
 ## รูปแบบ
 
@@ -9,6 +9,10 @@
 - `SHA256SUMS.txt` และ `release-manifest.json` — hash, commit, architecture และขนาด
 
 MVP ไม่มี framework-dependent, lite หรือ MSI package
+
+Renderer เผยแพร่แยกเป็น `modern-emoji-renderer-<version>.zip` พร้อมไฟล์ `.sha256` ต้องแตก ZIP แล้วโหลดผ่าน `chrome://extensions` แบบ **Load unpacked** ดูขั้นตอนเต็มใน [README หลัก](../../README.md#ติดตั้ง-modern-emoji-renderer-บน-chrome)
+
+Release notes ปัจจุบัน: [Picker 0.1.9 + Renderer 0.0.2](./v0.1.9.md)
 
 ## Windows และ .NET 10
 

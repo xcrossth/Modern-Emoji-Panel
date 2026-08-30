@@ -1,68 +1,112 @@
-# Modern Emoji Picker
+# Modern Emoji Picker และ Renderer
 
-Modern Emoji Picker คือโครงการสร้าง Emoji Picker สำหรับ Windows 10/11 ที่รองรับ Unicode Emoji รุ่นใหม่ แสดงภาพด้วย Noto Emoji และส่ง Unicode sequence ไปยังแอปเป้าหมายโดยไม่ผูกกับ Emoji font ของ Windows
+Modern Emoji Panel ช่วยให้ Windows 10/11 ใช้ Unicode Emoji รุ่นใหม่ได้ครบทั้งการเลือกส่งและการแสดงผลบนเว็บ โดยแยกเป็นสองผลิตภัณฑ์ซึ่งติดตั้งร่วมกันหรือแยกกันได้
 
-สถานะปัจจุบัน: **Foundation และ product isolation พร้อมแล้ว** โดยนำ Classic Emoji Picker ที่ตรึง commit เข้ามาใต้ `apps/picker`, ย้าย build target ไป .NET 10 และแยก runtime/installer/data identity ของ Modern ออกจาก Classic
+- **Modern Emoji Picker 0.1.9** — แอป WPF แบบ resident tray เรียกด้วย `Win + .` ค้นหาไทย/อังกฤษ แสดง Noto artwork และส่ง Unicode sequence ไปยังแอปเป้าหมาย
+- **Modern Emoji Renderer 0.0.2** — Chrome Extension สำหรับแสดง Emoji ด้วย Noto Color Emoji บน Instagram Web DM และ TikTok Web Chat รวม bubble, reply story/note และ reactions
 
-## เป้าหมายหลัก
+ทั้งสองผลิตภัณฑ์ทำงานในเครื่อง ไม่มี telemetry และไม่ต้องเชื่อมบัญชีหรือ backend ของโครงการ
+
+## ดาวน์โหลด
+
+ดาวน์โหลดจาก [GitHub Release v0.1.9](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.9)
+
+| ผลิตภัณฑ์ | ไฟล์ | เหมาะสำหรับ |
+|---|---|---|
+| Picker — ตัวติดตั้ง | [Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe) | แนะนำสำหรับผู้ใช้ทั่วไป ติดตั้งเฉพาะบัญชีปัจจุบันและเปิดพร้อม Windows ได้ |
+| Picker — Portable | [Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip) | แตกไฟล์แล้วใช้ได้ทันที ไม่ติดตั้ง |
+| Chrome Renderer | [modern-emoji-renderer-0.0.2.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/modern-emoji-renderer-0.0.2.zip) | โหลดแบบ unpacked ใน Chrome |
+
+ไฟล์ตรวจสอบ: [SHA256SUMS.txt](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/SHA256SUMS.txt) สำหรับ Picker และ [modern-emoji-renderer-0.0.2.zip.sha256](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/modern-emoji-renderer-0.0.2.zip.sha256) สำหรับ Renderer
+
+## ติดตั้ง Modern Emoji Picker
+
+### แบบตัวติดตั้ง — แนะนำ
+
+1. ดาวน์โหลดไฟล์ `Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe`
+2. ตรวจ SHA-256 กับ `SHA256SUMS.txt`
+3. ปิด Classic Emoji Picker จาก tray ก่อน หากยังใช้อยู่
+4. เปิดตัวติดตั้งและทำตามขั้นตอน ไม่ต้องใช้สิทธิ์ administrator
+5. เปิด Modern Emoji Picker แล้วกด `Win + .` จากช่องข้อความเพื่อใช้งาน
+
+ตัวติดตั้งยังไม่มี code-signing certificate Windows SmartScreen จึงอาจแจ้งว่าไม่รู้จักผู้เผยแพร่ ให้ตรวจชื่อไฟล์และ SHA-256 จาก Release ทางการก่อนดำเนินการ และไม่จำเป็นต้องปิดระบบป้องกันของ Windows
+
+### แบบ Portable
+
+1. ดาวน์โหลด `Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip`
+2. แตก ZIP ไปยังโฟลเดอร์ที่เขียนได้และต้องการเก็บถาวร
+3. เปิด `ModernEmojiPicker.exe`
+4. หากต้องการเปิดพร้อม Windows ให้เปิดจาก Settings ภายในแอป
+
+ทั้ง Installer และ Portable เป็น self-contained win-x64 จึงไม่ต้องติดตั้ง .NET Runtime แยก
+
+## ติดตั้ง Modern Emoji Renderer บน Chrome
+
+Chrome ไม่ติดตั้ง ZIP นอก Chrome Web Store โดยตรง จึงต้องแตกไฟล์แล้วโหลดแบบ unpacked
+
+1. ดาวน์โหลด `modern-emoji-renderer-0.0.2.zip` และไฟล์ `.sha256`
+2. ตรวจ SHA-256 แล้วแตก ZIP ไปยังโฟลเดอร์ถาวร
+3. เปิด `chrome://extensions`
+4. เปิด **Developer mode**
+5. กด **Load unpacked** และเลือกโฟลเดอร์ที่แตก ZIP ซึ่งมี `manifest.json`
+6. Refresh หน้า Instagram หรือ TikTok ที่เปิดอยู่
+
+เมื่ออัปเดตรุ่นใหม่ ให้แทนที่ไฟล์ในโฟลเดอร์เดิมแล้วกด **Reload** บนหน้า Extensions หรือแตกลงโฟลเดอร์ใหม่แล้ว Load unpacked ใหม่
+
+Renderer จงใจไม่เปลี่ยน Emoji ภายในช่องพิมพ์ เพื่อรักษา caret, selection และ IME เมื่อส่งข้อความและกลายเป็น Display Content แล้วจึงแสดงด้วย Noto
+
+## ตรวจ SHA-256 บน PowerShell
+
+```powershell
+(Get-FileHash .\Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\modern-emoji-renderer-0.0.2.zip -Algorithm SHA256).Hash.ToLower()
+```
+
+ค่า SHA-256 ของ release ปัจจุบัน:
+
+| ไฟล์ | SHA-256 |
+|---|---|
+| Picker Installer | `f62e881d9a143bbe74486f4b82c75a902ee53b7083eb998893fdf76b43146582` |
+| Picker Portable | `1fe2a0226bea343b3817c40c3c28d48fea1c401af47e73a153a3986ecbaba110` |
+| Renderer ZIP | `27751c509e78b93c1e450321edf91a644481874bf030e5b7309d440969ea6ba7` |
+
+## ความสามารถหลัก
 
 - รองรับ fully-qualified Emoji 17 ทุก sequence
 - ค้นหาด้วยภาษาไทยและอังกฤษ
-- แสดง Noto artwork ที่คมชัดใน grid และ Hover Preview
-- รองรับ multi-insert พร้อม focus และ clipboard safety
-- ทำงาน offline โดยไม่มี telemetry
-- สร้าง installer และ portable ZIP บนเครื่อง local
-
-## เอกสารสำคัญ
-
-- [SPEC 01 — Modern Emoji Picker](./docs/specs/01-modern-emoji-picker.md)
-- [SPEC 02 — Chrome Emoji Renderer Extension](./docs/specs/02-chrome-emoji-renderer-extension.md)
-- [Domain glossary](./CONTEXT.md)
-- [Architecture Decision Records](./docs/adr/)
-- [ผลทดสอบ Noto PNG 128 เทียบ 512](./docs/research/asset-visual-spike/README.md)
-- [แหล่งข้อมูล Emoji Baseline](./docs/emoji-baseline-sources.md)
-- [การสร้าง Emoji Baseline](./docs/emoji-baseline-generator.md)
-- [การแสดง Emoji 17 ด้วย Noto grid](./docs/noto-grid-runtime.md)
-- [การส่ง Emoji ไปยังแอปเป้าหมายอย่างปลอดภัย](./docs/safe-insertion.md)
-- [การค้นหาสองภาษาและ Hover Preview](./docs/bilingual-search-hover-preview.md)
-- [สีผิวเริ่มต้นและ Variant Override](./docs/emoji-skin-tone-and-variants.md)
-- [Recent และ Learned Ranking บนเครื่อง](./docs/local-activity-data.md)
-- [Settings, Welcome และความเป็นส่วนตัว](./docs/settings-welcome-and-privacy.md)
-- [การรับรอง accessibility, compatibility และ performance](./docs/qualification/README.md)
-
-## โครง repository
-
-โครงการเป็น monorepo:
-
-    apps/picker/              WPF application
-    tools/emoji-baseline/     .NET 10 data generator
-    vendor/noto-emoji/        Versioned Noto PNG assets
-    tests/                    Automated tests
-    scripts/                  Local build and release scripts
-
-Picker ถูกนำเข้าจาก platima/Classic-EmojiPicker ด้วย Git subtree และยังรับ upstream updates แบบ manual ได้ ดู [provenance และขั้นตอนอัปเดต upstream](./docs/upstream/classic-picker.md) โค้ดที่นำเข้าถูกแยกเป็น Modern product identity แล้ว โดยยังเก็บที่มาและเครดิต upstream ครบถ้วน
+- แสดง Noto artwork ใน Picker พร้อม Hover Preview
+- รองรับ skin tone, multi-person variants, Recent และ Learned Ranking บนเครื่อง
+- ส่ง Emoji แบบ ordered queue พร้อม focus และ clipboard safety
+- Renderer รองรับข้อความใหม่ การสลับห้อง Instagram/TikTok และ Instagram image-Emoji/reactions
+- ทำงาน offline โดยไม่มี analytics หรือ telemetry
 
 ## แพลตฟอร์มและข้อมูล
 
-- Picker: .NET 10 WPF, self-contained win-x64
-- แพลตฟอร์มหลักที่โครงการทดสอบ: Windows 10 22H2 x64
-- Windows 11: ต้องผ่าน smoke test ก่อน release
+- Picker: .NET 10 WPF, self-contained `win-x64`
+- Renderer: Chrome Manifest V3 พร้อม bundled Noto Color Emoji
+- ทดสอบหลักบน Windows 10 Enterprise N 22H2 build 19045 x64 และ Chrome Stable
 - Emoji Baseline: Unicode/Emoji 17.0, CLDR 48.2 และ Noto Emoji v2.051
 
-โครงการทดสอบ Windows 10 22H2 build 19045 ด้วยตนเอง แต่ Windows 10 รุ่นทั่วไปไม่อยู่ใน supported-OS matrix ปัจจุบันของ .NET 10 จึงต้องทดสอบ smoke และ regression บนเครื่องจริงทุกครั้งที่อัปเดต runtime
+## เอกสาร
 
-## Build foundation
+- [คู่มือ Release และข้อควรระวัง](./docs/release/README.md)
+- [คู่มือ Renderer ฉบับเต็ม](./apps/renderer-extension/README.md)
+- [SPEC 01 — Modern Emoji Picker](./docs/specs/01-modern-emoji-picker.md)
+- [SPEC 02 — Chrome Emoji Renderer Extension](./docs/specs/02-chrome-emoji-renderer-extension.md)
+- [ผล Qualification](./docs/qualification/README.md)
+- [Domain glossary](./CONTEXT.md)
+- [Architecture Decision Records](./docs/adr/)
 
-ต้องมี .NET SDK feature band 10.0.4xx แล้วรัน:
+## Build ในเครื่อง
 
-    .\scripts\verify-foundation.ps1
+```powershell
+.\scripts\verify-foundation.ps1
+.\scripts\release.ps1 -Version 0.1.9
+.\scripts\build-renderer-release.ps1
+```
 
-คำสั่ง build และ regression จาก clean checkout อธิบายเพิ่มเติมใน [เอกสารสคริปต์](./scripts/README.md)
-
-## ความเป็นส่วนตัว
-
-Picker MVP ทำงานแบบ offline ไม่มี telemetry, analytics, cloud sync หรือ automatic update ข้อมูล Recent และ Learned Ranking อยู่ในเครื่องของผู้ใช้เท่านั้น
+Release workflow หลักทำงานในเครื่องและไม่บังคับใช้ GitHub Actions minutes ดูรายละเอียดที่ [scripts/README.md](./scripts/README.md)
 
 ## License
 
-โค้ดของโครงการใช้ [MIT License](./LICENSE) และรักษา attribution ของ upstream, agent skills และข้อมูล/asset ภายนอกตาม [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md)
+โค้ดของโครงการใช้ [MIT License](./LICENSE) และรักษา attribution ของ upstream, agent skills, Unicode และ Noto ตาม [THIRD-PARTY-NOTICES.md](./THIRD-PARTY-NOTICES.md)

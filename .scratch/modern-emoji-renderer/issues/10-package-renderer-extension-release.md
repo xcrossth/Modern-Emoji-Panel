@@ -4,7 +4,7 @@
 
 **Blocked by:** 09: รับรอง Performance, Text Integrity และ Compatibility
 
-**Status:** ready-for-human
+**Status:** resolved
 
 - [x] Local release command สร้าง production extension และ ZIP ที่ load/install manual ได้จาก clean checkout
 - [x] Package มีเฉพาะ production assets ที่จำเป็น ไม่มี source maps, debug defaults, test fixtures, secrets หรือ remote-code references
@@ -17,8 +17,8 @@
 
 ## Comments
 
-- คำสั่งหลักคือ `scripts/build-renderer-release.ps1` และไม่ใช้ GitHub Actions; รอบ clean checkout ล่าสุดที่ commit `f005e79` ผ่าน qualification, production build, deterministic packaging, package verification, Chrome load smoke และ actual bundled-font gate
-- ZIP `modern-emoji-renderer-0.0.1.zip` หลังแก้ font URL ถูกสร้างซ้ำ 2 รอบได้ SHA-256 เดียวกันคือ `aad15a5f8cae0eeda80ecab0669e542afc97b5ebcfb79c9de52e3ea0cdf6d260`; output และรายงานอยู่ใต้ `artifacts/renderer-extension/release/`
+- คำสั่งหลักคือ `scripts/build-renderer-release.ps1` และไม่ใช้ GitHub Actions; รอบ final release จาก clean commit `d6b1f27` ผ่าน qualification, production build, deterministic packaging, package verification, Chrome load smoke และ actual bundled-font gate
+- ZIP `modern-emoji-renderer-0.0.1.zip` ถูกสร้างซ้ำ 2 รอบได้ SHA-256 เดียวกันคือ `3292bee1965f5b41ab221a65ddc54e4665891e080f6490065f67b3dae94c1a1c`; output และรายงานอยู่ใต้ `artifacts/renderer-extension/release/`
 - ตัวตรวจเปิดอ่าน ZIP กลับมาเทียบ staging ทุกไบต์ และตรวจ required/prohibited contents, manifest permissions, SHA256SUMS, licenses, Unicode/Noto metadata, font hash, debug default, Apple asset exclusion, runtime network API และ qualification report
 - Production package โหลด service worker ใน Chrome for Testing 152.0.7977.64 ได้โดยใช้ temporary profile
-- งานสร้างแพ็กเกจเสร็จครบ แต่ยังระบุเป็น `release-candidate` และคงสถานะ `ready-for-human` เพราะ Ticket 09 ยังรอ manual E2E บน Instagram DM/TikTok Web Chat; เมื่อ manual gate ผ่านจึงสร้าง final release ใหม่จาก clean checkout
+- Manual E2E บน Instagram DM และ TikTok Web Chat ผ่านแล้ว metadata จึงระบุ `releaseKind: release`, `qualification: passed`, `manualEvidence: passed` และ Ticket 10 ปิดได้

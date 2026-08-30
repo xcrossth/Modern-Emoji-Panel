@@ -64,6 +64,14 @@ const extensionFontEvidencePath = join(
   "renderer-font-runtime-win10-20260830.json",
 );
 const extensionFontEvidence = await readJson(extensionFontEvidencePath);
+const manualEvidencePath = join(
+  repositoryRoot,
+  "docs",
+  "qualification",
+  "results",
+  "renderer-manual-primary-sites-win10-20260830.json",
+);
+const manualEvidence = await readJson(manualEvidencePath);
 const packageFiles = await listFiles(packageRoot);
 const zipName = `modern-emoji-renderer-${manifest.version}.zip`;
 const zipPath = join(releaseRoot, zipName);
@@ -151,6 +159,18 @@ const checks = [
   check("ไม่มี Apple Emoji ในแพ็กเกจ", !packageFiles.some(file => /apple/iu.test(file)), packageFiles.filter(file => /apple/iu.test(file))),
   check("ไม่มี runtime network API หรือ remote code", remoteCodeHits.length === 0, remoteCodeHits),
   check("อ้างอิง qualification report ตรงไฟล์จริง", metadata.qualification?.status === qualification.status && metadata.qualification?.reportSha256 === sha256(await readFile(qualificationPath)), metadata.qualification),
+  check(
+    "Manual E2E ผ่าน Instagram และ TikTok พร้อมหลักฐานตรงไฟล์จริง",
+    qualification.status === "passed"
+      && qualification.manual?.status === "passed"
+      && metadata.releaseKind === "release"
+      && manualEvidence.status === "passed"
+      && manualEvidence.sites?.instagramWebDm?.status === "passed"
+      && manualEvidence.sites?.tiktokWebChat?.status === "passed"
+      && metadata.qualification?.manualEvidence?.status === "passed"
+      && metadata.qualification?.manualEvidence?.reportSha256 === sha256(await readFile(manualEvidencePath)),
+    metadata.qualification?.manualEvidence,
+  ),
   check(
     "หลักฐานยืนยันว่า glyph ใช้ bundled Noto จริง",
     extensionFontEvidence.status === "passed"

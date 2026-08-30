@@ -50,6 +50,14 @@ const extensionFontEvidencePath = join(
   "renderer-font-runtime-win10-20260830.json",
 );
 const extensionFontEvidence = await readJson(extensionFontEvidencePath);
+const manualEvidencePath = join(
+  repositoryRoot,
+  "docs",
+  "qualification",
+  "results",
+  "renderer-manual-primary-sites-win10-20260830.json",
+);
+const manualEvidence = await readJson(manualEvidencePath);
 const sourceCommit = git("rev-parse", "HEAD");
 const sourceTreeClean = git("status", "--porcelain").length === 0;
 const sourceDateEpoch = Number(process.env.SOURCE_DATE_EPOCH ?? git("log", "-1", "--format=%ct"));
@@ -100,6 +108,11 @@ const metadata = {
     report: "docs/qualification/results/renderer-automated-win10-20260830/qualification-report.json",
     reportSha256: qualificationHash,
     manualMatrix: qualification.manual?.matrix ?? null,
+    manualEvidence: {
+      status: manualEvidence.status,
+      report: "docs/qualification/results/renderer-manual-primary-sites-win10-20260830.json",
+      reportSha256: sha256(await readFile(manualEvidencePath)),
+    },
     extensionFont: {
       status: extensionFontEvidence.status,
       report: "docs/qualification/results/renderer-font-runtime-win10-20260830.json",

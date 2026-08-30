@@ -37,14 +37,14 @@ internal static class InsertionPolicy
         EmojiInsertMode mode,
         string sequence,
         bool targetRequiresAtomicSupplementaryText = false) => mode switch
-    {
-        EmojiInsertMode.Paste => InsertionMethod.TemporaryPaste,
-        EmojiInsertMode.Keystroke => InsertionMethod.UnicodeKeystrokes,
-        _ when targetRequiresAtomicSupplementaryText && ContainsSupplementaryScalar(sequence) =>
-            InsertionMethod.TemporaryPaste,
-        _ when IsComplexSequence(sequence) => InsertionMethod.TemporaryPaste,
-        _ => InsertionMethod.UnicodeKeystrokes,
-    };
+        {
+            EmojiInsertMode.Paste => InsertionMethod.TemporaryPaste,
+            EmojiInsertMode.Keystroke => InsertionMethod.UnicodeKeystrokes,
+            _ when targetRequiresAtomicSupplementaryText && ContainsSupplementaryScalar(sequence) =>
+                InsertionMethod.TemporaryPaste,
+            _ when IsComplexSequence(sequence) => InsertionMethod.TemporaryPaste,
+            _ => InsertionMethod.UnicodeKeystrokes,
+        };
 
     internal static bool ContainsSupplementaryScalar(string sequence) =>
         sequence.EnumerateRunes().Any(rune => rune.Value > char.MaxValue);

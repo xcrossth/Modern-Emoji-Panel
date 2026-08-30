@@ -2,6 +2,8 @@
 
 เอกสารนี้บันทึก attribution ของทรัพยากรที่มีอยู่ใน repository ปัจจุบัน
 
+โค้ดที่พัฒนาสำหรับ Modern Emoji Panel ใช้ MIT License ตามไฟล์ `LICENSE` ที่ root ของ repository ส่วนรายการต่อไปนี้ยังคงอยู่ภายใต้ license และ copyright ของเจ้าของแต่ละราย
+
 ## Classic Emoji Picker
 
 โค้ดรากฐานใต้ `apps/picker` นำเข้าจาก Classic Emoji Picker ที่ commit `56c54201e0673a57710c2498db25a149b45e63ec`
@@ -38,6 +40,20 @@ Unicode, Inc. สงวนลิขสิทธิ์ตามข้อควา
 
 Copyright 2013 Google, Inc. All Rights Reserved.
 
+## Noto Color Emoji COLRv1 v2.051
+
+ฟอนต์ที่ bundle ใน Modern Emoji Renderer มาจาก Noto Emoji commit เดียวกับข้างต้น
+
+- Source: https://github.com/googlefonts/noto-emoji/tree/v2.051
+- Commit: `8998f5dd683424a73e2314a8c1f1e359c19e8742`
+- File: `apps/renderer-extension/assets/fonts/Noto-COLRv1.ttf`
+- SHA-256: `0ae57fe58645638523ba35f388d93739d292539a9acb84df5700c81b1e1a28d2`
+- License: SIL Open Font License 1.1
+- License text: `apps/renderer-extension/assets/fonts/OFL.txt`
+- Renderer notice: `apps/renderer-extension/THIRD-PARTY-NOTICES.md`
+
+Copyright Google LLC และผู้ร่วมพัฒนา Noto ตามประกาศของโครงการต้นทาง
+
 ## Noto region-flags
 
 ภาพธงที่มากับ Noto Emoji มี provenance จากโครงการ `googlei18n/region-flags` ที่ commit `743e1f4a92b7d2dac49d7e6af509af63a71f0b45` และประกาศเป็น Public Domain หรือได้รับการยกเว้นลิขสิทธิ์ตามรายละเอียดของแต่ละธง
@@ -48,7 +64,7 @@ Copyright 2013 Google, Inc. All Rights Reserved.
 
 ## Matt Pocock Skills
 
-ไฟล์ภายใต้ .agents/skills และข้อมูลที่เกี่ยวข้องใน skills-lock.json มาจากโครงการ mattpocock/skills
+ไฟล์ภายใต้ `.agents/skills` และข้อมูลที่เกี่ยวข้องใน `skills-lock.json` มาจากโครงการ mattpocock/skills
 
 - Source: https://github.com/mattpocock/skills
 - License: MIT

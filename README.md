@@ -94,6 +94,8 @@ Renderer จงใจไม่เปลี่ยน Emoji ภายในช่�
 - [SPEC 01 — Modern Emoji Picker](./docs/specs/01-modern-emoji-picker.md)
 - [SPEC 02 — Chrome Emoji Renderer Extension](./docs/specs/02-chrome-emoji-renderer-extension.md)
 - [ผล Qualification](./docs/qualification/README.md)
+- [นโยบายความปลอดภัย](./SECURITY.md)
+- [แนวทางการมีส่วนร่วม](./CONTRIBUTING.md)
 - [Domain glossary](./CONTEXT.md)
 - [Architecture Decision Records](./docs/adr/)
 

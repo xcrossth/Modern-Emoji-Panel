@@ -8,8 +8,10 @@ Modern Emoji Renderer แจกเฉพาะทรัพยากรที่�
 - รุ่น: v2.051
 - Commit ต้นทาง: `8998f5dd683424a73e2314a8c1f1e359c19e8742`
 - ไฟล์ที่แจก: `assets/fonts/Noto-COLRv1.ttf`
+- Source file: `https://raw.githubusercontent.com/googlefonts/noto-emoji/8998f5dd683424a73e2314a8c1f1e359c19e8742/fonts/Noto-COLRv1.ttf`
+- SHA-256: `0ae57fe58645638523ba35f388d93739d292539a9acb84df5700c81b1e1a28d2`
 - License: SIL Open Font License 1.1
-- ข้อความ License: `assets/fonts/OFL.txt`
+- ข้อความ License: `assets/fonts/OFL.txt` ซึ่งตรงกับ `fonts/LICENSE` ที่ commit ต้นทาง
 - Copyright: Google LLC และผู้ร่วมพัฒนา Noto ตามประกาศของโครงการต้นทาง
 
 ฟอนต์ถูก bundle ไว้ในส่วนขยายและโหลดจาก `chrome-extension://` เท่านั้น ไม่มีการดาวน์โหลดฟอนต์ขณะใช้งาน

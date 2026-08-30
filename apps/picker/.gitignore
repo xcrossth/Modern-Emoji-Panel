@@ -367,8 +367,8 @@ FodyWeavers.xsd
 *.sln.iml
 
 # Custom application files
-# Segoe UI Emoji is a Microsoft system font and must NOT be redistributed;
-# never commit it (colour emoji render from the system font via Emoji.Wpf)
+# Segoe UI Emoji is a Microsoft system font and must NOT be redistributed.
+# Modern uses repository-pinned Noto artwork instead of bundling this font.
 **/seguiemj.ttf
 EmojiPicker/Fonts/
 

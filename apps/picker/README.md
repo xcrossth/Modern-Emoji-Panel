@@ -2,7 +2,7 @@
 
 แอป WPF แบบ resident tray utility สำหรับค้นหาและส่ง Unicode Emoji ไปยังแอปเป้าหมายบน Windows โค้ดตั้งต้นนำเข้าจาก Classic Emoji Picker ตาม provenance ที่บันทึกไว้ใน [`docs/upstream/classic-picker.md`](../../docs/upstream/classic-picker.md) แต่ตัวผลิตภัณฑ์ Modern ใช้ identity ของตนเองทั้งหมด
 
-## สถานะ Foundation
+## สถานะรุ่น 0.1.9
 
 - target `net10.0-windows` และ runtime `win-x64`
 - executable และ assembly ชื่อ `ModernEmojiPicker`
@@ -10,7 +10,8 @@
 - เป็น single-instance; การเปิด executable ซ้ำส่งสัญญาณเปิด instance เดิม
 - ปิดหน้าต่างเป็นการ dismiss ส่วน `Exit Modern Emoji Picker` ใน tray จึงหยุด process
 - ถ้าพบ Classic กำลังทำงาน Modern จะไม่ติดตั้ง Win + . hook และจะไม่ปิด process อื่น
-- ยังใช้ system icon ชั่วคราว; icon ใหม่เป็นงาน release Ticket 14
+- ใช้ product icon ของ Modern แยกจาก Classic ทั้งใน executable, tray และตัวติดตั้ง
+- เผยแพร่เป็น Public MVP แล้ว ดาวน์โหลดและดูวิธีติดตั้งได้จาก [README หลัก](../../README.md)
 
 ## Build และตรวจสอบ
 

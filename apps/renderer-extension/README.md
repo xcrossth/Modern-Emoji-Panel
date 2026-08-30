@@ -14,7 +14,7 @@ Chrome ไม่รับ ZIP ที่ไม่ได้เผยแพร่�
 4. เปิด **Developer mode**
 5. กด **Load unpacked** แล้วเลือกโฟลเดอร์ที่แตก ZIP
 
-แพ็กเกจที่สถานะเป็น `release-candidate` ผ่านชุดทดสอบอัตโนมัติแล้ว แต่ยังรอทดสอบ Instagram DM และ TikTok Chat บนบัญชีจริง ดูสถานะได้ใน `release-metadata.json`
+รุ่น `0.0.2` ผ่านชุดทดสอบอัตโนมัติและการทดสอบบัญชีจริงบน Instagram DM กับ TikTok Chat แล้ว แพ็กเกจ Release มี `release-metadata.json` และ verification report สำหรับตรวจสถานะของไฟล์ที่ดาวน์โหลด
 
 ## อัปเดต
 

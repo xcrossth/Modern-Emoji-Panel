@@ -34,6 +34,19 @@ Desktop.ini
 *.bak
 *.corrupt-*
 
+# Local secrets and signing credentials
+.env
+.env.*
+!.env.example
+.npmrc
+.netrc
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+
 # Local throwaway workspace. Curated evidence lives under docs/research/.
 /.scratch/asset-visual-spike/
 

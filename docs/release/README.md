@@ -16,13 +16,13 @@ Release notes ปัจจุบัน: [Picker 0.1.9 + Renderer 0.0.2](./v0.1.9
 
 ## Windows และ .NET 10
 
-โครงการตรวจ automated qualification บน Windows 10 Enterprise N 22H2 build 19045 x64 จริง แต่ Windows 10 22H2 รุ่นทั่วไปไม่อยู่ใน supported-OS matrix ปัจจุบันของ .NET 10 จึงต้องอ่านผล matrix ของ Ticket 13 ก่อนตีความว่า environment ใดได้รับการรับรอง
+โครงการตรวจ automated qualification และ workflow หลักบน Windows 10 Enterprise N 22H2 build 19045 x64 จริง อย่างไรก็ตาม Windows 10 22H2 รุ่นทั่วไปสิ้นสุดระยะ support ของ Microsoft แล้ว และ [.NET หยุดทดสอบหรือให้ support เมื่อระบบปฏิบัติการสิ้นสุดระยะ support](https://learn.microsoft.com/dotnet/core/releases-and-support#supported-operating-systems) โครงการยังคงทดสอบและรองรับ Windows 10 แบบ best-effort ตามวัตถุประสงค์ของผลิตภัณฑ์ แต่ผลดังกล่าวไม่ใช่ Microsoft support certification ดู environment ที่ตรวจจริงใน `docs/qualification`
 
 Artifact เป็น self-contained จึงไม่ต้องติดตั้ง .NET Runtime แยก อย่างไรก็ตามเมื่อ .NET 10 มี security/servicing update โครงการต้อง rebuild artifact และทำ smoke test ก่อนออก patch release
 
 ## SmartScreen และลายเซ็น
 
-MVP ยังไม่มี code-signing certificate Windows SmartScreen จึงอาจเตือนว่าไม่รู้จักผู้เผยแพร่ ตรวจชื่อไฟล์และ SHA-256 กับ `SHA256SUMS.txt` ที่มาจาก repository/Draft Release ทางการก่อนเปิด ห้ามใช้คำเตือนนี้เป็นเหตุผลให้ปิดระบบป้องกันทั้งเครื่อง
+MVP ยังไม่มี code-signing certificate Windows SmartScreen จึงอาจเตือนว่าไม่รู้จักผู้เผยแพร่ ตรวจชื่อไฟล์และ SHA-256 กับ `SHA256SUMS.txt` ที่มาจาก GitHub Release ทางการก่อนเปิด ห้ามใช้คำเตือนนี้เป็นเหตุผลให้ปิดระบบป้องกันทั้งเครื่อง
 
 ## Installer
 

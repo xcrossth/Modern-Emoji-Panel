@@ -44,7 +44,7 @@ qualification smoke ปกติไม่ติดตั้ง global hook, ไ�
 - คุณภาพการอ่านด้วย Narrator/NVDA, focus indicator ด้วยสายตา และ High Contrast palette จริง
 - DPI 100–250% กับจอหลายตัวต่าง DPI
 - Windows 11, RDP, Citrix และ Tier B apps
-- การเผยแพร่ Draft/public release ซึ่งแยกเป็น Ticket 15 (14B) และยังรอ manual qualification กับคำสั่งโดยเจตนาจาก maintainer
+- การเผยแพร่ Release ไม่ใช่หลักฐานว่า environment ที่ไม่ได้ทดสอบผ่าน การตัดสินใจเผยแพร่และผล qualification ต้องบันทึกแยกกัน
 
 ให้ใช้ [manual matrices](./manual-matrices.md) บันทึกแต่ละกรณี ห้ามเปลี่ยนแถวเป็น “ผ่าน” โดยไม่มีวันที่ ผู้ทดสอบ environment และหลักฐานที่ตรวจย้อนกลับได้
 
@@ -66,4 +66,8 @@ pwsh scripts/verify-manual-qualification-wizard.ps1
 
 ## สถานะปัจจุบัน
 
-ผลอัตโนมัติของเครื่อง Windows 10 build 19045 อยู่ที่ [`results/automated-win10-19045.json`](./results/automated-win10-19045.json) และผล hook-to-visible จริงอยู่ที่ [`results/global-hotkey-win10-19045.json`](./results/global-hotkey-win10-19045.json) ส่วน manual matrices ยังเป็น “ยังไม่ทดสอบ” ทั้งหมด จึงยังไม่ถือว่า Ticket 13 หรือ Picker MVP ผ่านการรับรองปล่อยจริง
+ผลอัตโนมัติของเครื่อง Windows 10 build 19045 อยู่ที่ [`results/automated-win10-19045.json`](./results/automated-win10-19045.json) และผล hook-to-visible จริงอยู่ที่ [`results/global-hotkey-win10-19045.json`](./results/global-hotkey-win10-19045.json)
+
+ผู้ทดสอบรัน manual wizard เมื่อ 29 สิงหาคม 2026 และ Agent review เทียบกับข้อความ/ภาพต้นทางแล้ว ผลรอบแรกคือผ่าน 31, ไม่ผ่าน 3, ทำไม่ได้ใน environment 7 และยังไม่ทดสอบ 2 รายการ ดูรายละเอียดที่ [`results/manual-win10-19045-20260829.md`](./results/manual-win10-19045-20260829.md) หลังจากนั้นมี regression และการแก้ rapid-click/focus, Chrome omnibox และ High Contrast เพิ่มเติม แต่ matrix เดิมยังคงผลตามเวลาที่ทดสอบเพื่อไม่แก้หลักฐานย้อนหลัง
+
+Maintainer อนุมัติและเผยแพร่ Public MVP `v0.1.9` เมื่อ 30 สิงหาคม 2026 โดยยอมรับขอบเขตที่ยังไม่ครอบคลุม การเผยแพร่จึงไม่ใช่คำรับรอง Windows 11, mixed-DPI, NVDA, RDP, Citrix หรือทุกแอปเป้าหมาย

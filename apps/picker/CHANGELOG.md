@@ -2,7 +2,7 @@
 
 ไฟล์นี้บันทึกผลิตภัณฑ์ Modern เท่านั้น ประวัติ Classic Emoji Picker ตรวจได้จาก import history และ [`docs/upstream/classic-picker.md`](../../docs/upstream/classic-picker.md)
 
-## ยังไม่เผยแพร่ — Picker MVP
+## 0.1.9 — 30 สิงหาคม 2026
 
 ### Foundation และข้อมูล
 
@@ -25,4 +25,5 @@
 - เพิ่ม product icon ใหม่พร้อม ICO หลายขนาดและภาพ 512 px
 - เพิ่ม local-only package pipeline สำหรับ self-contained per-user installer และ portable ZIP
 - ถอด lite/framework-dependent, MSI และ GitHub-hosted release workflow ออกจาก Modern MVP
-- ยังไม่มี public release; manual matrices และ Windows 11 smoke อยู่ใน Ticket 13
+- เผยแพร่ Public MVP ผ่าน GitHub Release พร้อมตัวติดตั้ง, portable ZIP, checksum, license และ notices
+- เก็บผล manual/automated qualification และกรณีที่ยังไม่ครอบคลุมไว้ใน `docs/qualification`

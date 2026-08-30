@@ -20,7 +20,12 @@
   "rootCause": "URL แบบ relative ใน CSS ที่ inject ผ่าน manifest ถูก resolve จาก URL ของเอกสาร ไม่ใช่ root ของส่วนขยาย",
   "fix": "Content controller สร้าง URL ด้วย chrome.runtime.getURL และ inject @font-face พร้อม wrapper styles จาก code path เดียว",
   "afterFix": {
-    "wrapperCount": 8,
+    "wrapperCount": 9,
+    "textWrapperCount": 8,
+    "imageWrapperCount": 1,
+    "imageWrapperText": "🥺",
+    "sourceImageHidden": true,
+    "ordinaryImageHidden": false,
     "fontFaceStatus": "loaded",
     "computedFontFamily": "ModernEmojiNoto, Segoe UI Emoji, sans-serif",
     "actualGlyphFont": {

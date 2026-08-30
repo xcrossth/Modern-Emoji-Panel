@@ -10,7 +10,7 @@ export function rendererStyleText(fontUrl: string): string {
   src: url("${fontUrl}") format("truetype");
   font-display: block;
 }
-.${RENDERER_CLASS}[${RENDERER_ATTRIBUTE}="emoji"] {
+.${RENDERER_CLASS}[${RENDERER_ATTRIBUTE}] {
   display: inline;
   font-family: "${FONT_FAMILY}", "Segoe UI Emoji", sans-serif !important;
   font-size: 1em;

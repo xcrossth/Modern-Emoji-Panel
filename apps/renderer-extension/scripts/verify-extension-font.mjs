@@ -24,6 +24,10 @@ const fixtureHtml = `<!doctype html>
 <html lang="th"><head><meta charset="utf-8"><title>Instagram font fixture</title></head>
 <body style="font: 48px/1.5 'Segoe UI Emoji', sans-serif">
   <main id="transcript">ทดสอบ 🫩 🫯 🤍 ❤️ 👩🏽‍💻 👨‍👩‍👧‍👦 1️⃣ 🇹🇭</main>
+  <aside data-e2e="dm-new-conversation-item">
+    <span id="tiktok-card-ascii">18 31</span>
+    <span id="tiktok-card-emoji">🫯</span>
+  </aside>
   <section id="story-reply">ตอบสตอรี่
     <img id="instagram-emoji" height="16" width="16" alt="🥺" src="https://static.cdninstagram.com/images/emoji.php/v9/t73/1/16/1f979.png">
     <img id="ordinary-image" alt="🥺" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=">
@@ -168,6 +172,16 @@ try {
   });
   if (!wrapperNode.nodeId) throw new Error("Wrapped Emoji node was not found through CDP DOM");
   const platformFonts = await send("CSS.getPlatformFontsForNode", { nodeId: wrapperNode.nodeId });
+  const tiktokAsciiNode = await send("DOM.querySelector", {
+    nodeId: documentNode.root.nodeId,
+    selector: "#tiktok-card-ascii",
+  });
+  const tiktokEmojiNode = await send("DOM.querySelector", {
+    nodeId: documentNode.root.nodeId,
+    selector: "#tiktok-card-emoji",
+  });
+  const tiktokAsciiFonts = await send("CSS.getPlatformFontsForNode", { nodeId: tiktokAsciiNode.nodeId });
+  const tiktokEmojiFonts = await send("CSS.getPlatformFontsForNode", { nodeId: tiktokEmojiNode.nodeId });
   const finalState = await send("Runtime.evaluate", {
     expression: `(() => ({
       wrapperCount: document.querySelectorAll('[data-modern-emoji-renderer]').length,
@@ -176,6 +190,7 @@ try {
       imageWrapperText: document.querySelector('[data-modern-emoji-renderer="emoji-image"]')?.textContent ?? null,
       sourceImageHidden: document.querySelector('#instagram-emoji')?.hidden ?? null,
       ordinaryImageHidden: document.querySelector('#ordinary-image')?.hidden ?? null,
+      tiktokCardWrapperCount: document.querySelectorAll('[data-e2e="dm-new-conversation-item"] [data-modern-emoji-renderer]').length,
       computedFontFamily: getComputedStyle(document.querySelector('[data-modern-emoji-renderer="emoji-image"]')).fontFamily,
       fontFaces: [...document.fonts].map(face => ({ family: face.family, status: face.status })),
     }))()`,
@@ -189,12 +204,20 @@ try {
     page: "https://www.instagram.com/direct/t/<fixture>",
     ...finalState.result.value,
     platformFonts: platformFonts.fonts,
+    tiktokAsciiFonts: tiktokAsciiFonts.fonts,
+    tiktokEmojiFonts: tiktokEmojiFonts.fonts,
     fontNetworkEvents,
   };
   await writeFile(join(evidenceRoot, "report.json"), `${JSON.stringify(report, null, 2)}\n`, "utf8");
   socket.close();
 
   const usesBundledNoto = report.platformFonts.some(font => (
+    font.isCustomFont && /noto.*emoji/iu.test(`${font.familyName} ${font.postScriptName}`)
+  ));
+  const tiktokAsciiUsesBundledNoto = report.tiktokAsciiFonts.some(font => (
+    font.isCustomFont && /noto.*emoji/iu.test(`${font.familyName} ${font.postScriptName}`)
+  ));
+  const tiktokEmojiUsesBundledNoto = report.tiktokEmojiFonts.some(font => (
     font.isCustomFont && /noto.*emoji/iu.test(`${font.familyName} ${font.postScriptName}`)
   ));
   if (!usesBundledNoto) {
@@ -207,6 +230,13 @@ try {
     || report.ordinaryImageHidden !== false
   ) {
     throw new Error(`Instagram image Emoji boundary failed: ${JSON.stringify(report)}`);
+  }
+  if (report.tiktokCardWrapperCount !== 0 || tiktokAsciiUsesBundledNoto || !tiktokEmojiUsesBundledNoto) {
+    throw new Error(`TikTok card font boundary failed: ${JSON.stringify({
+      wrapperCount: report.tiktokCardWrapperCount,
+      asciiFonts: report.tiktokAsciiFonts,
+      emojiFonts: report.tiktokEmojiFonts,
+    })}`);
   }
   const pageOriginFontRequest = report.fontNetworkEvents.find(event => (
     typeof event.url === "string" && event.url.startsWith("https://www.instagram.com/")

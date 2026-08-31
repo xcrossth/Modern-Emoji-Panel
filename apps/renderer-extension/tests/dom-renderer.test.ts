@@ -71,7 +71,9 @@ describe("static display renderer", () => {
     expect(first).toBe(second);
     expect(first.textContent).toContain(`.${RENDERER_CLASS}`);
     expect(first.textContent).toContain(`:root[${RENDERER_ACTIVE_ATTRIBUTE}] [data-e2e="dm-new-conversation-item"]`);
-    expect(first.textContent).toContain('"ModernEmojiNoto", "TikTokFont"');
+    expect(first.textContent).toContain('font-family: "ModernEmojiNotoDisplaySafe";');
+    expect(first.textContent).toContain("unicode-range: U+0080-10FFFF;");
+    expect(first.textContent).toContain('"ModernEmojiNotoDisplaySafe", "TikTokFont"');
     expect(first.textContent).not.toMatch(/(^|\n)\s*\*\s*\{/u);
     document.body.innerHTML = `
       <span><img height="16" width="16" alt="😆"

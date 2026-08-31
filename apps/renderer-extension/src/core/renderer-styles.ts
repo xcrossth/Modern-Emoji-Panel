@@ -6,6 +6,7 @@ import {
 
 export const STYLE_ELEMENT_ID = "modern-emoji-renderer-styles";
 export const FONT_FAMILY = "ModernEmojiNoto";
+export const DISPLAY_SAFE_FONT_FAMILY = "ModernEmojiNotoDisplaySafe";
 export const RENDERER_ACTIVE_ATTRIBUTE = "data-modern-emoji-renderer-active";
 
 export function rendererStyleText(fontUrl: string): string {
@@ -20,6 +21,12 @@ export function rendererStyleText(fontUrl: string): string {
   font-family: "${FONT_FAMILY}";
   src: url("${fontUrl}") format("truetype");
   font-display: block;
+}
+@font-face {
+  font-family: "${DISPLAY_SAFE_FONT_FAMILY}";
+  src: url("${fontUrl}") format("truetype");
+  font-display: block;
+  unicode-range: U+0080-10FFFF;
 }
 .${RENDERER_CLASS}[${RENDERER_ATTRIBUTE}] {
   display: inline;
@@ -39,7 +46,7 @@ export function rendererStyleText(fontUrl: string): string {
   overflow: visible !important;
 }
 ${tiktokConversationSelectors} {
-  font-family: "${FONT_FAMILY}", "TikTokFont", Arial, Tahoma, sans-serif !important;
+  font-family: "${DISPLAY_SAFE_FONT_FAMILY}", "TikTokFont", Arial, Tahoma, sans-serif !important;
 }
 `.trim();
 }

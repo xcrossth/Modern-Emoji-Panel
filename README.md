@@ -5,7 +5,7 @@
 Modern Emoji Panel ช่วยให้ Windows 10/11 ใช้ Unicode Emoji รุ่นใหม่ได้ครบทั้งการเลือกส่งและการแสดงผลบนเว็บ โดยแยกเป็นสองผลิตภัณฑ์ซึ่งติดตั้งร่วมกันหรือแยกกันได้
 
 - **Modern Emoji Picker 0.1.9** — แอป WPF แบบ resident tray เรียกด้วย `Win + .` ค้นหาไทย/อังกฤษ แสดง Noto artwork และส่ง Unicode sequence ไปยังแอปเป้าหมาย
-- **Modern Emoji Renderer 0.0.4** — Chrome Extension สำหรับแสดง Emoji ด้วย Noto Color Emoji บน Instagram Web DM, TikTok Web Chat, Facebook Messages/Inbox และ Messenger.com Inbox รวม bubble, reply story/note และ reactions
+- **Modern Emoji Renderer 0.0.5** — Chrome Extension สำหรับแสดง Emoji ด้วย Noto Color Emoji บน Instagram Web DM, TikTok Web Chat, Facebook Messages/Inbox และ Messenger.com Inbox รวม bubble, reply story/note และ reactions
 
 ทั้งสองผลิตภัณฑ์ทำงานในเครื่อง ไม่มี telemetry และไม่ต้องเชื่อมบัญชีหรือ backend ของโครงการ
 
@@ -17,15 +17,15 @@ Modern Emoji Picker แสดง Noto artwork, skin tone และ Hover Preview
 
 ## ดาวน์โหลด
 
-ดาวน์โหลด Picker จาก [GitHub Release v0.1.9](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.9) และ Renderer จาก [GitHub Release renderer-v0.0.4](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/renderer-v0.0.4)
+ดาวน์โหลด Picker จาก [GitHub Release v0.1.9](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.9) และ Renderer จาก [GitHub Release renderer-v0.0.5](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/renderer-v0.0.5)
 
 | ผลิตภัณฑ์ | ไฟล์ | เหมาะสำหรับ |
 |---|---|---|
 | Picker — ตัวติดตั้ง | [Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe) | แนะนำสำหรับผู้ใช้ทั่วไป ติดตั้งเฉพาะบัญชีปัจจุบันและเปิดพร้อม Windows ได้ |
 | Picker — Portable | [Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip) | แตกไฟล์แล้วใช้ได้ทันที ไม่ติดตั้ง |
-| Chrome Renderer | [modern-emoji-renderer-0.0.4.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.4/modern-emoji-renderer-0.0.4.zip) | โหลดแบบ unpacked ใน Chrome |
+| Chrome Renderer | [modern-emoji-renderer-0.0.5.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.5/modern-emoji-renderer-0.0.5.zip) | โหลดแบบ unpacked ใน Chrome |
 
-ไฟล์ตรวจสอบ: [SHA256SUMS.txt](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/SHA256SUMS.txt) สำหรับ Picker และ [modern-emoji-renderer-0.0.4.zip.sha256](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.4/modern-emoji-renderer-0.0.4.zip.sha256) สำหรับ Renderer
+ไฟล์ตรวจสอบ: [SHA256SUMS.txt](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/SHA256SUMS.txt) สำหรับ Picker และ [modern-emoji-renderer-0.0.5.zip.sha256](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.5/modern-emoji-renderer-0.0.5.zip.sha256) สำหรับ Renderer
 
 ## ติดตั้ง Modern Emoji Picker
 
@@ -52,7 +52,7 @@ Modern Emoji Picker แสดง Noto artwork, skin tone และ Hover Preview
 
 Chrome ไม่ติดตั้ง ZIP นอก Chrome Web Store โดยตรง จึงต้องแตกไฟล์แล้วโหลดแบบ unpacked
 
-1. ดาวน์โหลด `modern-emoji-renderer-0.0.4.zip` และไฟล์ `.sha256`
+1. ดาวน์โหลด `modern-emoji-renderer-0.0.5.zip` และไฟล์ `.sha256`
 2. ตรวจ SHA-256 แล้วแตก ZIP ไปยังโฟลเดอร์ถาวร
 3. เปิด `chrome://extensions`
 4. เปิด **Developer mode**
@@ -67,7 +67,7 @@ Renderer จงใจไม่เปลี่ยน Emoji ภายในช่�
 
 ```powershell
 (Get-FileHash .\Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe -Algorithm SHA256).Hash.ToLower()
-(Get-FileHash .\modern-emoji-renderer-0.0.4.zip -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\modern-emoji-renderer-0.0.5.zip -Algorithm SHA256).Hash.ToLower()
 ```
 
 ค่า SHA-256 ของ release ปัจจุบัน:
@@ -76,7 +76,7 @@ Renderer จงใจไม่เปลี่ยน Emoji ภายในช่�
 |---|---|
 | Picker Installer | `f62e881d9a143bbe74486f4b82c75a902ee53b7083eb998893fdf76b43146582` |
 | Picker Portable | `1fe2a0226bea343b3817c40c3c28d48fea1c401af47e73a153a3986ecbaba110` |
-| Renderer ZIP | `9e8b17e19a65d1356b064ef2ca1928f27b469df61571c9c326fb5e4058c639c6` |
+| Renderer ZIP | `cfe6a685439568b3a703fd8e0698a5d98e1395e35edd82e0455b8adbe1abdd11` |
 
 ## ความสามารถหลัก
 

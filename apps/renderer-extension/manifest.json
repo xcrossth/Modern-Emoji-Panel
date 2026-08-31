@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Modern Emoji Renderer",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "แสดง Emoji รุ่นใหม่ด้วย Noto บน Instagram, TikTok, Facebook และ Messenger",
   "permissions": ["storage", "activeTab", "scripting"],
   "optional_host_permissions": ["<all_urls>"],

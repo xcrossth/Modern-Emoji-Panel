@@ -1,6 +1,6 @@
 # ใช้ Hybrid insertion และ Temporary Paste แบบ best-effort
 
-โครงการเลือก Hybrid เป็นค่าเริ่มต้น: Emoji เดี่ยวใช้ Unicode keystroke ส่วน ZWJ, flags, keycaps, skin-tone และ sequence ซับซ้อนใช้ Temporary Paste เพื่อให้แอป Chromium/Electron รับลำดับเป็นก้อนเดียว ก่อนส่งต้องยืนยัน target ซ้ำและความล้มเหลวต้องหยุดอย่างปลอดภัยพร้อมเสนอ Explicit Copy
+โครงการเลือก Hybrid เป็นค่าเริ่มต้น: Emoji เดี่ยวใช้ Unicode keystroke บน native target ส่วน ZWJ, flags, keycaps และ sequence ซับซ้อนใช้ Temporary Paste เพื่อให้ปลายทางรับลำดับเป็นก้อนเดียว Text edit target ใน Chrome accessibility framework ใช้ Temporary Paste เพิ่มเติมเมื่อ sequence มี supplementary scalar เพราะ Chromium editor บางรุ่นแปลง surrogate pair ที่ส่งหลัง focus round-trip เป็น `U+FFFD` ก่อนส่งต้องยืนยัน target ซ้ำและความล้มเหลวต้องหยุดอย่างปลอดภัยพร้อมเสนอ Explicit Copy
 
 ## ตัวเลือกที่พิจารณา
 

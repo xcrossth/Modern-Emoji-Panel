@@ -45,7 +45,7 @@ try {
     $report = Get-Content -Raw -LiteralPath $temporaryReport | ConvertFrom-Json
     $checks = @($report.checks.psobject.Properties)
     Assert-Condition ($report.passed -eq $true) "One or more insertion policy checks failed"
-    Assert-Condition ($checks.Count -eq 21) "Expected 21 insertion policy checks"
+    Assert-Condition ($checks.Count -eq 24) "Expected 24 insertion policy checks"
     Assert-Condition (@($checks | Where-Object { $_.Value -ne $true }).Count -eq 0) "Insertion report contains a failed check"
 
     $injector = Get-Content -Raw -LiteralPath (Join-Path $repositoryRoot "apps\picker\EmojiPicker\TextInjector.cs")

@@ -206,7 +206,7 @@ pwsh scripts/verify-manual-qualification-wizard.ps1
 ## สร้าง local qualification artifacts
 
 ```powershell
-.\scripts\release.ps1 -Version 0.1.9
+.\scripts\release.ps1 -Version 0.1.10
 ```
 
 ต้องรันจาก clean commit และมี Inno Setup 6 สคริปต์จะตรวจ icon, baseline/generator, regression/qualification และ product version ก่อนสร้าง self-contained per-user installer กับ portable ZIP พร้อม notices, SHA-256 และ manifest ใต้ `artifacts/release/picker-v<version>/` โดยไม่มี tag, upload หรือ GitHub Release
@@ -214,7 +214,7 @@ pwsh scripts/verify-manual-qualification-wizard.ps1
 ตรวจ artifact ที่สร้างแล้วแยกต่างหากได้ด้วย:
 
 ```powershell
-.\scripts\verify-release-artifacts.ps1 -Version 0.1.9
+.\scripts\verify-release-artifacts.ps1 -Version 0.1.10
 ```
 
 MVP ไม่มี framework-dependent, lite หรือ MSI package การเตรียม Draft/public releaseอยู่ใน Ticket 15 และไม่ใช่หน้าที่ของ `release.ps1`

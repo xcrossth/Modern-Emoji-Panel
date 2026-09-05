@@ -2,13 +2,13 @@
 
 ## Public MVP
 
-- Product metadata: `0.1.9`
+- Product metadata: `0.1.10`
 - Target framework: `.NET 10` (`net10.0-windows`)
 - Runtime identifier: `win-x64`
 - รูปแบบ build: self-contained local publish
-- สถานะ release: เผยแพร่แล้วใน GitHub Release `v0.1.9`
+- สถานะ release: เผยแพร่แล้วใน GitHub Release `v0.1.10`
 
-หมายเลขผลิตภัณฑ์ `0.1.9` ตรงกับ assembly metadata, installer, portable package และ Release ปัจจุบัน
+หมายเลขผลิตภัณฑ์ `0.1.10` ตรงกับ assembly metadata, installer, portable package และ Release ปัจจุบัน
 
 ## ความเข้ากันได้ที่ยืนยันแล้ว
 
@@ -25,6 +25,6 @@
 - Product: Modern Emoji Picker
 - Executable/assembly: `ModernEmojiPicker`
 - User data: `%APPDATA%\ModernEmojiPicker`
-- Release tag: `v0.1.9`
+- Release tag: `v0.1.10`
 
 รายละเอียด local artifacts อยู่ใน [Ticket 14](../../.scratch/modern-emoji-picker/issues/14-package-and-release-locally.md) และประวัติการเผยแพร่อยู่ใน [Ticket 15](../../.scratch/modern-emoji-picker/issues/15-publish-picker-release.md)

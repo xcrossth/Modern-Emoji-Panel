@@ -59,7 +59,7 @@ dotnet run --project .\apps\picker\EmojiPicker\EmojiPicker.csproj
 ## Local package
 
 ```powershell
-.\scripts\release.ps1 -Version 0.1.9
+.\scripts\release.ps1 -Version 0.1.10
 ```
 
 คำสั่งนี้ต้องรันจาก clean commit ตรวจ qualification ก่อนสร้าง self-contained Inno per-user installer กับ portable ZIP และไม่ tag/upload/สร้าง GitHub Release ผลลัพธ์อยู่ใต้ `artifacts/release/picker-v<version>/`

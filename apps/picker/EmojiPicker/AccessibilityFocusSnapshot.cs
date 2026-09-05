@@ -3,6 +3,18 @@ using System.Windows.Automation;
 
 namespace EmojiPicker;
 
+internal static class AtomicSupplementaryTextTargetPolicy
+{
+    // Chromium page editors and browser chrome can turn the two UTF-16 units of a
+    // supplementary scalar into U+FFFD after the Picker focus round-trip. Treat
+    // Chrome accessibility text-edit controls as atomic-text targets;
+    // InsertionPolicy still limits Temporary Paste to supplementary sequences
+    // and preserves the explicit Keystroke-only override.
+    internal static bool RequiresAtomicText(string frameworkId, ControlType controlType) =>
+        string.Equals(frameworkId, "Chrome", StringComparison.OrdinalIgnoreCase) &&
+        controlType == ControlType.Edit;
+}
+
 /// <summary>
 /// Keeps the exact accessibility element that owned text focus before the Picker
 /// activated. Chromium and Explorer chrome render address/search editors without
@@ -11,22 +23,21 @@ namespace EmojiPicker;
 internal sealed class AccessibilityFocusSnapshot
 {
     private readonly AutomationElement element;
-    private readonly string className;
     private readonly string frameworkId;
+    private readonly ControlType controlType;
 
     private AccessibilityFocusSnapshot(
         AutomationElement element,
-        string className,
-        string frameworkId)
+        string frameworkId,
+        ControlType controlType)
     {
         this.element = element;
-        this.className = className;
         this.frameworkId = frameworkId;
+        this.controlType = controlType;
     }
 
     internal bool RequiresAtomicSupplementaryText =>
-        string.Equals(frameworkId, "Chrome", StringComparison.OrdinalIgnoreCase) &&
-        string.Equals(className, "OmniboxViewViews", StringComparison.Ordinal);
+        AtomicSupplementaryTextTargetPolicy.RequiresAtomicText(frameworkId, controlType);
 
     internal static AccessibilityFocusSnapshot? Capture(IntPtr targetWindow)
     {
@@ -59,8 +70,8 @@ internal sealed class AccessibilityFocusSnapshot
             return belongsToTarget
                 ? new AccessibilityFocusSnapshot(
                     focused,
-                    current.ClassName,
-                    current.FrameworkId)
+                    current.FrameworkId,
+                    current.ControlType)
                 : null;
         }
         catch (ElementNotAvailableException)

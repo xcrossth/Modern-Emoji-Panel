@@ -4,8 +4,8 @@ Picker จับ top-level window และ focused control ก่อนเป�
 
 ## Insertion Mode
 
-- **Hybrid** เป็นค่าเริ่มต้น: Emoji เดี่ยว, variation selector และสีผิวแบบสม่ำเสมอใช้ Unicode keystroke ส่วน ZWJ, flags, keycaps, mixed-tone และ sequence หลายตัวฐานใช้ Temporary Paste
-- Chrome/Chromium address bar เป็นข้อยกเว้นเฉพาะ target: เมื่อ UI Automation ระบุ `OmniboxViewViews` และข้อความมี supplementary scalar ระบบใช้ Temporary Paste เป็นก้อนเดียว เพราะ omnibox บน Chrome รุ่นที่ทดสอบเปลี่ยน surrogate pair จาก `KEYEVENTF_UNICODE` เป็น `U+FFFD` หลัง focus round-trip ผ่าน Picker ตัวเลือก Keystroke only ยังคงเป็น override ตามคำสั่งผู้ใช้
+- **Hybrid** เป็นค่าเริ่มต้น: Emoji เดี่ยว, variation selector และสีผิวแบบสม่ำเสมอใช้ Unicode keystroke บน native target ส่วน ZWJ, flags, keycaps, mixed-tone และ sequence หลายตัวฐานใช้ Temporary Paste
+- text edit target ใน Chrome accessibility framework เป็นข้อยกเว้น: supplementary scalar ใช้ Temporary Paste เป็นก้อนเดียว เพราะทั้ง address bar และ Chromium page editor บางรุ่นสามารถเปลี่ยน surrogate pair จาก `KEYEVENTF_UNICODE` เป็น `U+FFFD` หลัง focus round-trip ผ่าน Picker ตัวเลือก Keystroke only ยังคงเป็น override ตามคำสั่งผู้ใช้
 - **Keystroke only** ส่ง UTF-16 code units ด้วย `SendInput` และตรวจจำนวน event ที่ Windows รับ หากรับเพียงบางส่วนจะรายงาน failure โดยไม่ส่ง string ซ้ำ
 - **Paste always** ใช้ Temporary Paste กับทุกรายการ
 
@@ -25,7 +25,7 @@ Hybrid และ Paste always ใช้ `pasteRestoreDelayMs` ค่าเดี
 .\scripts\verify-safe-insertion.ps1
 ```
 
-smoke path ตรวจ policy 21 กรณีสำหรับ Insertion Mode, target-specific atomic supplementary text, target validation และ clipboard restore โดยไม่ส่ง input จริง จึงรันได้โดยไม่เสี่ยงพิมพ์ข้อความลงแอปอื่น
+smoke path ตรวจ policy 24 กรณีสำหรับ Insertion Mode, Chromium text edit/non-edit, native target, target validation และ clipboard restore โดยไม่ส่ง input จริง จึงรันได้โดยไม่เสี่ยงพิมพ์ข้อความลงแอปอื่น
 
 หาก Chrome เปิดอยู่ สามารถตรวจเส้นทาง address bar จริงด้วย:
 

@@ -424,8 +424,10 @@ Insertion Failure:
 
 Hybrid:
 
-- Emoji เดี่ยวใช้ SendInput KEYEVENTF_UNICODE
-- ZWJ, flags, keycaps, skin-tone และ multi-codepoint sequence ใช้ Temporary Paste
+- Emoji เดี่ยวใช้ SendInput KEYEVENTF_UNICODE บน target ที่รับ supplementary scalar หลัง focus round-trip ได้ถูกต้อง
+- text edit target ใน Chrome accessibility framework ใช้ Temporary Paste เมื่อ sequence มี supplementary scalar
+- ZWJ, flags, keycaps และ multi-codepoint sequence ใช้ Temporary Paste
+- Keystroke only ยังคงเป็น override แม้ target ต้องการ atomic supplementary text
 
 SendInput ต้อง:
 

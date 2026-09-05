@@ -29,6 +29,18 @@ internal static class InsertionPolicySmoke
                 targetRequiresAtomicSupplementaryText: true) == InsertionMethod.UnicodeKeystrokes,
             ["paste-always"] = InsertionPolicy.SelectMethod(EmojiInsertMode.Paste, "😀") == InsertionMethod.TemporaryPaste,
             ["keystroke-only"] = InsertionPolicy.SelectMethod(EmojiInsertMode.Keystroke, "👨‍👩‍👧") == InsertionMethod.UnicodeKeystrokes,
+            ["chromium-contenteditable-requires-atomic-text"] =
+                AtomicSupplementaryTextTargetPolicy.RequiresAtomicText(
+                    "Chrome",
+                    System.Windows.Automation.ControlType.Edit),
+            ["chromium-document-does-not-require-atomic-text"] =
+                !AtomicSupplementaryTextTargetPolicy.RequiresAtomicText(
+                    "Chrome",
+                    System.Windows.Automation.ControlType.Document),
+            ["native-edit-does-not-require-atomic-text"] =
+                !AtomicSupplementaryTextTargetPolicy.RequiresAtomicText(
+                    "Win32",
+                    System.Windows.Automation.ControlType.Edit),
             ["target-valid"] = TargetValidationPolicy.Validate(1, true, 1, 0x2000, 0x2000) == TargetValidationFailure.None,
             ["target-missing"] = TargetValidationPolicy.Validate(0, false, 0, 0x2000, null) == TargetValidationFailure.MissingTarget,
             ["target-closed"] = TargetValidationPolicy.Validate(1, false, 1, 0x2000, null) == TargetValidationFailure.TargetClosed,

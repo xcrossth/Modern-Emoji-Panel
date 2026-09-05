@@ -2,6 +2,14 @@
 
 ไฟล์นี้บันทึกผลิตภัณฑ์ Modern เท่านั้น ประวัติ Classic Emoji Picker ตรวจได้จาก import history และ [`docs/upstream/classic-picker.md`](../../docs/upstream/classic-picker.md)
 
+## 0.1.10 — 6 กันยายน 2026
+
+### การส่งข้อความใน Chromium
+
+- แก้ Hybrid insertion ที่ส่ง supplementary Emoji ผ่าน `KEYEVENTF_UNICODE` แล้ว Chrome page editor บางรุ่นแปลง surrogate pair เป็น `U+FFFD`
+- ให้ text edit target ใน Chrome accessibility framework ใช้ Temporary Paste แบบ atomic เฉพาะ supplementary sequence รวมช่องพิมพ์ Instagram และ TikTok โดยไม่จำกัดแค่ address bar
+- คง `Keystroke only` เป็นคำสั่ง override, คง native target ไว้บนเส้นทางเดิม และเพิ่ม regression checks สำหรับ Chromium contenteditable, omnibox และ native edit
+
 ## 0.1.9 — 30 สิงหาคม 2026
 
 ### Foundation และข้อมูล

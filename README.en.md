@@ -4,7 +4,7 @@
 
 Modern Emoji Panel brings current Unicode Emoji support to Windows 10 and Windows 11 for both selecting Emoji and displaying them on the web. It consists of two products that can be installed together or used independently.
 
-- **Modern Emoji Picker 0.1.9** — A resident WPF tray application invoked with `Win + .`. It supports Thai and English search, displays Noto artwork, and inserts Unicode sequences into the target application.
+- **Modern Emoji Picker 0.1.10** — A resident WPF tray application invoked with `Win + .`. It supports Thai and English search, displays Noto artwork, and inserts Unicode sequences into the target application.
 - **Modern Emoji Renderer 0.0.5** — A Chrome extension that renders Emoji with Noto Color Emoji in Instagram Web DMs, TikTok Web Chat, Facebook Messages/Inbox, and Messenger.com Inbox, including message bubbles, story and note replies, and reactions.
 
 Both products run locally, contain no telemetry, and require no project account or backend service.
@@ -17,21 +17,21 @@ Modern Emoji Picker displaying Noto artwork, skin tones, and Hover Preview while
 
 ## Downloads
 
-Download the Picker from [GitHub Release v0.1.9](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.9) and the Renderer from [GitHub Release renderer-v0.0.5](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/renderer-v0.0.5).
+Download both the Picker and Renderer from the same [GitHub Release v0.1.10](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.10).
 
 | Product | File | Recommended use |
 |---|---|---|
-| Picker — Installer | [Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe) | Recommended for most users. Installs for the current account and can start with Windows. |
-| Picker — Portable | [Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip) | Extract and run without installation. |
-| Chrome Renderer | [modern-emoji-renderer-0.0.5.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.5/modern-emoji-renderer-0.0.5.zip) | Load as an unpacked extension in Chrome. |
+| Picker — Installer | [Modern-Emoji-Picker-v0.1.10-setup-win-x64.exe](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/Modern-Emoji-Picker-v0.1.10-setup-win-x64.exe) | Recommended for most users. Installs for the current account and can start with Windows. |
+| Picker — Portable | [Modern-Emoji-Picker-v0.1.10-portable-win-x64.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/Modern-Emoji-Picker-v0.1.10-portable-win-x64.zip) | Extract and run without installation. |
+| Chrome Renderer | [modern-emoji-renderer-0.0.5.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/modern-emoji-renderer-0.0.5.zip) | Load as an unpacked extension in Chrome. |
 
-Verification files: [SHA256SUMS.txt](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/SHA256SUMS.txt) for the Picker and [modern-emoji-renderer-0.0.5.zip.sha256](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.5/modern-emoji-renderer-0.0.5.zip.sha256) for the Renderer.
+Verification files: [SHA256SUMS.txt](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/SHA256SUMS.txt) for the Picker and [modern-emoji-renderer-0.0.5.zip.sha256](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/modern-emoji-renderer-0.0.5.zip.sha256) for the Renderer.
 
 ## Install Modern Emoji Picker
 
 ### Installer — recommended
 
-1. Download `Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe`.
+1. Download `Modern-Emoji-Picker-v0.1.10-setup-win-x64.exe`.
 2. Verify its SHA-256 value against `SHA256SUMS.txt`.
 3. Exit Classic Emoji Picker from the system tray if it is still running.
 4. Run the installer and follow the prompts. Administrator privileges are not required.
@@ -41,7 +41,7 @@ The installer is not code-signed yet, so Windows SmartScreen may report an unkno
 
 ### Portable
 
-1. Download `Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip`.
+1. Download `Modern-Emoji-Picker-v0.1.10-portable-win-x64.zip`.
 2. Extract it to a writable folder where you intend to keep it.
 3. Run `ModernEmojiPicker.exe`.
 4. To start it with Windows, enable the option in the application's Settings.
@@ -66,17 +66,11 @@ The Renderer intentionally leaves Emoji inside editable fields unchanged to pres
 ## Verify SHA-256 in PowerShell
 
 ```powershell
-(Get-FileHash .\Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Modern-Emoji-Picker-v0.1.10-setup-win-x64.exe -Algorithm SHA256).Hash.ToLower()
 (Get-FileHash .\modern-emoji-renderer-0.0.5.zip -Algorithm SHA256).Hash.ToLower()
 ```
 
-SHA-256 values for the current release:
-
-| File | SHA-256 |
-|---|---|
-| Picker Installer | `f62e881d9a143bbe74486f4b82c75a902ee53b7083eb998893fdf76b43146582` |
-| Picker Portable | `1fe2a0226bea343b3817c40c3c28d48fea1c401af47e73a153a3986ecbaba110` |
-| Renderer ZIP | `cfe6a685439568b3a703fd8e0698a5d98e1395e35edd82e0455b8adbe1abdd11` |
+Use `SHA256SUMS.txt` and `modern-emoji-renderer-0.0.5.zip.sha256` from the same Release as the authoritative values. This avoids leaving the README pinned to hashes from an older release.
 
 ## Key features
 
@@ -111,7 +105,7 @@ SHA-256 values for the current release:
 
 ```powershell
 .\scripts\verify-foundation.ps1
-.\scripts\release.ps1 -Version 0.1.9
+.\scripts\release.ps1 -Version 0.1.10
 .\scripts\build-renderer-release.ps1
 ```
 

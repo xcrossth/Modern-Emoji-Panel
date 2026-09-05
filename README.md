@@ -4,7 +4,7 @@
 
 Modern Emoji Panel ช่วยให้ Windows 10/11 ใช้ Unicode Emoji รุ่นใหม่ได้ครบทั้งการเลือกส่งและการแสดงผลบนเว็บ โดยแยกเป็นสองผลิตภัณฑ์ซึ่งติดตั้งร่วมกันหรือแยกกันได้
 
-- **Modern Emoji Picker 0.1.9** — แอป WPF แบบ resident tray เรียกด้วย `Win + .` ค้นหาไทย/อังกฤษ แสดง Noto artwork และส่ง Unicode sequence ไปยังแอปเป้าหมาย
+- **Modern Emoji Picker 0.1.10** — แอป WPF แบบ resident tray เรียกด้วย `Win + .` ค้นหาไทย/อังกฤษ แสดง Noto artwork และส่ง Unicode sequence ไปยังแอปเป้าหมาย
 - **Modern Emoji Renderer 0.0.5** — Chrome Extension สำหรับแสดง Emoji ด้วย Noto Color Emoji บน Instagram Web DM, TikTok Web Chat, Facebook Messages/Inbox และ Messenger.com Inbox รวม bubble, reply story/note และ reactions
 
 ทั้งสองผลิตภัณฑ์ทำงานในเครื่อง ไม่มี telemetry และไม่ต้องเชื่อมบัญชีหรือ backend ของโครงการ
@@ -17,21 +17,21 @@ Modern Emoji Picker แสดง Noto artwork, skin tone และ Hover Preview
 
 ## ดาวน์โหลด
 
-ดาวน์โหลด Picker จาก [GitHub Release v0.1.9](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.9) และ Renderer จาก [GitHub Release renderer-v0.0.5](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/renderer-v0.0.5)
+ดาวน์โหลด Picker และ Renderer จาก [GitHub Release v0.1.10](https://github.com/xcrossth/Modern-Emoji-Panel/releases/tag/v0.1.10) เดียวกัน
 
 | ผลิตภัณฑ์ | ไฟล์ | เหมาะสำหรับ |
 |---|---|---|
-| Picker — ตัวติดตั้ง | [Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe) | แนะนำสำหรับผู้ใช้ทั่วไป ติดตั้งเฉพาะบัญชีปัจจุบันและเปิดพร้อม Windows ได้ |
-| Picker — Portable | [Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip) | แตกไฟล์แล้วใช้ได้ทันที ไม่ติดตั้ง |
-| Chrome Renderer | [modern-emoji-renderer-0.0.5.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.5/modern-emoji-renderer-0.0.5.zip) | โหลดแบบ unpacked ใน Chrome |
+| Picker — ตัวติดตั้ง | [Modern-Emoji-Picker-v0.1.10-setup-win-x64.exe](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/Modern-Emoji-Picker-v0.1.10-setup-win-x64.exe) | แนะนำสำหรับผู้ใช้ทั่วไป ติดตั้งเฉพาะบัญชีปัจจุบันและเปิดพร้อม Windows ได้ |
+| Picker — Portable | [Modern-Emoji-Picker-v0.1.10-portable-win-x64.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/Modern-Emoji-Picker-v0.1.10-portable-win-x64.zip) | แตกไฟล์แล้วใช้ได้ทันที ไม่ติดตั้ง |
+| Chrome Renderer | [modern-emoji-renderer-0.0.5.zip](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/modern-emoji-renderer-0.0.5.zip) | โหลดแบบ unpacked ใน Chrome |
 
-ไฟล์ตรวจสอบ: [SHA256SUMS.txt](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.9/SHA256SUMS.txt) สำหรับ Picker และ [modern-emoji-renderer-0.0.5.zip.sha256](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/renderer-v0.0.5/modern-emoji-renderer-0.0.5.zip.sha256) สำหรับ Renderer
+ไฟล์ตรวจสอบ: [SHA256SUMS.txt](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/SHA256SUMS.txt) สำหรับ Picker และ [modern-emoji-renderer-0.0.5.zip.sha256](https://github.com/xcrossth/Modern-Emoji-Panel/releases/download/v0.1.10/modern-emoji-renderer-0.0.5.zip.sha256) สำหรับ Renderer
 
 ## ติดตั้ง Modern Emoji Picker
 
 ### แบบตัวติดตั้ง — แนะนำ
 
-1. ดาวน์โหลดไฟล์ `Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe`
+1. ดาวน์โหลดไฟล์ `Modern-Emoji-Picker-v0.1.10-setup-win-x64.exe`
 2. ตรวจ SHA-256 กับ `SHA256SUMS.txt`
 3. ปิด Classic Emoji Picker จาก tray ก่อน หากยังใช้อยู่
 4. เปิดตัวติดตั้งและทำตามขั้นตอน ไม่ต้องใช้สิทธิ์ administrator
@@ -41,7 +41,7 @@ Modern Emoji Picker แสดง Noto artwork, skin tone และ Hover Preview
 
 ### แบบ Portable
 
-1. ดาวน์โหลด `Modern-Emoji-Picker-v0.1.9-portable-win-x64.zip`
+1. ดาวน์โหลด `Modern-Emoji-Picker-v0.1.10-portable-win-x64.zip`
 2. แตก ZIP ไปยังโฟลเดอร์ที่เขียนได้และต้องการเก็บถาวร
 3. เปิด `ModernEmojiPicker.exe`
 4. หากต้องการเปิดพร้อม Windows ให้เปิดจาก Settings ภายในแอป
@@ -66,17 +66,11 @@ Renderer จงใจไม่เปลี่ยน Emoji ภายในช่�
 ## ตรวจ SHA-256 บน PowerShell
 
 ```powershell
-(Get-FileHash .\Modern-Emoji-Picker-v0.1.9-setup-win-x64.exe -Algorithm SHA256).Hash.ToLower()
+(Get-FileHash .\Modern-Emoji-Picker-v0.1.10-setup-win-x64.exe -Algorithm SHA256).Hash.ToLower()
 (Get-FileHash .\modern-emoji-renderer-0.0.5.zip -Algorithm SHA256).Hash.ToLower()
 ```
 
-ค่า SHA-256 ของ release ปัจจุบัน:
-
-| ไฟล์ | SHA-256 |
-|---|---|
-| Picker Installer | `f62e881d9a143bbe74486f4b82c75a902ee53b7083eb998893fdf76b43146582` |
-| Picker Portable | `1fe2a0226bea343b3817c40c3c28d48fea1c401af47e73a153a3986ecbaba110` |
-| Renderer ZIP | `cfe6a685439568b3a703fd8e0698a5d98e1395e35edd82e0455b8adbe1abdd11` |
+ใช้ค่าจาก `SHA256SUMS.txt` และ `modern-emoji-renderer-0.0.5.zip.sha256` ใน Release เดียวกันเป็นแหล่งอ้างอิง เพื่อลดความเสี่ยงที่ README จะค้างอยู่ที่ hash ของรุ่นเก่า
 
 ## ความสามารถหลัก
 
@@ -111,7 +105,7 @@ Renderer จงใจไม่เปลี่ยน Emoji ภายในช่�
 
 ```powershell
 .\scripts\verify-foundation.ps1
-.\scripts\release.ps1 -Version 0.1.9
+.\scripts\release.ps1 -Version 0.1.10
 .\scripts\build-renderer-release.ps1
 ```
 
